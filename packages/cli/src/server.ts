@@ -2,19 +2,32 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { loadOrCreateWallet } from "./lib/wallet.js";
 import { logger } from "./lib/logger.js";
 
-// System tools
+// System
 import { registerToolsListTool } from "./tools/tools-list.js";
 import { registerListChainsTool } from "./tools/list-chains.js";
 
-// Account tools
+// Account
 import { registerWalletTool } from "./tools/wallet.js";
 import { registerCreditBalanceTool } from "./tools/credit-balance.js";
 
-// Explorer tools
+// Explorer
 import { registerExplorerStatsTool } from "./tools/explorer-stats.js";
 import { registerExplorerActionsTool } from "./tools/explorer-actions.js";
 import { registerGetWorkflowTool } from "./tools/get-workflow.js";
 import { registerFetchAbiTool } from "./tools/fetch-abi.js";
+
+// Workflow Generation
+import { registerCreateAutomationTool } from "./tools/create-automation.js";
+import { registerExplainYamlTool } from "./tools/explain-yaml.js";
+import { registerListTemplatesTool } from "./tools/list-templates.js";
+import { registerBuildTriggerTool } from "./tools/build-trigger.js";
+import { registerBuildActionTool } from "./tools/build-action.js";
+
+// Deployment
+import { registerVerifyWorkflowTool } from "./tools/verify-workflow.js";
+import { registerDeployWorkflowTool } from "./tools/deploy-workflow.js";
+import { registerWorkflowStatusTool } from "./tools/workflow-status.js";
+import { registerListWorkflowsTool } from "./tools/list-workflows.js";
 
 export function createMcpServer(): McpServer {
   loadOrCreateWallet();
@@ -24,33 +37,33 @@ export function createMcpServer(): McpServer {
     { capabilities: { tools: {}, logging: {} } },
   );
 
-  // ── System ──
-  registerToolsListTool(server);
-  registerListChainsTool(server);
+  // ── Workflow Generation (5) ──
+  registerCreateAutomationTool(server);
+  registerExplainYamlTool(server);
+  registerListTemplatesTool(server);
+  registerBuildTriggerTool(server);
+  registerBuildActionTool(server);
 
-  // ── Account ──
-  registerWalletTool(server);
-  registerCreditBalanceTool(server);
+  // ── Deployment (4) ──
+  registerVerifyWorkflowTool(server);
+  registerDeployWorkflowTool(server);
+  registerWorkflowStatusTool(server);
+  registerListWorkflowsTool(server);
 
-  // ── Explorer ──
+  // ── Explorer (4) ──
   registerExplorerStatsTool(server);
   registerExplorerActionsTool(server);
   registerGetWorkflowTool(server);
   registerFetchAbiTool(server);
 
-  // ── Workflow Generation (Phase 4) ──
-  // registerCreateAutomationTool(server);
-  // registerExplainYamlTool(server);
-  // registerListTemplatesTool(server);
-  // registerBuildTriggerTool(server);
-  // registerBuildActionTool(server);
+  // ── Account (2) ──
+  registerWalletTool(server);
+  registerCreditBalanceTool(server);
 
-  // ── Deployment (Phase 4) ──
-  // registerVerifyWorkflowTool(server);
-  // registerDeployWorkflowTool(server);
-  // registerWorkflowStatusTool(server);
-  // registerListWorkflowsTool(server);
+  // ── System (2) ──
+  registerToolsListTool(server);
+  registerListChainsTool(server);
 
-  logger.info("Kwala MCP server created with 8 tools");
+  logger.info("Kwala MCP server created with 17 tools");
   return server;
 }
