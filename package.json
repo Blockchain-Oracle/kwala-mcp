@@ -1,0 +1,21 @@
+{
+  "name": "kwala-mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:mcp": "pnpm --filter @kwala-dev/mcp dev",
+    "dev:cli": "pnpm --filter @kwala-dev/cli dev",
+    "dev:web": "pnpm --filter @kwala-dev/web dev",
+    "dev:docs": "pnpm --filter @kwala-dev/docs dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  },
+  "pnpm": {
+    "overrides": {
+      "zod": "4.3.6"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

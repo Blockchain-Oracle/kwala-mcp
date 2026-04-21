@@ -1,0 +1,55 @@
+{
+  "name": "@kwala-dev/cli",
+  "version": "0.1.0",
+  "description": "Core library and CLI for Kwala Network blockchain automations. 17 MCP tools for creating, verifying, deploying, and monitoring Kwalang workflows.",
+  "type": "module",
+  "bin": {
+    "kwala": "dist/cli.js"
+  },
+  "main": "./dist/server.js",
+  "types": "./dist/server.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/server.js",
+      "types": "./dist/server.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/cli.ts",
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "kwala",
+    "mcp",
+    "model-context-protocol",
+    "blockchain",
+    "automation",
+    "kwalang",
+    "web3",
+    "ai",
+    "agent"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "commander": "^14.0.3",
+    "ethers": "^6.13.0",
+    "pino": "^10.3.1",
+    "yaml": "^2.7.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.1.0"
+  }
+}

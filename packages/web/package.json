@@ -1,0 +1,10 @@
+{
+  "name": "@kwala-dev/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Landing page for kwala-mcp — showcases the MCP server, tool catalog, and installation guide.",
+  "scripts": {
+    "dev": "echo 'TODO: Set up Next.js — see GitHub issue for instructions'",
+    "build": "echo 'TODO: Set up Next.js'"
+  }
+}
