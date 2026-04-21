@@ -99,6 +99,7 @@ export async function fullDeploy(
     const contract = getContract(wallet);
     const tx = await contract.saveWorkflow(mutatedYaml);
     const receipt = await tx.wait();
+    if (!receipt) throw new Error("Transaction failed: no receipt returned");
     steps.push({ name: "save", status: "ok", tx_hash: receipt.hash });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -112,6 +113,7 @@ export async function fullDeploy(
     const contract = getContract(wallet);
     const tx = await contract.deployWorkflow(mutatedYaml);
     const receipt = await tx.wait();
+    if (!receipt) throw new Error("Transaction failed: no receipt returned");
     steps.push({ name: "deploy", status: "ok", tx_hash: receipt.hash });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -142,6 +144,7 @@ export async function fullDeploy(
       const contract = getContract(wallet);
       const tx = await contract.triggerWorkflow(chaincodeAddress);
       const receipt = await tx.wait();
+      if (!receipt) throw new Error("Transaction failed: no receipt returned");
       steps.push({ name: "activate", status: "ok", tx_hash: receipt.hash });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
