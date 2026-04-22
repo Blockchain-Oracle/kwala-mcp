@@ -149,7 +149,12 @@ function explainTrigger(t: Record<string, unknown>): string {
 
   const expires = t.ExpiresIn;
   if (expires) {
-    parts.push(`Expires: ${expires}`);
+    const ts = typeof expires === "string" ? parseInt(expires, 10) : (expires as number);
+    if (ts > 1_000_000_000) {
+      parts.push(`Expires: ${new Date(ts * 1000).toISOString()}`);
+    } else {
+      parts.push(`Expires: ${expires}`);
+    }
   }
 
   return parts.join(" ") || "Trigger details not recognized.";

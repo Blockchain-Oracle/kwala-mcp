@@ -7,6 +7,7 @@ import { resolveToken } from "../lib/tokens.js";
 import { getErc20AbiBase64, resolveWellKnownEvent, resolveWellKnownFunction } from "../lib/abi.js";
 import { validateWorkflow } from "../lib/schema.js";
 import { triggerDefaults, actionDefaults, normalizeExpiresIn, normalizeInterval, cronToInterval } from "../lib/defaults.js";
+import { getConfig } from "../lib/wallet.js";
 import { logger } from "../lib/logger.js";
 
 export function registerCreateAutomationTool(server: McpServer): void {
@@ -91,7 +92,9 @@ export function registerCreateAutomationTool(server: McpServer): void {
 
       try {
         const testnet = params.testnet ?? true;
-        const chainId = resolveChainId(params.chain ?? "base", testnet) ?? 84532;
+        const storedConfig = getConfig();
+        const chainInput = params.chain ?? storedConfig.default_chain ?? "base";
+        const chainId = resolveChainId(chainInput, testnet) ?? 84532;
         const chain = getChain(chainId);
 
         // ── Build Trigger ──
@@ -104,12 +107,108 @@ export function registerCreateAutomationTool(server: McpServer): void {
           const resolved = resolveToken(contractAddr, chainId);
           if (resolved) {
             contractAddr = resolved;
+          } else {
+            return err(`Token "${contractAddr}" not found on chain ${chain?.name ?? chainId}. Use kwala-list-chains to see supported tokens, or provide the contract address directly (0x...).`, {
+              missing_params: ["contract_address"],
+            });
+          }
+        }
+
+        // ── Validate trigger-specific required params ──
+        switch (params.trigger_type) {
+          case "event":
+          case "address_tracking":
+            if (!contractAddr) {
+              return err(`contract_address is required for ${params.trigger_type} triggers. Provide a 0x address or token name like "USDC".`, {
+                missing_params: ["contract_address"],
+              });
+            }
+            break;
+          case "oracle_price":
+            if (!params.trigger_price) {
+              return err("trigger_price is required for oracle_price triggers. E.g., 2000 for $2000.", {
+                missing_params: ["trigger_price"],
+              });
+            }
+            break;
+          case "block":
+            if (!params.block_number) {
+              return err("block_number is required for block triggers.", {
+                missing_params: ["block_number"],
+              });
+            }
+            break;
+          case "time":
+            if (!params.interval_seconds) {
+              return err("interval_seconds is required for time triggers. E.g., 300 for every 5 minutes.", {
+                missing_params: ["interval_seconds"],
+              });
+            }
+            break;
+          case "cron":
+            if (!params.cron_expression) {
+              return err("cron_expression is required for cron triggers. E.g., '0 9 * * *' for daily at 9am.", {
+                missing_params: ["cron_expression"],
+              });
+            }
+            break;
+        }
+
+        // ── Auto-fill from stored config, then validate ──
+        const storedTelegram = storedConfig.notifications?.telegram;
+        const storedDiscord = storedConfig.notifications?.discord;
+
+        for (const a of params.actions) {
+          // Auto-fill from stored notification config
+          if (a.type === "notification") {
+            const channel = a.channel ?? "telegram";
+            if (channel === "telegram") {
+              if (!a.bot_token && storedTelegram?.bot_token) a.bot_token = storedTelegram.bot_token;
+              if (!a.chat_id && storedTelegram?.chat_id) a.chat_id = storedTelegram.chat_id;
+              if (!a.bot_token) {
+                return err("Telegram not configured. Either pass bot_token here, or run kwala-configure with telegram_bot_token and telegram_chat_id to store it once.", {
+                  missing_params: ["actions[].bot_token"],
+                  suggestion: "Get a bot token from @BotFather on Telegram. Then call kwala-configure to save it.",
+                });
+              }
+              if (!a.chat_id) {
+                return err("Telegram chat_id missing. Either pass chat_id here, or run kwala-configure with telegram_chat_id to store it.", {
+                  missing_params: ["actions[].chat_id"],
+                  suggestion: "Call https://api.telegram.org/bot<TOKEN>/getUpdates to find your chat_id.",
+                });
+              }
+            } else if (channel === "discord") {
+              if (!a.webhook_url && storedDiscord?.webhook_url) a.webhook_url = storedDiscord.webhook_url;
+              if (!a.webhook_url) {
+                return err("Discord not configured. Either pass webhook_url here, or run kwala-configure with discord_webhook_url to store it once.", {
+                  missing_params: ["actions[].webhook_url"],
+                });
+              }
+            } else if (channel === "webhook") {
+              if (!a.webhook_url) {
+                return err("webhook_url is required for webhook notifications.", {
+                  missing_params: ["actions[].webhook_url"],
+                });
+              }
+            }
+          } else if (a.type === "call") {
+            if (!a.target_contract) {
+              return err("target_contract is required for call actions. Provide the contract address (0x...).", {
+                missing_params: ["actions[].target_contract"],
+              });
+            }
+          } else if (a.type === "api") {
+            if (!a.api_endpoint) {
+              return err("api_endpoint is required for API actions. Provide the webhook/API URL.", {
+                missing_params: ["actions[].api_endpoint"],
+              });
+            }
           }
         }
 
         switch (params.trigger_type) {
           case "event": {
-            trigger.TriggerSourceContract = contractAddr ?? "<CONTRACT_ADDRESS>";
+            trigger.TriggerSourceContract = contractAddr;
             trigger.TriggerChainID = chainId;
             trigger.RecurringChainID = chainId;
             trigger.TriggerEventFilter = params.event_filter ?? "NA";
@@ -118,7 +217,6 @@ export function registerCreateAutomationTool(server: McpServer): void {
             trigger.RepeatEvery = "event";
 
             // Use built-in ERC-20 ABI (works for USDC, USDT, WETH, DAI, etc.)
-            // No API call needed — we know what standard token ABIs look like
             trigger.TriggerSourceContractABI = getErc20AbiBase64();
 
             // Resolve event name to full signature using well-known events
@@ -127,25 +225,23 @@ export function registerCreateAutomationTool(server: McpServer): void {
           }
           case "time":
             trigger.ExecuteAfter = "event";
-            trigger.RepeatEvery = normalizeInterval(params.interval_seconds ?? 3600);
+            trigger.RepeatEvery = normalizeInterval(params.interval_seconds!);
             break;
           case "cron":
-            // Backend doesn't support cron expressions directly.
-            // Convert common cron patterns to interval format.
             trigger.ExecuteAfter = "event";
-            trigger.RepeatEvery = cronToInterval(params.cron_expression ?? "0 9 * * *");
+            trigger.RepeatEvery = cronToInterval(params.cron_expression!);
             break;
           case "oracle_price":
-            trigger.TriggerPrice = params.trigger_price ?? 0;
-            trigger.RecurringPrice = params.trigger_price ?? 0;
+            trigger.TriggerPrice = params.trigger_price;
+            trigger.RecurringPrice = params.trigger_price;
             trigger.ExecuteAfter = "oracle_price";
             trigger.RepeatEvery = "oracle_price";
             break;
           case "block":
-            trigger.ExecuteAfter = `BL${params.block_number ?? 0}`;
+            trigger.ExecuteAfter = `block:${params.block_number}`;
             break;
           case "address_tracking":
-            trigger.TriggerSourceContract = contractAddr ?? "<ADDRESS_TO_TRACK>";
+            trigger.TriggerSourceContract = contractAddr;
             trigger.TriggerChainID = chainId;
             trigger.ExecuteAfter = "address_tracking";
             trigger.RepeatEvery = "address_tracking";
@@ -171,7 +267,6 @@ export function registerCreateAutomationTool(server: McpServer): void {
               ? (resolveChainId(a.target_chain, testnet) ?? chainId)
               : chainId;
 
-            // Resolve function signature from well-known functions
             if (funcSig && !funcSig.startsWith("function ")) {
               funcSig = resolveWellKnownFunction(funcSig);
             }
@@ -180,7 +275,7 @@ export function registerCreateAutomationTool(server: McpServer): void {
               ...actionDefaults(targetChainId),
               Name: a.name,
               Type: "call",
-              TargetContract: a.target_contract ?? "<TARGET_CONTRACT>",
+              TargetContract: a.target_contract!,
               TargetFunction: funcSig,
               TargetParams: a.target_params ?? [],
               ChainID: targetChainId,
@@ -192,16 +287,16 @@ export function registerCreateAutomationTool(server: McpServer): void {
             let payload: Record<string, unknown>;
 
             if (channel === "telegram") {
-              endpoint = `https://api.telegram.org/bot${a.bot_token ?? "<BOT_TOKEN>"}/sendMessage`;
+              endpoint = `https://api.telegram.org/bot${a.bot_token!}/sendMessage`;
               payload = {
-                chat_id: a.chat_id ?? "<CHAT_ID>",
+                chat_id: a.chat_id!,
                 text: a.message ?? "Workflow triggered",
               };
             } else if (channel === "discord") {
-              endpoint = a.webhook_url ?? "<DISCORD_WEBHOOK>";
+              endpoint = a.webhook_url!;
               payload = { content: a.message ?? "Workflow triggered" };
             } else {
-              endpoint = a.webhook_url ?? "<WEBHOOK_URL>";
+              endpoint = a.webhook_url!;
               payload = { message: a.message ?? "Workflow triggered" };
             }
 
@@ -222,7 +317,7 @@ export function registerCreateAutomationTool(server: McpServer): void {
               ...actionDefaults(chainId),
               Name: a.name,
               Type: "post",
-              APIEndpoint: a.api_endpoint ?? "<API_ENDPOINT>",
+              APIEndpoint: a.api_endpoint!,
               APIPayload: payload,
               RetriesUntilSuccess: retries,
             });
@@ -242,25 +337,17 @@ export function registerCreateAutomationTool(server: McpServer): void {
         // Validate
         const validation = validateWorkflow(yamlStr);
 
-        // Check for placeholder values that need user input
+        // Security and informational warnings
         const warnings: string[] = [];
-        if (yamlStr.includes("<BOT_TOKEN>")) {
+        if (yamlStr.includes("api.telegram.org/bot")) {
           warnings.push(
-            "Telegram bot_token is missing. Get one from @BotFather on Telegram, then pass it in the action's bot_token field.",
+            "SECURITY: Your Telegram bot token will be stored on-chain when deployed. Consider using a dedicated bot token for automations.",
           );
         }
-        if (yamlStr.includes("<CHAT_ID>")) {
+        if (yamlStr.includes("discord.com/api/webhooks")) {
           warnings.push(
-            "Telegram chat_id is missing. Add your bot to a chat, then call https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates to find your chat_id.",
+            "SECURITY: Your Discord webhook URL will be stored on-chain when deployed.",
           );
-        }
-        if (yamlStr.includes("<DISCORD_WEBHOOK>")) {
-          warnings.push(
-            "Discord webhook_url is missing. Create one in Server Settings > Integrations > Webhooks.",
-          );
-        }
-        if (yamlStr.includes("<CONTRACT_ADDRESS>") || yamlStr.includes("<ADDRESS_TO_TRACK>")) {
-          warnings.push("A contract/wallet address placeholder was not filled in.");
         }
 
         // Human-readable expiration

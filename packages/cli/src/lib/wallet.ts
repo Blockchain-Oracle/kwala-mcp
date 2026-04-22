@@ -12,16 +12,33 @@ export function loadOrCreateWallet(): KwalaConfig {
   // Env override
   const envKey = process.env.KWALA_PRIVATE_KEY;
   if (envKey) {
-    const wallet = new Wallet(envKey);
-    return {
-      privateKey: wallet.privateKey,
-      address: wallet.address,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const wallet = new Wallet(envKey);
+      return {
+        privateKey: wallet.privateKey,
+        address: wallet.address,
+        createdAt: new Date().toISOString(),
+      };
+    } catch {
+      throw new Error("KWALA_PRIVATE_KEY env var contains an invalid private key.");
+    }
   }
 
   if (existsSync(CONFIG_PATH)) {
-    return JSON.parse(readFileSync(CONFIG_PATH, "utf-8")) as KwalaConfig;
+    try {
+      const raw = readFileSync(CONFIG_PATH, "utf-8");
+      const config = JSON.parse(raw) as KwalaConfig;
+      if (!config.privateKey || !config.address) {
+        throw new Error("missing fields");
+      }
+      // Validate the key is usable
+      new Wallet(config.privateKey);
+      return config;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logger.warn({ err: msg }, "wallet config corrupted, regenerating");
+      // Fall through to generate new wallet
+    }
   }
 
   // Generate new wallet
@@ -66,4 +83,32 @@ export function getAddress(): string {
 
 export function getConfigPath(): string {
   return CONFIG_PATH;
+}
+
+/**
+ * Get the full config (including notifications, default_chain).
+ */
+export function getConfig(): KwalaConfig {
+  return loadOrCreateWallet();
+}
+
+/**
+ * Update config fields without touching the private key.
+ * Merges the update into existing config.
+ */
+export function updateConfig(update: Partial<Omit<KwalaConfig, "privateKey" | "address" | "createdAt">>): KwalaConfig {
+  const config = loadOrCreateWallet();
+  const merged = { ...config, ...update };
+
+  // Merge notifications deeply
+  if (update.notifications) {
+    merged.notifications = {
+      ...config.notifications,
+      ...update.notifications,
+    };
+  }
+
+  writeFileSync(CONFIG_PATH, JSON.stringify(merged, null, 2), { mode: 0o600 });
+  logger.info("config updated");
+  return merged;
 }

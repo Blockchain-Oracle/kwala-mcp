@@ -23,7 +23,7 @@ export function registerFetchAbiTool(server: McpServer): void {
       }),
     },
     async ({ address, chain }) => {
-      const chainId = resolveChainId(chain, false) ?? Number(chain);
+      const chainId = resolveChainId(chain, true) ?? resolveChainId(chain, false) ?? Number(chain);
       if (Number.isNaN(chainId)) {
         return err(`Unknown chain: ${chain}`, {
           suggestion: "Use kwala-list-chains to see all supported chains.",

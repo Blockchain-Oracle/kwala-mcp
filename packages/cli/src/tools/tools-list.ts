@@ -7,7 +7,7 @@ export function registerToolsListTool(server: McpServer): void {
     "kwala-tools",
     {
       title: "List All Kwala Tools",
-      description: "Returns a categorized list of all 17 MCP tools available in kwala-mcp.",
+      description: "Returns a categorized list of all 18 MCP tools available in kwala-mcp.",
       inputSchema: z.object({}),
     },
     async () => {
@@ -34,6 +34,7 @@ export function registerToolsListTool(server: McpServer): void {
         "Account": [
           { tool: "kwala-wallet", description: "Show/create your KWALA chain wallet" },
           { tool: "kwala-credit-balance", description: "Check Kwala credit balance" },
+          { tool: "kwala-configure", description: "Store Telegram/Discord/webhook settings (set once, auto-used everywhere)" },
         ],
         "System": [
           { tool: "kwala-list-chains", description: "List all supported chains" },

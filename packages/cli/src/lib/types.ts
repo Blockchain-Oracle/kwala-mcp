@@ -1,10 +1,18 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 // ─── Wallet Config ──────────────────────────────────────
+export interface NotificationConfig {
+  telegram?: { bot_token: string; chat_id: string };
+  discord?: { webhook_url: string };
+  webhook?: { url: string };
+}
+
 export interface KwalaConfig {
   privateKey: string;
   address: string;
   createdAt: string;
+  default_chain?: string;
+  notifications?: NotificationConfig;
 }
 
 // ─── Chain Info ──────────────────────────────────────────
