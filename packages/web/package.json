@@ -6,5 +6,10 @@
   "scripts": {
     "dev": "echo 'TODO: Set up Next.js — see GitHub issue for instructions'",
     "build": "echo 'TODO: Set up Next.js'"
+  },
+  "dependencies": {
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.8.0",
+    "swr": "^2.4.1"
   }
 }
