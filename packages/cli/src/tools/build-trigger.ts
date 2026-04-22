@@ -140,7 +140,7 @@ export function registerBuildTriggerTool(server: McpServer): void {
                 missing_params: ["block_number"],
               });
             }
-            trigger.ExecuteAfter = `block:${params.block_number}`;
+            trigger.ExecuteAfter = `BL${params.block_number}`;
             break;
           }
 

@@ -142,7 +142,7 @@ export function registerCreateAutomationTool(server: McpServer): void {
             trigger.RepeatEvery = "oracle_price";
             break;
           case "block":
-            trigger.ExecuteAfter = `block:${params.block_number ?? 0}`;
+            trigger.ExecuteAfter = `BL${params.block_number ?? 0}`;
             break;
           case "address_tracking":
             trigger.TriggerSourceContract = contractAddr ?? "<ADDRESS_TO_TRACK>";
