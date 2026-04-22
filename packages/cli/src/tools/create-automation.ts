@@ -4,9 +4,9 @@ import YAML from "yaml";
 import { ok, err } from "../lib/format.js";
 import { resolveChainId, getChain } from "../lib/chains.js";
 import { resolveToken } from "../lib/tokens.js";
-import { fetchAbiBase64, fetchAbi, resolveEventSignature } from "../lib/abi.js";
+import { getErc20AbiBase64, resolveWellKnownEvent, resolveWellKnownFunction } from "../lib/abi.js";
 import { validateWorkflow } from "../lib/schema.js";
-import { triggerDefaults, actionDefaults, normalizeExpiresIn } from "../lib/defaults.js";
+import { triggerDefaults, actionDefaults, normalizeExpiresIn, normalizeInterval, cronToInterval } from "../lib/defaults.js";
 import { logger } from "../lib/logger.js";
 
 export function registerCreateAutomationTool(server: McpServer): void {
@@ -117,35 +117,23 @@ export function registerCreateAutomationTool(server: McpServer): void {
             trigger.ExecuteAfter = "event";
             trigger.RepeatEvery = "event";
 
-            // Auto-fetch ABI and resolve event
-            if (contractAddr?.startsWith("0x")) {
-              try {
-                const abiB64 = await fetchAbiBase64(contractAddr, chainId);
-                trigger.TriggerSourceContractABI = abiB64;
+            // Use built-in ERC-20 ABI (works for USDC, USDT, WETH, DAI, etc.)
+            // No API call needed — we know what standard token ABIs look like
+            trigger.TriggerSourceContractABI = getErc20AbiBase64();
 
-                if (params.event_name) {
-                  const abi = await fetchAbi(contractAddr, chainId);
-                  const sig = resolveEventSignature(abi, params.event_name);
-                  trigger.TriggerEventName = sig ?? params.event_name;
-                }
-              } catch {
-                if (params.event_name) {
-                  trigger.TriggerEventName = params.event_name;
-                }
-              }
-            }
-            if (!trigger.TriggerEventName) {
-              trigger.TriggerEventName = params.event_name ?? "Transfer(address,address,uint256)";
-            }
+            // Resolve event name to full signature using well-known events
+            trigger.TriggerEventName = resolveWellKnownEvent(params.event_name ?? "Transfer");
             break;
           }
           case "time":
             trigger.ExecuteAfter = "event";
-            trigger.RepeatEvery = params.interval_seconds ?? 3600;
+            trigger.RepeatEvery = normalizeInterval(params.interval_seconds ?? 3600);
             break;
           case "cron":
+            // Backend doesn't support cron expressions directly.
+            // Convert common cron patterns to interval format.
             trigger.ExecuteAfter = "event";
-            trigger.RepeatEvery = params.cron_expression ?? "0 9 * * *";
+            trigger.RepeatEvery = cronToInterval(params.cron_expression ?? "0 9 * * *");
             break;
           case "oracle_price":
             trigger.TriggerPrice = params.trigger_price ?? 0;
@@ -183,13 +171,9 @@ export function registerCreateAutomationTool(server: McpServer): void {
               ? (resolveChainId(a.target_chain, testnet) ?? chainId)
               : chainId;
 
-            // Resolve function signature
-            if (funcSig && !funcSig.startsWith("function ") && a.target_contract?.startsWith("0x")) {
-              try {
-                const abi = await fetchAbi(a.target_contract, targetChainId);
-                const sig = resolveFunctionSignature(abi, funcSig);
-                if (sig) funcSig = sig;
-              } catch { /* keep original */ }
+            // Resolve function signature from well-known functions
+            if (funcSig && !funcSig.startsWith("function ")) {
+              funcSig = resolveWellKnownFunction(funcSig);
             }
 
             actions.push({

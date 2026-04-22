@@ -3,8 +3,8 @@ import { z } from "zod";
 import YAML from "yaml";
 import { ok, err } from "../lib/format.js";
 import { resolveChainId } from "../lib/chains.js";
-import { fetchAbiBase64, resolveEventSignature, fetchAbi } from "../lib/abi.js";
-import { triggerDefaults, normalizeExpiresIn } from "../lib/defaults.js";
+import { getErc20AbiBase64, resolveWellKnownEvent, fetchAbiBase64, fetchAbi, resolveEventSignature } from "../lib/abi.js";
+import { triggerDefaults, normalizeExpiresIn, normalizeInterval, cronToInterval } from "../lib/defaults.js";
 import { logger } from "../lib/logger.js";
 
 export function registerBuildTriggerTool(server: McpServer): void {
@@ -93,44 +93,31 @@ export function registerBuildTriggerTool(server: McpServer): void {
             trigger.ExecuteAfter = "event";
             trigger.RepeatEvery = "event";
 
-            // Auto-resolve event signature and ABI
-            let abiBase64: string | undefined;
-            let fullEventSig: string | undefined;
-
+            // Use provided ABI or fall back to built-in ERC-20 ABI
             if (params.abi_json) {
-              const abi = JSON.parse(params.abi_json) as unknown[];
-              abiBase64 = Buffer.from(params.abi_json).toString("base64");
+              trigger.TriggerSourceContractABI = Buffer.from(params.abi_json).toString("base64");
+              // Try to resolve event from provided ABI
               if (params.event_name) {
-                fullEventSig = resolveEventSignature(abi, params.event_name);
+                const abi = JSON.parse(params.abi_json) as unknown[];
+                const sig = resolveEventSignature(abi, params.event_name);
+                trigger.TriggerEventName = sig ?? resolveWellKnownEvent(params.event_name);
               }
             } else {
-              try {
-                abiBase64 = await fetchAbiBase64(params.contract_address, chainId);
-                if (params.event_name) {
-                  const abi = await fetchAbi(params.contract_address, chainId);
-                  fullEventSig = resolveEventSignature(abi, params.event_name);
-                }
-              } catch {
-                // ABI fetch failed — continue without it
-              }
-            }
-
-            trigger.TriggerEventName = fullEventSig ?? params.event_name ?? "Transfer(address,address,uint256)";
-            if (abiBase64) {
-              trigger.TriggerSourceContractABI = abiBase64;
+              trigger.TriggerSourceContractABI = getErc20AbiBase64();
+              trigger.TriggerEventName = resolveWellKnownEvent(params.event_name ?? "Transfer");
             }
             break;
           }
 
           case "time": {
             trigger.ExecuteAfter = "event";
-            trigger.RepeatEvery = params.interval_seconds ?? 3600;
+            trigger.RepeatEvery = normalizeInterval(params.interval_seconds ?? 3600);
             break;
           }
 
           case "cron": {
             trigger.ExecuteAfter = "event";
-            trigger.RepeatEvery = params.cron_expression ?? "0 9 * * *";
+            trigger.RepeatEvery = cronToInterval(params.cron_expression ?? "0 9 * * *");
             break;
           }
 

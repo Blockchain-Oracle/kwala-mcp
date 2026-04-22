@@ -3,7 +3,7 @@ import { z } from "zod";
 import YAML from "yaml";
 import { ok, err } from "../lib/format.js";
 import { resolveChainId } from "../lib/chains.js";
-import { resolveFunctionSignature, fetchAbi } from "../lib/abi.js";
+import { resolveWellKnownFunction } from "../lib/abi.js";
 import { resolveToken } from "../lib/tokens.js";
 import { actionDefaults } from "../lib/defaults.js";
 import { logger } from "../lib/logger.js";
@@ -60,16 +60,10 @@ export function registerBuildActionTool(server: McpServer): void {
             }
             const chainId = resolveChainId(params.chain ?? "base sepolia") ?? 84532;
 
-            // Auto-resolve function signature
+            // Resolve function signature from well-known functions
             let funcSig = params.function_name ?? "";
             if (funcSig && !funcSig.startsWith("function ")) {
-              try {
-                const abi = await fetchAbi(params.contract_address, chainId);
-                const resolved = resolveFunctionSignature(abi, funcSig);
-                if (resolved) funcSig = resolved;
-              } catch {
-                // Keep the user-provided name
-              }
+              funcSig = resolveWellKnownFunction(funcSig);
             }
 
             action = {
