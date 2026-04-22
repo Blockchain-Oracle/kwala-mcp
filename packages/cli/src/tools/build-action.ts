@@ -5,6 +5,7 @@ import { ok, err } from "../lib/format.js";
 import { resolveChainId } from "../lib/chains.js";
 import { resolveFunctionSignature, fetchAbi } from "../lib/abi.js";
 import { resolveToken } from "../lib/tokens.js";
+import { actionDefaults } from "../lib/defaults.js";
 import { logger } from "../lib/logger.js";
 
 export function registerBuildActionTool(server: McpServer): void {
@@ -72,14 +73,13 @@ export function registerBuildActionTool(server: McpServer): void {
             }
 
             action = {
+              ...actionDefaults(chainId),
               Name: params.name,
               Type: "call",
               TargetContract: params.contract_address,
               TargetFunction: funcSig,
               TargetParams: params.params ?? [],
               ChainID: chainId,
-              EncodedABI: "NA",
-              Metadata: "NA",
               RetriesUntilSuccess: retries,
             };
             break;
@@ -119,6 +119,7 @@ export function registerBuildActionTool(server: McpServer): void {
             }
 
             action = {
+              ...actionDefaults(84532),
               Name: params.name,
               Type: "post",
               APIEndpoint: endpoint,
@@ -142,6 +143,7 @@ export function registerBuildActionTool(server: McpServer): void {
             }
 
             action = {
+              ...actionDefaults(84532),
               Name: params.name,
               Type: "post",
               APIEndpoint: params.api_endpoint,
@@ -157,6 +159,7 @@ export function registerBuildActionTool(server: McpServer): void {
             }
             const chainId = resolveChainId(params.chain ?? "base sepolia") ?? 84532;
             action = {
+              ...actionDefaults(chainId),
               Name: params.name,
               Type: "deploy",
               Bytecode: params.bytecode,

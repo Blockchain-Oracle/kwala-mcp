@@ -1,0 +1,29 @@
+Name: AutoTopUpWallet
+Trigger:
+  TriggerSourceContract: "0xBalanceCheckerContract"
+  TriggerChainID: 8453
+  TriggerEventName: "LowBalance(address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: TransferUSDC
+    Type: call
+    TargetContract: "0xUSDCContractAddress"
+    TargetFunction: "function transfer(address to, uint256 amount)"
+    TargetParams:
+      - "re.event(0)"
+      - "1000000"
+    ChainID: 8453
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 3
+  - Name: NotifyOwner
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "Auto top-up sent 1 USDC to re.event(0)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential

@@ -4,6 +4,7 @@ import YAML from "yaml";
 import { ok, err } from "../lib/format.js";
 import { resolveChainId } from "../lib/chains.js";
 import { fetchAbiBase64, resolveEventSignature, fetchAbi } from "../lib/abi.js";
+import { triggerDefaults, normalizeExpiresIn } from "../lib/defaults.js";
 import { logger } from "../lib/logger.js";
 
 export function registerBuildTriggerTool(server: McpServer): void {
@@ -74,8 +75,8 @@ export function registerBuildTriggerTool(server: McpServer): void {
       logger.debug(params, "kwala-build-trigger invoked");
 
       try {
-        const trigger: Record<string, unknown> = {};
         const chainId = resolveChainId(params.chain ?? "base sepolia") ?? 84532;
+        const trigger: Record<string, unknown> = { ...triggerDefaults(chainId) };
 
         switch (params.type) {
           case "event": {
@@ -86,7 +87,9 @@ export function registerBuildTriggerTool(server: McpServer): void {
             }
             trigger.TriggerSourceContract = params.contract_address;
             trigger.TriggerChainID = chainId;
+            trigger.RecurringChainID = chainId;
             trigger.TriggerEventFilter = params.filter ?? "NA";
+            trigger.RecurringEventFilter = "NA";
             trigger.ExecuteAfter = "event";
             trigger.RepeatEvery = "event";
 
@@ -138,6 +141,7 @@ export function registerBuildTriggerTool(server: McpServer): void {
               });
             }
             trigger.TriggerPrice = params.price;
+            trigger.RecurringPrice = params.price;
             trigger.ExecuteAfter = "oracle_price";
             trigger.RepeatEvery = "oracle_price";
             break;
@@ -168,7 +172,9 @@ export function registerBuildTriggerTool(server: McpServer): void {
         }
 
         if (params.expires_in) {
-          trigger.ExpiresIn = params.expires_in;
+          trigger.ExpiresIn = normalizeExpiresIn(params.expires_in);
+        } else {
+          trigger.ExpiresIn = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
         }
 
         const yamlStr = YAML.stringify({ Trigger: trigger });

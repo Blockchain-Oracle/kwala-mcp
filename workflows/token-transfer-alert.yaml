@@ -1,0 +1,18 @@
+Name: TokenTransferAlert
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 1
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: SendTelegramAlert
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "USDC Transfer: from re.event(0) to re.event(1), amount: re.event(2)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential

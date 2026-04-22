@@ -1,0 +1,16 @@
+Name: SOLPriceDropAlert
+Trigger:
+  TriggerPrice: 150.0
+  ExecuteAfter: "oracle_price"
+  RepeatEvery: "oracle_price"
+  ExpiresIn: 2592000
+Actions:
+  - Name: AlertTelegram
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "SOL has dropped below $150!"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential

@@ -1,0 +1,28 @@
+Name: NFTRewardOnPurchase
+Trigger:
+  TriggerSourceContract: "0xShopContract"
+  TriggerChainID: 80002
+  TriggerEventName: "PurchaseCompleted(address buyer, uint256 amount)"
+  TriggerEventFilter: "re.event(1) > 100"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: MintRewardNFT
+    Type: call
+    TargetContract: "0xRewardNFTContract"
+    TargetFunction: "function mintReward(address to)"
+    TargetParams:
+      - "re.event(0)"
+    ChainID: 80002
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 5
+  - Name: NotifyBuyer
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "Reward NFT minted for buyer re.event(0)!"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential

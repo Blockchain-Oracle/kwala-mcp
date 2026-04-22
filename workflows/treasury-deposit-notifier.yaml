@@ -1,0 +1,21 @@
+Name: TreasuryDepositNotifier
+Trigger:
+  TriggerSourceContract: "0xYourTreasuryAddress"
+  TriggerChainID: 8453
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+Actions:
+  - Name: NotifyDiscord
+    Type: post
+    APIEndpoint: "https://discord.com/api/webhooks/<YOUR_WEBHOOK>"
+    APIPayload:
+      content: "Treasury activity detected! Tx: re.event(0)"
+    RetriesUntilSuccess: 5
+  - Name: LogToBackend
+    Type: post
+    APIEndpoint: "https://your-api.com/webhook/treasury"
+    APIPayload:
+      receipt: "re.event(0)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential

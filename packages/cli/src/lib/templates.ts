@@ -74,7 +74,7 @@ Trigger:
   TriggerPrice: 150.0
   ExecuteAfter: "oracle_price"
   RepeatEvery: "oracle_price"
-  ExpiresIn: "2592000"
+  ExpiresIn: 2592000
 Actions:
   - Name: AlertTelegram
     Type: post
@@ -101,7 +101,7 @@ Trigger:
   TriggerChainID: 137
   ExecuteAfter: "address_tracking"
   RepeatEvery: "address_tracking"
-  ExpiresIn: "604800"
+  ExpiresIn: 604800
 Actions:
   - Name: ForwardToWebhook
     Type: post

@@ -1,0 +1,17 @@
+Name: WalletActivityTracker
+Trigger:
+  TriggerSourceContract: "0xWalletToTrack"
+  TriggerChainID: 137
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+  ExpiresIn: 604800
+Actions:
+  - Name: ForwardToWebhook
+    Type: post
+    APIEndpoint: "https://your-api.com/webhook/activity"
+    APIPayload:
+      type: "address_activity"
+      receipt: "re.event(0)"
+    RetriesUntilSuccess: 5
+Execution:
+  Mode: sequential

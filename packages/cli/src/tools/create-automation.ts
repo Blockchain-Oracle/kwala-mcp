@@ -6,6 +6,7 @@ import { resolveChainId, getChain } from "../lib/chains.js";
 import { resolveToken } from "../lib/tokens.js";
 import { fetchAbiBase64, fetchAbi, resolveEventSignature } from "../lib/abi.js";
 import { validateWorkflow } from "../lib/schema.js";
+import { triggerDefaults, actionDefaults, normalizeExpiresIn } from "../lib/defaults.js";
 import { logger } from "../lib/logger.js";
 
 export function registerCreateAutomationTool(server: McpServer): void {
@@ -94,7 +95,8 @@ export function registerCreateAutomationTool(server: McpServer): void {
         const chain = getChain(chainId);
 
         // ── Build Trigger ──
-        const trigger: Record<string, unknown> = {};
+        // Start with all mandatory defaults (Kwala backend requires every field)
+        const trigger: Record<string, unknown> = { ...triggerDefaults(chainId) };
 
         // Resolve contract address (could be a token name like "USDC")
         let contractAddr = params.contract_address;
@@ -109,7 +111,9 @@ export function registerCreateAutomationTool(server: McpServer): void {
           case "event": {
             trigger.TriggerSourceContract = contractAddr ?? "<CONTRACT_ADDRESS>";
             trigger.TriggerChainID = chainId;
+            trigger.RecurringChainID = chainId;
             trigger.TriggerEventFilter = params.event_filter ?? "NA";
+            trigger.RecurringEventFilter = "NA";
             trigger.ExecuteAfter = "event";
             trigger.RepeatEvery = "event";
 
@@ -145,6 +149,7 @@ export function registerCreateAutomationTool(server: McpServer): void {
             break;
           case "oracle_price":
             trigger.TriggerPrice = params.trigger_price ?? 0;
+            trigger.RecurringPrice = params.trigger_price ?? 0;
             trigger.ExecuteAfter = "oracle_price";
             trigger.RepeatEvery = "oracle_price";
             break;
@@ -160,7 +165,10 @@ export function registerCreateAutomationTool(server: McpServer): void {
         }
 
         if (params.expires_in) {
-          trigger.ExpiresIn = params.expires_in;
+          trigger.ExpiresIn = normalizeExpiresIn(params.expires_in);
+        } else {
+          // Default: 30 days from now
+          trigger.ExpiresIn = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
         }
 
         // ── Build Actions ──
@@ -185,14 +193,13 @@ export function registerCreateAutomationTool(server: McpServer): void {
             }
 
             actions.push({
+              ...actionDefaults(targetChainId),
               Name: a.name,
               Type: "call",
               TargetContract: a.target_contract ?? "<TARGET_CONTRACT>",
               TargetFunction: funcSig,
               TargetParams: a.target_params ?? [],
               ChainID: targetChainId,
-              EncodedABI: "NA",
-              Metadata: "NA",
               RetriesUntilSuccess: retries,
             });
           } else if (a.type === "notification") {
@@ -215,6 +222,7 @@ export function registerCreateAutomationTool(server: McpServer): void {
             }
 
             actions.push({
+              ...actionDefaults(chainId),
               Name: a.name,
               Type: "post",
               APIEndpoint: endpoint,
@@ -227,6 +235,7 @@ export function registerCreateAutomationTool(server: McpServer): void {
               try { payload = JSON.parse(a.api_payload) as Record<string, unknown>; } catch { /* empty */ }
             }
             actions.push({
+              ...actionDefaults(chainId),
               Name: a.name,
               Type: "post",
               APIEndpoint: a.api_endpoint ?? "<API_ENDPOINT>",
