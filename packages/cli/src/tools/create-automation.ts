@@ -242,6 +242,31 @@ export function registerCreateAutomationTool(server: McpServer): void {
         // Validate
         const validation = validateWorkflow(yamlStr);
 
+        // Check for placeholder values that need user input
+        const warnings: string[] = [];
+        if (yamlStr.includes("<BOT_TOKEN>")) {
+          warnings.push(
+            "Telegram bot_token is missing. Get one from @BotFather on Telegram, then pass it in the action's bot_token field.",
+          );
+        }
+        if (yamlStr.includes("<CHAT_ID>")) {
+          warnings.push(
+            "Telegram chat_id is missing. Add your bot to a chat, then call https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates to find your chat_id.",
+          );
+        }
+        if (yamlStr.includes("<DISCORD_WEBHOOK>")) {
+          warnings.push(
+            "Discord webhook_url is missing. Create one in Server Settings > Integrations > Webhooks.",
+          );
+        }
+        if (yamlStr.includes("<CONTRACT_ADDRESS>") || yamlStr.includes("<ADDRESS_TO_TRACK>")) {
+          warnings.push("A contract/wallet address placeholder was not filled in.");
+        }
+
+        // Human-readable expiration
+        const expiresTs = trigger.ExpiresIn as number;
+        const expiresDate = new Date(expiresTs * 1000).toISOString();
+
         return ok({
           yaml: yamlStr,
           workflow_name: params.name,
@@ -250,9 +275,11 @@ export function registerCreateAutomationTool(server: McpServer): void {
           trigger_type: params.trigger_type,
           actions_count: actions.length,
           execution_mode: params.execution_mode ?? "sequential",
+          expires: expiresDate,
           validation: validation.valid
             ? { valid: true }
             : { valid: false, errors: validation.errors },
+          warnings: warnings.length > 0 ? warnings : undefined,
           description: params.description ?? null,
           next_steps: [
             "Call kwala-verify-workflow with this YAML to verify against Kwala's backend.",

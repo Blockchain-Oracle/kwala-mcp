@@ -73,6 +73,11 @@ export function registerDeployWorkflowTool(server: McpServer): void {
             chaincode_address: result.chaincode_address,
             status: result.chaincode_address ? "active" : "deployed",
             steps: result.steps,
+            explorer: {
+              workflow: `https://kwala-explorer.lovable.app/?workflow=${encodeURIComponent(result.workflow_id)}`,
+              dashboard: "https://kwala.network/dashboard",
+            },
+            note: "Use kwala-workflow-status to check execution progress. Use kwala-explorer-actions to see action logs.",
           });
         }
 
