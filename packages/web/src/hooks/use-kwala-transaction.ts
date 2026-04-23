@@ -83,8 +83,8 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           setProgress({ ...prog });
           setStatus("broadcasting");
 
-          // Use walletClient.sendTransaction directly with all params set
-          // to prevent viem from making pre-flight RPC calls that KWALA doesn't support
+          // Sign with MetaMask wallet
+          console.log("[kwala-tx] Signing with wallet...");
           const result = await walletClient.sendTransaction({
             account: address,
             to: step.to as `0x${string}`,
@@ -102,8 +102,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
             nonce: 0,
           });
 
-          console.log("[kwala-tx] Raw result:", result);
-
+          // KWALA RPC returns object {txHash, from, to, validation}
           const hash = typeof result === "object" && result !== null
             ? ((result as Record<string, unknown>).txHash as string) ?? String(result)
             : String(result);

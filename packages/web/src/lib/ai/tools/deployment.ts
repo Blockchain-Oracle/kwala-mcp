@@ -67,8 +67,10 @@ export const prepareDeploy = tool({
       const workflowId = `${workflowName}_${user_address}`;
       const mutatedYaml = mutateYamlName(yamlStr, user_address);
 
+      // Only saveWorkflow is needed as a wallet transaction.
+      // The Kwala dashboard does: save (wallet) → deploy (automatic) → activate (wallet)
+      // deployWorkflow via eth_sendTransaction is rejected by KWALA gateway.
       const saveData = iface.encodeFunctionData("saveWorkflow", [mutatedYaml]);
-      const deployData = iface.encodeFunctionData("deployWorkflow", [mutatedYaml]);
 
       return {
         prepared: true,
@@ -86,21 +88,12 @@ export const prepareDeploy = tool({
             gasLimit: KWALA_GAS_LIMIT,
             value: "0",
           },
-          {
-            name: "deploy",
-            to: KWALA_CONTRACT_ADDRESS,
-            data: deployData,
-            chainId: KWALA_CHAIN_ID,
-            gasPrice: KWALA_GAS_PRICE,
-            gasLimit: KWALA_GAS_LIMIT,
-            value: "0",
-          },
         ],
         instructions: [
-          "Sign each transaction with your wallet: save first, then deploy.",
-          "After both transactions succeed, the workflow will be deployed on KWALA chain.",
+          "Sign the save transaction with your wallet to deploy the workflow on-chain.",
+          "After saving, the workflow will be automatically deployed by the Kwala network.",
         ],
-        note: "Your wallet will sign and broadcast these transactions to KWALA chain (1905).",
+        note: "Your wallet signs the save transaction. Kwala handles deployment and activation.",
       };
     } catch (e) {
       return { error: `Failed to prepare: ${e instanceof Error ? e.message : String(e)}` };
