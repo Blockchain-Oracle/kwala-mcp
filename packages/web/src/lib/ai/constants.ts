@@ -253,13 +253,23 @@ export function actionDefaults(chainId: number): Record<string, unknown> {
   };
 }
 
-export function normalizeExpiresIn(value: string | number | undefined): number | undefined {
-  if (value === undefined) return undefined;
+export function normalizeExpiresIn(value: string | number | undefined): number {
+  const now = Math.floor(Date.now() / 1000);
+  const defaultExpiry = now + 30 * 24 * 60 * 60;
+
+  if (value === undefined) return defaultExpiry;
   const num = typeof value === "string" ? Number(value) : value;
-  if (Number.isNaN(num)) return undefined;
+  if (Number.isNaN(num)) return defaultExpiry;
+
   if (num < 1_000_000_000) {
-    return Math.floor(Date.now() / 1000) + num;
+    return now + num;
   }
+
+  // Reject past timestamps — always use future
+  if (num <= now) {
+    return defaultExpiry;
+  }
+
   return num;
 }
 

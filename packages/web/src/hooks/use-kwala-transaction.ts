@@ -85,7 +85,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           setProgress({ ...prog });
           setStatus("broadcasting");
 
-          const hash = await sendTransactionAsync({
+          const result = await sendTransactionAsync({
             to: step.to as `0x${string}`,
             data: step.data as `0x${string}`,
             chainId: step.chainId ?? KWALA_TX_DEFAULTS.chainId,
@@ -93,6 +93,11 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
             gas: BigInt(step.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit),
             type: "legacy",
           });
+
+          // KWALA RPC returns object {txHash, from, to, validation} — extract the hash
+          const hash = typeof result === "object" && result !== null
+            ? ((result as Record<string, unknown>).txHash as string) ?? String(result)
+            : String(result);
 
           hashes.push(hash);
           setTxHashes([...hashes]);

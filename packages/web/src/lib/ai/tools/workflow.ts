@@ -49,7 +49,7 @@ export const createAutomation = tool({
     cron_expression: z.string().optional().describe("Cron expression (for cron triggers)."),
     trigger_price: z.number().optional().describe("Price threshold (for oracle_price triggers)."),
     block_number: z.number().optional().describe("Block number (for block triggers)."),
-    expires_in: z.string().optional().describe("Expiration in seconds or Unix timestamp."),
+    expires_in: z.string().optional().describe("Expiration in seconds from now. Default: 30 days. Do NOT pass a Unix timestamp — just seconds."),
     actions: z
       .array(
         z.object({
