@@ -10,6 +10,7 @@ import { registerListChainsTool } from "./tools/list-chains.js";
 import { registerWalletTool } from "./tools/wallet.js";
 import { registerCreditBalanceTool } from "./tools/credit-balance.js";
 import { registerConfigureTool } from "./tools/configure.js";
+import { registerLoginTool } from "./tools/login.js";
 
 // Explorer
 import { registerExplorerStatsTool } from "./tools/explorer-stats.js";
@@ -57,15 +58,16 @@ export function createMcpServer(): McpServer {
   registerGetWorkflowTool(server);
   registerFetchAbiTool(server);
 
-  // ── Account (3) ──
+  // ── Account (4) ──
   registerWalletTool(server);
   registerCreditBalanceTool(server);
   registerConfigureTool(server);
+  registerLoginTool(server);
 
   // ── System (2) ──
   registerToolsListTool(server);
   registerListChainsTool(server);
 
-  logger.info("Kwala MCP server created with 18 tools");
+  logger.info("Kwala MCP server created with 19 tools");
   return server;
 }

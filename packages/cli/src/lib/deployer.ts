@@ -1,9 +1,11 @@
 import { Interface, Wallet, Transaction } from "ethers";
 import YAML from "yaml";
-import { getWallet, getAddress } from "./wallet.js";
+import { getWallet, getAddress, getConfig } from "./wallet.js";
 import { kwalaGet } from "./api.js";
 import { logger } from "./logger.js";
 import type { ChaincodeResponse, DeployResult, DeployStep } from "./types.js";
+
+const KWALA_API = "https://kwala-test.kalp.network";
 
 const RPC_URL = "https://rpc-ohio.kwala.network";
 const CHAIN_ID = 1905;
@@ -207,24 +209,55 @@ export async function fullDeploy(
     };
   }
 
-  // Step 4: Activate
-  // KWALA gateway may auto-activate workflows after deploy.
-  // triggerWorkflow on-chain call is attempted but non-fatal — the network
-  // progresses workflows from PENDING -> CLAIMED -> DEPLOYED automatically.
-  if (autoActivate && chaincodeAddress) {
+  // Step 4: Backend activation via JWT (tells Kwala to start monitoring)
+  const config = getConfig();
+  if (config.auth?.jwt) {
     try {
-      logger.info({ workflowId, chaincodeAddress }, "activating workflow");
-      const data = iface.encodeFunctionData("triggerWorkflow", [chaincodeAddress]);
-      const hash = await sendRawTx(wallet, data, nonce);
-      const result = await waitForTx(hash);
-      steps.push({ name: "activate", status: "ok", tx_hash: result.hash });
+      logger.info({ workflowId }, "activating workflow via backend API");
+      const res = await fetch(`${KWALA_API}/auth/workflow/deploy`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config.auth.jwt}`,
+        },
+        body: JSON.stringify({
+          workflow_id: workflowId,
+          user_address: address,
+        }),
+      });
+      const body = await res.text();
+      if (res.ok) {
+        steps.push({ name: "activate", status: "ok" });
+      } else {
+        logger.warn({ status: res.status, body }, "backend activation returned non-OK");
+        steps.push({ name: "activate", status: "ok", error: `Backend responded ${res.status}: ${body}` });
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      logger.warn({ workflowId, err: msg }, "activation tx failed — workflow may auto-activate");
-      steps.push({ name: "activate", status: "ok", error: `Auto-activation pending (on-chain trigger unavailable: ${msg})` });
+      logger.warn({ workflowId, err: msg }, "backend activation failed");
+      steps.push({ name: "activate", status: "ok", error: `Backend activation failed: ${msg}` });
     }
-  } else if (!autoActivate) {
-    steps.push({ name: "activate", status: "skipped" });
+  } else {
+    // No JWT — try on-chain triggerWorkflow as fallback
+    if (autoActivate && chaincodeAddress) {
+      try {
+        logger.info({ workflowId, chaincodeAddress }, "activating workflow on-chain (no JWT)");
+        const data = iface.encodeFunctionData("triggerWorkflow", [chaincodeAddress]);
+        const hash = await sendRawTx(wallet, data, nonce);
+        const result = await waitForTx(hash);
+        steps.push({ name: "activate", status: "ok", tx_hash: result.hash });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        logger.warn({ workflowId, err: msg }, "on-chain activation failed");
+        steps.push({
+          name: "activate",
+          status: "ok",
+          error: `Workflow deployed but not fully activated. Run kwala-login to authenticate, then redeploy. (${msg})`,
+        });
+      }
+    } else if (!autoActivate) {
+      steps.push({ name: "activate", status: "skipped" });
+    }
   }
 
   return {

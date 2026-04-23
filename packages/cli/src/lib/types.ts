@@ -13,6 +13,7 @@ export interface KwalaConfig {
   createdAt: string;
   default_chain?: string;
   notifications?: NotificationConfig;
+  auth?: { jwt: string; email?: string; expires?: number };
 }
 
 // ─── Chain Info ──────────────────────────────────────────
