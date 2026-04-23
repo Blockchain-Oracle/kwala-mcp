@@ -29,6 +29,7 @@ interface ToolResultRendererProps {
   result: unknown;
   toolCallId?: string;
   addToolOutput?: AddToolOutputHandler;
+  sendMessage?: (opts: { text: string }) => void;
 }
 
 export function ToolResultRenderer({
@@ -36,6 +37,7 @@ export function ToolResultRenderer({
   result,
   toolCallId,
   addToolOutput,
+  sendMessage,
 }: ToolResultRendererProps) {
   if (result === null || result === undefined) {
     return <ErrorCard error="Tool result not available." toolName={toolName} />;
@@ -60,33 +62,18 @@ export function ToolResultRenderer({
 
   const handleTemplateSelect = useCallback(
     (template: { id: string; name: string }) => {
-      if (!addToolOutput || !toolCallId) return;
-      addToolOutput({
-        tool: toolName,
-        toolCallId,
-        output: {
-          selectedTemplate: template.id,
-          templateName: template.name,
-        },
-      });
+      if (!sendMessage) return;
+      sendMessage({ text: `I want to use the "${template.name}" template. Set it up for me.` });
     },
-    [addToolOutput, toolCallId, toolName]
+    [sendMessage]
   );
 
   const handleDeployRequest = useCallback(
     (yaml: string, name: string) => {
-      if (!addToolOutput || !toolCallId) return;
-      addToolOutput({
-        tool: toolName,
-        toolCallId,
-        output: {
-          action: "deploy",
-          yaml,
-          workflowName: name,
-        },
-      });
+      if (!sendMessage) return;
+      sendMessage({ text: `Deploy the workflow "${name}". Here is the YAML:\n\n\`\`\`yaml\n${yaml}\n\`\`\`` });
     },
-    [addToolOutput, toolCallId, toolName]
+    [sendMessage]
   );
 
   switch (toolName) {
@@ -95,7 +82,7 @@ export function ToolResultRenderer({
       return (
         <AutomationCard
           data={result}
-          onDeploy={addToolOutput && toolCallId ? handleDeployRequest : undefined}
+          onDeploy={sendMessage ? handleDeployRequest : undefined}
         />
       );
     case "explainYaml":
@@ -104,7 +91,7 @@ export function ToolResultRenderer({
       return (
         <TemplateGalleryCard
           data={result}
-          onSelect={addToolOutput && toolCallId ? handleTemplateSelect : undefined}
+          onSelect={sendMessage ? handleTemplateSelect : undefined}
         />
       );
 

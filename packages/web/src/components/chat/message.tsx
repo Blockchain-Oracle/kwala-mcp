@@ -10,9 +10,10 @@ import { ToolResultRenderer, type AddToolOutputHandler } from "./tool-result-ren
 interface MessageProps {
   message: UIMessage;
   addToolOutput?: AddToolOutputHandler;
+  sendMessage?: (opts: { text: string }) => void;
 }
 
-export function Message({ message, addToolOutput }: MessageProps) {
+export function Message({ message, addToolOutput, sendMessage }: MessageProps) {
   const isUser = message.role === "user";
 
   const renderParts = () => {
@@ -94,6 +95,7 @@ export function Message({ message, addToolOutput }: MessageProps) {
                 result={part.output}
                 toolCallId={toolCallId}
                 addToolOutput={addToolOutput}
+                sendMessage={sendMessage}
               />
             </div>
           );

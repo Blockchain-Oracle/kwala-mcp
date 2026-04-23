@@ -141,6 +141,7 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
             messages={messages}
             isLoading={isLoading}
             addToolOutput={addToolOutput}
+            sendMessage={sendMessage}
           />
         )}
       </div>

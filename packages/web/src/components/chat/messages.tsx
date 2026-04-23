@@ -10,9 +10,10 @@ interface MessagesProps {
   messages: UIMessage[];
   isLoading: boolean;
   addToolOutput?: AddToolOutputHandler;
+  sendMessage?: (opts: { text: string }) => void;
 }
 
-export function Messages({ messages, isLoading, addToolOutput }: MessagesProps) {
+export function Messages({ messages, isLoading, addToolOutput, sendMessage }: MessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function Messages({ messages, isLoading, addToolOutput }: MessagesProps) 
             key={message.id}
             message={message}
             addToolOutput={addToolOutput}
+            sendMessage={sendMessage}
           />
         ))}
 
