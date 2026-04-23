@@ -4,10 +4,6 @@ import { useState, useEffect, type ReactNode } from "react";
 import { Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Placeholder button shown before the wallet provider loads.
- * Matches the visual style of the real connect button.
- */
 function ConnectButtonPlaceholder() {
   return (
     <button
@@ -26,154 +22,154 @@ function ConnectButtonPlaceholder() {
   );
 }
 
-/**
- * Lazily loaded inner component that uses RainbowKit's ConnectButton.
- * Deferred to avoid importing wagmi hooks during SSR.
- */
-function LazyConnectButtonInner({
-  children,
-}: {
-  children: (props: {
-    account?: { displayName: string };
-    chain?: { unsupported?: boolean; hasIcon?: boolean; iconUrl?: string; name?: string };
-    openAccountModal: () => void;
-    openChainModal: () => void;
-    openConnectModal: () => void;
-    mounted: boolean;
-  }) => ReactNode;
-}) {
-  const [Inner, setInner] = useState<React.ComponentType<{
-    children: typeof children;
-  }> | null>(null);
+interface RKRenderProps {
+  account?: { displayName: string };
+  chain?: { unsupported?: boolean; hasIcon?: boolean; iconUrl?: string; name?: string };
+  openAccountModal: () => void;
+  openChainModal: () => void;
+  openConnectModal: () => void;
+  mounted: boolean;
+}
+
+export function ConnectButton() {
+  const [renderProps, setRenderProps] = useState<RKRenderProps | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      try {
+        // Wait for provider to be available by checking if config exists
+        const { wagmiConfig } = await import("@/lib/wallet/config");
+        const { getAccount } = await import("wagmi/actions");
+
+        // Test that the config is usable (provider is mounted)
+        getAccount(wagmiConfig);
+
+        if (cancelled) return;
+        setReady(true);
+      } catch {
+        // Provider not ready yet, retry
+        if (!cancelled) {
+          setTimeout(init, 100);
+        }
+      }
+    }
+
+    init();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!ready) {
+    return <ConnectButtonPlaceholder />;
+  }
+
+  return <ConnectButtonInner />;
+}
+
+function ConnectButtonInner() {
+  const [Component, setComponent] = useState<React.ComponentType | null>(null);
 
   useEffect(() => {
     import("@rainbow-me/rainbowkit").then((mod) => {
-      const RKButton = mod.ConnectButton;
-      // Wrap the Custom render prop component
-      setInner(() => {
-        return function InnerButton({ children: renderFn }: { children: typeof children }) {
+      const RKConnectButton = mod.ConnectButton;
+
+      setComponent(() => {
+        return function WrappedConnectButton() {
           return (
-            <RKButton.Custom>
-              {(props) => renderFn(props)}
-            </RKButton.Custom>
+            <RKConnectButton.Custom>
+              {(props) => <ConnectButtonUI {...props} />}
+            </RKConnectButton.Custom>
           );
         };
       });
     });
   }, []);
 
-  if (!Inner) {
-    return <ConnectButtonPlaceholder />;
-  }
-
-  return <Inner>{children}</Inner>;
+  if (!Component) return <ConnectButtonPlaceholder />;
+  return <Component />;
 }
 
-/** Custom-styled RainbowKit connect button matching the purple theme */
-export function ConnectButton() {
+function ConnectButtonUI({
+  account,
+  chain,
+  openAccountModal,
+  openChainModal,
+  openConnectModal,
+  mounted,
+}: RKRenderProps) {
+  const connected = mounted && account && chain;
+
   return (
-    <LazyConnectButtonInner>
-      {({
-        account,
-        chain,
-        openAccountModal,
-        openChainModal,
-        openConnectModal,
-        mounted,
-      }) => {
-        const connected = mounted && account && chain;
-
-        return (
-          <div
-            {...(!mounted && {
-              "aria-hidden": true,
-              style: {
-                opacity: 0,
-                pointerEvents: "none" as const,
-                userSelect: "none" as const,
-              },
-            })}
+    <div
+      {...(!mounted && {
+        "aria-hidden": true,
+        style: { opacity: 0, pointerEvents: "none" as const, userSelect: "none" as const },
+      })}
+    >
+      {!connected ? (
+        <button
+          onClick={openConnectModal}
+          type="button"
+          className={cn(
+            "flex items-center gap-2",
+            "rounded-full border border-border bg-card px-4 py-1.5",
+            "font-mono text-[11px] tracking-[0.12em] font-semibold uppercase",
+            "text-foreground transition-all duration-150",
+            "hover:bg-primary hover:text-primary-foreground hover:border-primary/20",
+          )}
+        >
+          <Wallet className="size-3.5" />
+          Connect
+        </button>
+      ) : chain.unsupported ? (
+        <button
+          onClick={openChainModal}
+          type="button"
+          className={cn(
+            "flex items-center gap-2",
+            "rounded-full border border-destructive/30 bg-destructive/10 px-4 py-1.5",
+            "font-mono text-[11px] tracking-[0.12em] font-semibold uppercase",
+            "text-destructive transition-all duration-150",
+            "hover:bg-destructive/20",
+          )}
+        >
+          Wrong Network
+        </button>
+      ) : (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={openChainModal}
+            type="button"
+            className={cn(
+              "flex items-center gap-1.5",
+              "rounded-full border border-border bg-card px-3 py-1.5",
+              "text-xs text-muted-foreground transition-all duration-150",
+              "hover:bg-muted/40 hover:text-foreground",
+            )}
           >
-            {(() => {
-              if (!connected) {
-                return (
-                  <button
-                    onClick={openConnectModal}
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2",
-                      "rounded-full border border-border bg-card px-4 py-1.5",
-                      "font-mono text-[11px] tracking-[0.12em] font-semibold uppercase",
-                      "text-foreground transition-all duration-150",
-                      "hover:bg-primary hover:text-primary-foreground hover:border-primary/20",
-                    )}
-                  >
-                    <Wallet className="size-3.5" />
-                    Connect
-                  </button>
-                );
-              }
-
-              if (chain.unsupported) {
-                return (
-                  <button
-                    onClick={openChainModal}
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2",
-                      "rounded-full border border-destructive/30 bg-destructive/10 px-4 py-1.5",
-                      "font-mono text-[11px] tracking-[0.12em] font-semibold uppercase",
-                      "text-destructive transition-all duration-150",
-                      "hover:bg-destructive/20",
-                    )}
-                  >
-                    Wrong Network
-                  </button>
-                );
-              }
-
-              return (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={openChainModal}
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-1.5",
-                      "rounded-full border border-border bg-card px-3 py-1.5",
-                      "text-xs text-muted-foreground transition-all duration-150",
-                      "hover:bg-muted/40 hover:text-foreground",
-                    )}
-                  >
-                    {chain.hasIcon && chain.iconUrl && (
-                      <img
-                        alt={chain.name ?? "Chain"}
-                        src={chain.iconUrl}
-                        className="size-3.5 rounded-full"
-                      />
-                    )}
-                    <span className="hidden sm:inline">{chain.name}</span>
-                  </button>
-
-                  <button
-                    onClick={openAccountModal}
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2",
-                      "rounded-full border border-border bg-card px-4 py-1.5",
-                      "font-mono text-[11px] tracking-[0.12em] font-semibold",
-                      "text-foreground transition-all duration-150",
-                      "hover:bg-muted/40",
-                    )}
-                  >
-                    <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-                    {account.displayName}
-                  </button>
-                </div>
-              );
-            })()}
-          </div>
-        );
-      }}
-    </LazyConnectButtonInner>
+            {chain.hasIcon && chain.iconUrl && (
+              <img alt={chain.name ?? "Chain"} src={chain.iconUrl} className="size-3.5 rounded-full" />
+            )}
+            <span className="hidden sm:inline">{chain.name}</span>
+          </button>
+          <button
+            onClick={openAccountModal}
+            type="button"
+            className={cn(
+              "flex items-center gap-2",
+              "rounded-full border border-border bg-card px-4 py-1.5",
+              "font-mono text-[11px] tracking-[0.12em] font-semibold",
+              "text-foreground transition-all duration-150",
+              "hover:bg-muted/40",
+            )}
+          >
+            <div className="size-2 rounded-full bg-green-500 animate-pulse" />
+            {account.displayName}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
