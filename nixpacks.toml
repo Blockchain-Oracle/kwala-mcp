@@ -1,13 +1,17 @@
 # Kwala MCP monorepo — Nixpacks build config for Coolify / Railway / Render
 #
-# Two deployable services. Set the APP_NAME env var per deploy so each
+# Three deployable services. Set the APP_NAME env var per deploy so each
 # service builds and runs the right workspace:
 #
-#   web   -> APP_NAME=@kwala-dev/web    (Next.js 16 landing + chat + explorer)
-#   docs  -> APP_NAME=@kwala-dev/docs   (Nextra 4 documentation site)
+#   web      -> APP_NAME=@kwala-dev/web    (Next.js 16 landing + chat + explorer)
+#   mcp-http -> APP_NAME=@kwala-dev/mcp    (MCP HTTP transport server, port 3001)
+#   docs     -> APP_NAME=@kwala-dev/docs   (Nextra 4 documentation site)
 #
-# The CLI and MCP packages are NOT deployed here — they're published to npm
-# as @kwala-dev/cli and @kwala-dev/mcp and installed locally by users.
+# The web app connects to the MCP HTTP server via MCP_HTTP_URL env var.
+# Set MCP_HTTP_URL to the internal/public URL of the mcp-http service.
+#
+# The CLI package is published to npm as @kwala-dev/cli and installed
+# locally by users — not deployed here.
 #
 # IMPORTANT: In Coolify, set "Base Directory" to / (repo root), NOT
 # packages/<name>. Nixpacks needs to see the workspace root so pnpm can
@@ -36,7 +40,8 @@ dependsOn = ["install"]
 cmds = ["pnpm --filter ${APP_NAME:-@kwala-dev/web} build"]
 
 # -- Start --
-# web   -> next start -p $PORT
-# docs  -> next start -p $PORT
+# web      -> next start -p $PORT
+# mcp-http -> node dist/http.js (port $MCP_HTTP_PORT or 3001)
+# docs     -> next start -p $PORT
 [start]
 cmd = "pnpm --filter ${APP_NAME:-@kwala-dev/web} start"
