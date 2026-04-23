@@ -82,8 +82,8 @@ importers:
   packages/mcp:
     dependencies:
       '@kwala-ai/cli':
-        specifier: workspace:*
-        version: link:../cli
+        specifier: ^0.1.1
+        version: 0.1.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.3.6)
@@ -1165,6 +1165,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kwala-ai/cli@0.1.1':
+    resolution: {integrity: sha512-4N3x4STCuhZV2DUmFqtQ5ziILR+OZqPGW9TmgGc33FrTQxF6FSfD0v+WckaY5b0QolQRq0dIhepfaRgYG31Ejw==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
 
   '@lit-labs/ssr-dom-shim@1.5.1':
     resolution: {integrity: sha512-Aou5UdlSpr5whQe8AA/bZG0jMj96CoJIWbGfZ91qieWu5AWUMKw8VR/pAkQkJYvBNhmCcWnZlyyk5oze8JIqYA==}
@@ -7723,6 +7728,20 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@kwala-ai/cli@0.1.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.29.0(zod@4.3.6)
+      commander: 14.0.3
+      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      pino: 10.3.1
+      yaml: 2.8.3
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
 
   '@lit-labs/ssr-dom-shim@1.5.1': {}
 
