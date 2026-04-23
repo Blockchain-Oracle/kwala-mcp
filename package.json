@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev:mcp": "pnpm --filter @kwala-dev/mcp dev",
+    "dev:http": "pnpm --filter @kwala-dev/mcp dev:http",
     "dev:cli": "pnpm --filter @kwala-dev/cli dev",
     "dev:web": "pnpm --filter @kwala-dev/web dev",
     "dev:docs": "pnpm --filter @kwala-dev/docs dev",
@@ -15,7 +16,7 @@
       "zod": "4.3.6"
     },
     "onlyBuiltDependencies": [
-      "esbuild"
+      "better-sqlite3"
     ]
   }
 }
