@@ -7,7 +7,7 @@ import {
   type UIMessage,
 } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
+import { createMCPClient } from "@ai-sdk/mcp";
 import { getSystemPrompt } from "@/lib/ai/system-prompt";
 import {
   saveMessages,
@@ -27,7 +27,9 @@ let mcpClientPromise: ReturnType<typeof createMCPClient> | null = null;
 function getMCPClient() {
   if (!mcpClientPromise) {
     const url = process.env.MCP_HTTP_URL ?? "http://localhost:3001/mcp";
-    mcpClientPromise = createMCPClient({ transportType: "sse", url });
+    mcpClientPromise = createMCPClient({
+      transport: { type: "sse", url },
+    });
   }
   return mcpClientPromise;
 }

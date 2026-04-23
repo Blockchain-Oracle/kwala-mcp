@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 const GITHUB_URL = "https://github.com/Blockchain-Oracle/kwala-mcp";
 
 const navLinks = [
+  { href: "/chat", label: "Chat" },
   { href: "#tools", label: "Tools" },
   { href: "#how-it-works", label: "How It Works" },
   { href: "#install", label: "Install" },

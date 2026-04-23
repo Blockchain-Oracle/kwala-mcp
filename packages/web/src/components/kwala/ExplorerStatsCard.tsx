@@ -74,11 +74,11 @@ export function ExplorerStatsCard({ data }: ExplorerStatsCardProps) {
           </div>
         ))}
       </div>
-      {result.filtered_by && (
+      {result.filtered_by ? (
         <p className="text-xs text-muted-foreground mt-2">
           Filtered by: <span className="font-mono text-foreground">{String(result.filtered_by)}</span>
         </p>
-      )}
+      ) : null}
     </BaseCard>
   );
 }

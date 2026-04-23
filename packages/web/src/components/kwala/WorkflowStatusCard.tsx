@@ -77,46 +77,46 @@ export function WorkflowStatusCard({ data }: WorkflowStatusCardProps) {
           : "default"
       }
     >
-      {result.workflow_id && (
+      {result.workflow_id ? (
         <DataRow
           label="Workflow ID"
           value={result.workflow_id as string}
           mono
           copyable
         />
-      )}
+      ) : null}
 
-      {status?.status && (
+      {status?.status ? (
         <div className="flex justify-between items-center py-1.5">
           <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
             Status
           </span>
           <StatusBadge status={status.status as string} />
         </div>
-      )}
+      ) : null}
 
-      {chaincode?.address && (
+      {chaincode?.address ? (
         <DataRow
           label="Chaincode Address"
           value={chaincode.address as string}
           mono
           copyable
         />
-      )}
+      ) : null}
 
-      {status?.lastExecution && (
+      {status?.lastExecution ? (
         <DataRow
           label="Last Execution"
           value={status.lastExecution as string}
         />
-      )}
-      {status?.executionCount !== undefined && (
+      ) : null}
+      {status?.executionCount !== undefined ? (
         <DataRow
           label="Executions"
           value={String(status.executionCount)}
           highlight
         />
-      )}
+      ) : null}
     </BaseCard>
   );
 }

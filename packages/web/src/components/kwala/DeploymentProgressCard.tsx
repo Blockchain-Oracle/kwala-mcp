@@ -107,37 +107,37 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
       icon={<Rocket className="w-4 h-4" />}
       variant={isSuccess ? "success" : "default"}
     >
-      {result.workflow_name && (
+      {result.workflow_name ? (
         <DataRow label="Workflow" value={result.workflow_name} highlight />
-      )}
+      ) : null}
 
-      {result.steps && result.steps.length > 0 && (
+      {result.steps && result.steps.length > 0 ? (
         <div className="border border-border/50 rounded-lg p-3 space-y-1">
           {result.steps.map((step, i) => (
             <div key={i}>
               <StepIndicator step={step.step} status={step.status} />
-              {step.tx_hash && (
+              {step.tx_hash ? (
                 <DataRow label="TX Hash" value={step.tx_hash} mono copyable />
-              )}
+              ) : null}
             </div>
           ))}
         </div>
-      )}
+      ) : null}
 
-      {result.workflow_id && (
+      {result.workflow_id ? (
         <DataRow label="Workflow ID" value={result.workflow_id} mono copyable />
-      )}
-      {result.chaincode_address && (
+      ) : null}
+      {result.chaincode_address ? (
         <DataRow
           label="Chaincode"
           value={result.chaincode_address}
           mono
           copyable
         />
-      )}
-      {result.final_status && (
+      ) : null}
+      {result.final_status ? (
         <DataRow label="Status" value={result.final_status} highlight />
-      )}
+      ) : null}
     </BaseCard>
   );
 }

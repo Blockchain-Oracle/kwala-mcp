@@ -80,11 +80,11 @@ export function WalletCard({ data }: WalletCardProps) {
         </div>
       )}
 
-      {result.note && (
+      {result.note ? (
         <p className="text-xs text-muted-foreground mt-2 italic">
           {result.note as string}
         </p>
-      )}
+      ) : null}
     </BaseCard>
   );
 }

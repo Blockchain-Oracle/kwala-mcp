@@ -89,12 +89,12 @@ export function AutomationCard({ data }: AutomationCardProps) {
         </div>
       )}
 
-      {result.trigger_type && (
+      {result.trigger_type ? (
         <DataRow label="Trigger" value={result.trigger_type as string} />
-      )}
-      {result.chain && (
+      ) : null}
+      {result.chain ? (
         <DataRow label="Chain" value={result.chain as string} />
-      )}
+      ) : null}
     </BaseCard>
   );
 }
