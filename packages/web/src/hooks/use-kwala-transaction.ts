@@ -128,12 +128,13 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           };
           setProgress({ ...prog });
 
-          // Brief delay between steps for chain processing
+          // Wait between steps — KWALA gateway rejects rapid sequential txs
           if (i < steps.length - 1) {
             prog.status = "confirming";
             setProgress({ ...prog });
             setStatus("confirming");
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            console.log(`[kwala-tx] Waiting 5s before next step...`);
+            await new Promise((resolve) => setTimeout(resolve, 5000));
           }
         } catch (err) {
           console.error("[kwala-tx] Transaction failed:", err);
