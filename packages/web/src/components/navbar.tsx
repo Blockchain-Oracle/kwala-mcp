@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ConnectButton } from "@/components/wallet";
 
-const GITHUB_URL = "https://github.com/Blockchain-Oracle/kwala-mcp";
+const GITHUB_URL = "https://github.com/Blockchain-Oracle/kwala-ai";
 
 const navLinks = [
   { href: "/chat", label: "Chat" },
@@ -53,7 +53,7 @@ export function Navbar() {
             <span className="text-primary font-bold text-sm">K</span>
           </div>
           <span className="font-mono text-sm sm:text-base font-bold tracking-[0.12em] text-foreground">
-            kwala-mcp
+            Kwala AI
           </span>
         </Link>
 

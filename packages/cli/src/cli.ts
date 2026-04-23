@@ -39,7 +39,7 @@ program.action(async () => {
 
 program
   .command("tools")
-  .description("List all 20 available Kwala MCP tools")
+  .description("List all 20 available Kwala AI tools")
   .action(() => {
     output({
       "Workflow Generation": ["create-automation", "explain-yaml", "list-templates", "build-trigger", "build-action"],

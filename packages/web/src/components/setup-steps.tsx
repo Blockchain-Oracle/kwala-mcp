@@ -16,7 +16,7 @@ const steps = [
     title: "Generate",
     description: "AI builds a Kwalang YAML workflow.",
     detail:
-      "The agent uses kwala-mcp tools to generate a validated Kwalang YAML file with triggers, actions, and execution logic -- ready for deployment.",
+      "The agent uses Kwala AI tools to generate a validated Kwalang YAML file with triggers, actions, and execution logic -- ready for deployment.",
     code: "kwala create-automation --prompt \"Alert me when ETH < $2000\"",
   },
   {

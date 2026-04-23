@@ -1,13 +1,13 @@
-# kwala-mcp
+# Kwala AI
 
 ## What this is
 MCP server for Kwala Network blockchain automation. 20 tools for AI agents to create, verify, deploy, and monitor Kwalang YAML workflows via natural language.
 
-Install: `claude mcp add kwala npx @kwala-dev/mcp`
+Install: `claude mcp add kwala npx @kwala-ai/mcp`
 
 ## Project structure
-- `packages/cli` — @kwala-dev/cli: core library, 20 tools, server factory, CLI
-- `packages/mcp` — @kwala-dev/mcp: thin stdio wrapper (~30 lines)
+- `packages/cli` — @kwala-ai/cli: core library, 20 tools, server factory, CLI
+- `packages/mcp` — @kwala-ai/mcp: thin stdio wrapper (~30 lines)
 - `packages/web` — Web app (Next.js): landing page, explorer, chat with generative UI
 - `packages/docs` — Documentation site (Nextra) — maintained by teammates
 - `packages/skills` — SKILL.md for agent integration

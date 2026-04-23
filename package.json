@@ -1,13 +1,13 @@
 {
-  "name": "kwala-mcp",
+  "name": "kwala-ai",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @kwala-dev/web dev",
-    "dev:mcp": "pnpm --filter @kwala-dev/mcp dev",
-    "dev:cli": "pnpm --filter @kwala-dev/cli dev",
-    "dev:web": "pnpm --filter @kwala-dev/web dev",
-    "dev:docs": "pnpm --filter @kwala-dev/docs dev",
+    "dev": "pnpm --filter @kwala-ai/web dev",
+    "dev:mcp": "pnpm --filter @kwala-ai/mcp dev",
+    "dev:cli": "pnpm --filter @kwala-ai/cli dev",
+    "dev:web": "pnpm --filter @kwala-ai/web dev",
+    "dev:docs": "pnpm --filter @kwala-ai/docs dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test"
   },

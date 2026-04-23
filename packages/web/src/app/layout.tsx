@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "kwala-mcp -- AI-Powered Blockchain Automation",
+  title: "Kwala AI -- AI-Powered Blockchain Automation",
   description:
     "MCP server for Kwala Network. 18 tools for AI agents to create, verify, deploy, and monitor blockchain automations via natural language.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.svg",
   },
 };
 

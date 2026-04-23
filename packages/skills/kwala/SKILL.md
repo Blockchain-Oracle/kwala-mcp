@@ -1,9 +1,9 @@
 ---
 name: kwala
-description: Kwala Network MCP — create, verify, deploy, and monitor blockchain automations via natural language. 20 tools for Kwalang YAML workflows across 6 EVM chains.
+description: Kwala AI — create, verify, deploy, and monitor blockchain automations via natural language. 20 tools for Kwalang YAML workflows across 6 EVM chains.
 ---
 
-# Kwala MCP Skill
+# Kwala AI Skill
 
 ## When to use
 
@@ -27,12 +27,12 @@ Activate this skill when the user asks about:
 
 **MCP (recommended):**
 ```bash
-claude mcp add kwala npx @kwala-dev/mcp
+claude mcp add kwala npx @kwala-ai/mcp
 ```
 
 **CLI:**
 ```bash
-npm install -g @kwala-dev/cli
+npm install -g @kwala-ai/cli
 kwala --help
 ```
 

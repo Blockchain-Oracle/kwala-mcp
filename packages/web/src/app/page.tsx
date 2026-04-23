@@ -98,7 +98,7 @@ export default function Home() {
                     <span className="size-2.5 rounded-full bg-yellow-400/70" />
                     <span className="size-2.5 rounded-full bg-green-400/70" />
                     <span className="ml-2 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-                      Claude &middot; kwala-mcp
+                      Claude &middot; Kwala AI
                     </span>
                   </div>
                   <div className="px-5 py-5 font-mono text-[13px] space-y-3">
@@ -226,7 +226,7 @@ export default function Home() {
               6 mainnets + 6 testnets.
             </h2>
             <p className="mt-3 text-sm text-muted-foreground max-w-xl">
-              Fuzzy chain name resolution -- say &quot;Base&quot; and kwala-mcp resolves it to chain ID 8453 automatically.
+              Fuzzy chain name resolution -- say &quot;Base&quot; and Kwala AI resolves it to chain ID 8453 automatically.
             </p>
           </div>
           <ChainGrid />
@@ -278,7 +278,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex flex-col items-center sm:items-start gap-1">
             <span className="font-mono text-xs font-bold text-foreground tracking-tight">
-              kwala-mcp
+              Kwala AI
             </span>
             <span className="font-mono text-[10px] text-muted-foreground">
               AI-powered blockchain automation
@@ -310,7 +310,7 @@ export default function Home() {
               Kwala Network <ExternalLink className="size-3" />
             </a>
             <a
-              href="https://github.com/Blockchain-Oracle/kwala-mcp"
+              href="https://github.com/Blockchain-Oracle/kwala-ai"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"

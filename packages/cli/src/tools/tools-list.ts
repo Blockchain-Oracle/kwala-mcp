@@ -7,7 +7,7 @@ export function registerToolsListTool(server: McpServer): void {
     "kwala-tools",
     {
       title: "List All Kwala Tools",
-      description: "Returns a categorized list of all 20 MCP tools available in kwala-mcp.",
+      description: "Returns a categorized list of all 20 MCP tools available in Kwala AI.",
       inputSchema: z.object({}),
     },
     async () => {

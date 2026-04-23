@@ -37,7 +37,7 @@ export function createMcpServer(): McpServer {
   loadOrCreateWallet();
 
   const server = new McpServer(
-    { name: "kwala-mcp", version: "0.1.0" },
+    { name: "kwala-ai", version: "0.1.0" },
     { capabilities: { tools: {}, logging: {} } },
   );
 
@@ -72,6 +72,6 @@ export function createMcpServer(): McpServer {
   registerToolsListTool(server);
   registerListChainsTool(server);
 
-  logger.info("kwala-mcp: 20 tools registered");
+  logger.info("kwala-ai: 20 tools registered");
   return server;
 }

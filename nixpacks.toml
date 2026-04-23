@@ -3,10 +3,10 @@
 # Two deployable services. Set the APP_NAME env var per deploy so each
 # service builds and runs the right workspace:
 #
-#   web  -> APP_NAME=@kwala-dev/web    (Next.js 16 landing + chat + explorer)
-#   docs -> APP_NAME=@kwala-dev/docs   (Nextra 4 documentation site)
+#   web  -> APP_NAME=@kwala-ai/web    (Next.js 16 landing + chat + explorer)
+#   docs -> APP_NAME=@kwala-ai/docs   (Nextra 4 documentation site)
 #
-# The CLI package is published to npm as @kwala-dev/cli and installed
+# The CLI package is published to npm as @kwala-ai/cli and installed
 # locally by users — not deployed here.
 #
 # IMPORTANT: In Coolify, set "Base Directory" to / (repo root), NOT
@@ -33,10 +33,10 @@ onlyIncludeFiles = [
 # pnpm --filter builds only the target workspace.
 [phases.build]
 dependsOn = ["install"]
-cmds = ["pnpm --filter ${APP_NAME:-@kwala-dev/web} build"]
+cmds = ["pnpm --filter ${APP_NAME:-@kwala-ai/web} build"]
 
 # -- Start --
 # web  -> next start -p $PORT
 # docs -> next start -p $PORT
 [start]
-cmd = "pnpm --filter ${APP_NAME:-@kwala-dev/web} start"
+cmd = "pnpm --filter ${APP_NAME:-@kwala-ai/web} start"

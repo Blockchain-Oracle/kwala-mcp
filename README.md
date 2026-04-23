@@ -1,4 +1,4 @@
-# Kwala MCP
+# Kwala AI
 
 MCP server that lets AI agents create, deploy, and monitor blockchain automations on [Kwala Network](https://kwala.network) using natural language. 20 tools. One-line install.
 
@@ -6,25 +6,25 @@ MCP server that lets AI agents create, deploy, and monitor blockchain automation
 
 ```bash
 # Claude Code
-claude mcp add kwala npx @kwala-dev/mcp
+claude mcp add kwala npx @kwala-ai/mcp
 
 # Cursor / Windsurf / Claude Desktop / VS Code / Zed / Cline / Goose
 # Add to the client's MCP config:
-#   { "command": "npx", "args": ["-y", "@kwala-dev/mcp"] }
+#   { "command": "npx", "args": ["-y", "@kwala-ai/mcp"] }
 ```
 
 ### Standalone CLI
 
 ```bash
-npm install -g @kwala-dev/cli
+npm install -g @kwala-ai/cli
 kwala --help
 ```
 
-On first run, Kwala MCP generates a wallet on the KWALA chain (chain ID 1905). The private key is stored locally at `~/.kwala-mcp/config.json` and never leaves your machine.
+On first run, Kwala AI generates a wallet on the KWALA chain (chain ID 1905). The private key is stored locally at `~/.kwala-mcp/config.json` and never leaves your machine.
 
 ## What This Does
 
-Kwala MCP gives AI agents full access to the Kwala Network automation platform. Describe what you want in plain English -- "alert me on Telegram when USDC is transferred on Ethereum" -- and the agent generates a Kwalang YAML workflow, verifies it, deploys it on-chain, and monitors its execution. No Solidity. No manual config. Works across 11 EVM chains.
+Kwala AI gives AI agents full access to the Kwala Network automation platform. Describe what you want in plain English -- "alert me on Telegram when USDC is transferred on Ethereum" -- and the agent generates a Kwalang YAML workflow, verifies it, deploys it on-chain, and monitors its execution. No Solidity. No manual config. Works across 11 EVM chains.
 
 Works with every major agent client (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code Copilot, Gemini CLI, Zed, Continue, Cline, Goose) and as a standalone `kwala` CLI for direct terminal use.
 
@@ -159,14 +159,14 @@ kwala tools
 
 ```
 packages/
-  mcp/     @kwala-dev/mcp   — Thin MCP stdio wrapper (imports from cli)
-  cli/     @kwala-dev/cli   — 20 tools, API client, wallet, deployer, CLI
+  mcp/     @kwala-ai/mcp   — Thin MCP stdio wrapper (imports from cli)
+  cli/     @kwala-ai/cli   — 20 tools, API client, wallet, deployer, CLI
   web/     Landing page     — Next.js frontend
   docs/    Documentation    — Nextra docs site
   skills/  Agent Skill      — SKILL.md for cross-client install
 ```
 
-The MCP package is a thin wrapper. All tool logic lives in `@kwala-dev/cli`, which exports a `createMcpServer()` factory. This split ensures `npx @kwala-dev/mcp` works cleanly across all MCP hosts.
+The MCP package is a thin wrapper. All tool logic lives in `@kwala-ai/cli`, which exports a `createMcpServer()` factory. This split ensures `npx @kwala-ai/mcp` works cleanly across all MCP hosts.
 
 **Workflow lifecycle:**
 

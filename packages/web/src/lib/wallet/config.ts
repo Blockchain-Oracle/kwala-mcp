@@ -26,7 +26,7 @@ const connectors = connectorsForWallets(
     },
   ],
   {
-    appName: "kwala-mcp",
+    appName: "kwala-ai",
     projectId: WALLET_CONNECT_PROJECT_ID,
   },
 );

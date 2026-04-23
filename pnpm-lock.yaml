@@ -49,7 +49,7 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@kwala-dev/cli':
+      '@kwala-ai/cli':
         specifier: workspace:*
         version: link:../cli
       '@modelcontextprotocol/sdk':

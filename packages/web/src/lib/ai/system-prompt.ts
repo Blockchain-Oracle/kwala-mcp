@@ -90,7 +90,7 @@ Append a short timestamp or random suffix to ensure uniqueness: e.g., "ETHPriceA
 
 ## Notification Message Rules
 
-NEVER send generic messages like "kwala-mcp is LIVE!" or "Workflow triggered".
+NEVER send generic messages like "Kwala AI is LIVE!" or "Workflow triggered".
 Write contextual, informative notifications that include:
 - **What happened**: "ETH price dropped below $2000"
 - **Dynamic data**: Use re.event(0), re.event(1), re.event(2) for on-chain data

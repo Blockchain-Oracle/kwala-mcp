@@ -1,10 +1,10 @@
 {
-  "name": "@kwala-dev/mcp",
+  "name": "@kwala-ai/mcp",
   "version": "0.1.0",
   "description": "MCP server for Kwala Network — AI agents create, verify, deploy, and monitor blockchain automations through natural language.",
   "type": "module",
   "bin": {
-    "kwala-mcp": "dist/index.js"
+    "kwala-ai": "dist/index.js"
   },
   "main": "./dist/index.js",
   "exports": {
@@ -36,7 +36,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@kwala-dev/cli": "workspace:*",
+    "@kwala-ai/cli": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "devDependencies": {

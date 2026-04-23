@@ -12,7 +12,7 @@ export const KWALA_CONTRACT_ADDRESS =
 
 /** WalletConnect project ID — required for RainbowKit */
 export const WALLET_CONNECT_PROJECT_ID =
-  process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? "kwala-mcp-dev";
+  process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? "kwala-ai-dev";
 
 /** Header key for passing wallet address to API routes */
 export const WALLET_ADDRESS_HEADER = "x-wallet-address";

@@ -12,12 +12,12 @@ interface McpOption {
 }
 
 const MCP_OPTIONS: McpOption[] = [
-  { client: "Claude Code", command: "claude mcp add kwala npx @kwala-dev/mcp", hue: 280 },
-  { client: "Cursor", command: '// .cursor/mcp.json -- "kwala": { "command": "npx", "args": ["-y", "@kwala-dev/mcp"] }', hue: 260 },
-  { client: "Claude Desktop", command: '// claude_desktop_config.json -- "kwala": { "command": "npx", "args": ["-y", "@kwala-dev/mcp"] }', hue: 220 },
-  { client: "Windsurf", command: '// ~/.codeium/windsurf/mcp_config.json -- "kwala": { "command": "npx", "args": ["-y", "@kwala-dev/mcp"] }', hue: 290 },
-  { client: "VS Code Copilot", command: '// .vscode/mcp.json -- "servers": { "kwala": { "type": "stdio", "command": "npx", "args": ["-y", "@kwala-dev/mcp"] } }', hue: 180 },
-  { client: "Gemini CLI", command: "gemini mcp add kwala npx -y @kwala-dev/mcp", hue: 30 },
+  { client: "Claude Code", command: "claude mcp add kwala npx @kwala-ai/mcp", hue: 280 },
+  { client: "Cursor", command: '// .cursor/mcp.json -- "kwala": { "command": "npx", "args": ["-y", "@kwala-ai/mcp"] }', hue: 260 },
+  { client: "Claude Desktop", command: '// claude_desktop_config.json -- "kwala": { "command": "npx", "args": ["-y", "@kwala-ai/mcp"] }', hue: 220 },
+  { client: "Windsurf", command: '// ~/.codeium/windsurf/mcp_config.json -- "kwala": { "command": "npx", "args": ["-y", "@kwala-ai/mcp"] }', hue: 290 },
+  { client: "VS Code Copilot", command: '// .vscode/mcp.json -- "servers": { "kwala": { "type": "stdio", "command": "npx", "args": ["-y", "@kwala-ai/mcp"] } }', hue: 180 },
+  { client: "Gemini CLI", command: "gemini mcp add kwala npx -y @kwala-ai/mcp", hue: 30 },
 ];
 
 const ROTATE_MS = 3500;
@@ -192,7 +192,7 @@ export function McpInstall() {
     <RotatingCard
       eyebrow="MCP Server"
       title="One command, every client."
-      subtitle="kwala-mcp runs in 6+ AI clients. Pick yours -- config auto-rotates."
+      subtitle="Kwala AI runs in 6+ AI clients. Pick yours -- config auto-rotates."
       options={MCP_OPTIONS}
       renderLabel={(o) => o.client}
     />

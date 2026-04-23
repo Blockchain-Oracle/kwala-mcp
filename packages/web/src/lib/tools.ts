@@ -110,7 +110,7 @@ export const tools: Tool[] = [
   {
     name: "kwala-wallet",
     title: "Wallet Info",
-    description: "Show your Kwala MCP wallet address, connected network, and on-chain balance.",
+    description: "Show your Kwala AI wallet address, connected network, and on-chain balance.",
     category: "account",
     prompt: "Show my Kwala wallet address and balance",
   },
@@ -124,7 +124,7 @@ export const tools: Tool[] = [
   {
     name: "kwala-configure",
     title: "Configure",
-    description: "Set or update your Kwala MCP configuration -- wallet private key, default chain, API settings.",
+    description: "Set or update your Kwala AI configuration -- wallet private key, default chain, API settings.",
     category: "account",
     prompt: "Configure my Kwala wallet with a new private key",
   },
@@ -147,9 +147,9 @@ export const tools: Tool[] = [
   {
     name: "kwala-tools",
     title: "List Tools",
-    description: "List all available Kwala MCP tools grouped by category -- discover what the server can do.",
+    description: "List all available Kwala AI tools grouped by category -- discover what the server can do.",
     category: "system",
-    prompt: "List all available Kwala MCP tools",
+    prompt: "List all available Kwala AI tools",
   },
 ]
 

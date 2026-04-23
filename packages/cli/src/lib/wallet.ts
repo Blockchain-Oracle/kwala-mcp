@@ -55,7 +55,7 @@ export function loadOrCreateWallet(): KwalaConfig {
   // First-run banner
   process.stderr.write(`
 ╔══════════════════════════════════════════════════════════╗
-║  kwala-mcp — First Run Setup                             ║
+║  Kwala AI — First Run Setup                             ║
 ╠══════════════════════════════════════════════════════════╣
 ║  New wallet generated for KWALA chain (1905)             ║
 ║                                                          ║
