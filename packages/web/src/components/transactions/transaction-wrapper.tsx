@@ -156,7 +156,7 @@ export function TransactionWrapper({
               </span>
             </div>
             <a
-              href={`https://explorer.kwala.network/tx/${hash}`}
+              href={`https://kwala-explorer.lovable.app/workflow/${hash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:text-primary/80 shrink-0"
