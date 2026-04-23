@@ -1,3 +1,6 @@
 .next/
 node_modules/
 public/_pagefind/
+
+# Local working notes (not shipped)
+CLAUDE.md
