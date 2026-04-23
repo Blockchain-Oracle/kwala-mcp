@@ -7,6 +7,7 @@ import {
   type UIMessage,
 } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
+import { openai } from "@ai-sdk/openai";
 import { createMCPClient } from "@ai-sdk/mcp";
 import { getSystemPrompt } from "@/lib/ai/system-prompt";
 import {
@@ -92,8 +93,13 @@ export async function POST(request: Request) {
     // Stream response
     const stream = createUIMessageStream({
       execute: ({ writer }) => {
+        // Support both Anthropic and OpenAI — set OPENAI_API_KEY or ANTHROPIC_API_KEY
+        const model = process.env.OPENAI_API_KEY
+          ? openai(process.env.OPENAI_MODEL ?? "gpt-4o")
+          : anthropic(process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514");
+
         const result = streamText({
-          model: anthropic("claude-sonnet-4-20250514"),
+          model,
           system: systemPrompt,
           messages: modelMessages,
           tools: mcpTools,

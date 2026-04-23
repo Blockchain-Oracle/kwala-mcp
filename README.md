@@ -180,25 +180,88 @@ Natural language prompt
   → Actions fire automatically (webhooks, contract calls, notifications)
 ```
 
+## Web UI (Generative AI Chat)
+
+The project includes a web interface with an AI-powered chat that calls kwala tools and renders results as interactive card components.
+
+### Setup
+
+```bash
+cd packages/web
+pnpm install
+
+# Set one of these (OpenAI or Anthropic):
+export OPENAI_API_KEY=sk-...
+# or
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Run
+
+```bash
+# Terminal 1: Start the MCP HTTP transport server
+pnpm dev:http
+
+# Terminal 2: Start the web app
+pnpm dev:web
+
+# Visit http://localhost:3000       (landing page)
+# Visit http://localhost:3000/chat  (AI chat with generative UI)
+```
+
+The chat connects to the MCP server over HTTP, calls tools, and renders results as cards (deployment progress, wallet info, workflow status, chain selectors, YAML previews, etc).
+
+### Environment Variables
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | One of these | Anthropic API key for Claude |
+| `OPENAI_API_KEY` | One of these | OpenAI API key for GPT-4o |
+| `ANTHROPIC_MODEL` | No | Model name (default: `claude-sonnet-4-20250514`) |
+| `OPENAI_MODEL` | No | Model name (default: `gpt-4o`) |
+| `MCP_HTTP_URL` | No | MCP server URL (default: `http://localhost:3001/mcp`) |
+| `MCP_HTTP_PORT` | No | HTTP transport port (default: `3001`) |
+
+## First-Time Setup
+
+On first run, a wallet is auto-generated at `~/.kwala-mcp/config.json`. To set up notifications:
+
+```bash
+# Configure Telegram (one-time)
+kwala configure --telegram-token YOUR_BOT_TOKEN --telegram-chat YOUR_CHAT_ID
+
+# Configure Discord (one-time)
+kwala configure --discord-webhook https://discord.com/api/webhooks/...
+
+# Set default chain
+kwala configure --default-chain Base
+```
+
+After configuring, all workflows auto-use your stored notification settings. No need to pass tokens every time.
+
+To get a Telegram bot token: message @BotFather on Telegram, create a bot, copy the token. Then send your bot a message and call `https://api.telegram.org/bot<TOKEN>/getUpdates` to find your chat ID.
+
 ## Development
 
 ```bash
 pnpm install
-
-pnpm dev:mcp     # MCP server with tsx watch
-pnpm dev:cli     # CLI with tsx watch
-pnpm dev:web     # Landing page
-pnpm dev:docs    # Documentation
 pnpm build       # Build all packages
-pnpm test        # Run tests
+
+# Development servers
+pnpm dev:mcp     # MCP stdio server with tsx watch
+pnpm dev:http    # MCP HTTP transport server (port 3001)
+pnpm dev:cli     # CLI with tsx watch
+pnpm dev:web     # Web app (port 3000)
 ```
 
 ## Tech Stack
 
-- TypeScript, Node.js 18+, ES modules
-- @modelcontextprotocol/sdk (MCP)
-- ethers.js (ABI encoding, wallet)
+- TypeScript, Node.js 18+, ES modules, pnpm workspaces
+- @modelcontextprotocol/sdk (MCP protocol)
+- ethers.js (ABI encoding, raw transaction signing)
 - Commander (CLI), Zod 4 (validation), pino (logging)
+- Next.js 16, Tailwind CSS, Vercel AI SDK (web UI)
+- SQLite + Drizzle ORM (chat history)
 - YAML (Kwalang workflow format)
 - Kwala Network API + KWALA chain (chain ID 1905)
 
