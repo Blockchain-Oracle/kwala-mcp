@@ -17,7 +17,7 @@ Kwala AI works natively with 12+ MCP clients. Pick yours:
 
 <Tabs.Tab>
 ```bash
-claude mcp add kwala npx @kwala-dev/mcp
+claude mcp add kwala npx @kwala-ai/mcp
 ```
 
 Claude Code downloads and runs the server automatically on next session.
@@ -34,7 +34,7 @@ Open your config file:
   "mcpServers": {
     "kwala": {
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"]
+      "args": ["-y", "@kwala-ai/mcp"]
     }
   }
 }
@@ -51,7 +51,7 @@ Create `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
   "mcpServers": {
     "kwala": {
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"]
+      "args": ["-y", "@kwala-ai/mcp"]
     }
   }
 }
@@ -68,7 +68,7 @@ Edit `~/.codeium/windsurf/mcp_config.json`:
   "mcpServers": {
     "kwala": {
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"]
+      "args": ["-y", "@kwala-ai/mcp"]
     }
   }
 }
@@ -84,7 +84,7 @@ VS Code Copilot uses a different schema -- note `servers` key (not `mcpServers`)
     "kwala": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"]
+      "args": ["-y", "@kwala-ai/mcp"]
     }
   }
 }
@@ -95,13 +95,13 @@ Copilot Chat must be in Agent mode for MCP tools to appear.
 
 <Tabs.Tab>
 ```bash
-gemini mcp add kwala npx -y @kwala-dev/mcp
+gemini mcp add kwala npx -y @kwala-ai/mcp
 ```
 </Tabs.Tab>
 
 <Tabs.Tab>
 ```bash
-codex mcp add kwala npx -y @kwala-dev/mcp
+codex mcp add kwala npx -y @kwala-ai/mcp
 ```
 </Tabs.Tab>
 
@@ -114,7 +114,7 @@ Edit `~/.config/zed/settings.json`:
     "kwala": {
       "source": "custom",
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"],
+      "args": ["-y", "@kwala-ai/mcp"],
       "env": {}
     }
   }
@@ -135,7 +135,7 @@ mcpServers:
     command: npx
     args:
       - "-y"
-      - "@kwala-dev/mcp"
+      - "@kwala-ai/mcp"
 ```
 
 MCP only works in Continue's Agent mode.
@@ -149,7 +149,7 @@ Edit `cline_mcp_settings.json`:
   "mcpServers": {
     "kwala": {
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"],
+      "args": ["-y", "@kwala-ai/mcp"],
       "disabled": false,
       "autoApprove": []
     }
@@ -165,13 +165,13 @@ goose configure
 
 Choose: Add Extension > Command-line Extension (stdio)
 - Name: `kwala`
-- Command: `npx -y @kwala-dev/mcp`
+- Command: `npx -y @kwala-ai/mcp`
 </Tabs.Tab>
 
 </Tabs>
 
 <Callout type="info">
-**npm packages:** [`@kwala-dev/mcp`](https://www.npmjs.com/package/@kwala-dev/mcp) | [`@kwala-dev/cli`](https://www.npmjs.com/package/@kwala-dev/cli)
+**npm packages:** [`@kwala-ai/mcp`](https://www.npmjs.com/package/@kwala-ai/mcp) | [`@kwala-ai/cli`](https://www.npmjs.com/package/@kwala-ai/cli)
 </Callout>
 
 ---
@@ -189,7 +189,7 @@ No API keys are required for core functionality. To set env vars, add an `env` b
   "mcpServers": {
     "kwala": {
       "command": "npx",
-      "args": ["-y", "@kwala-dev/mcp"],
+      "args": ["-y", "@kwala-ai/mcp"],
       "env": {
         "LOG_LEVEL": "debug"
       }
@@ -215,7 +215,7 @@ pnpm dlx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala
 For terminal use without an MCP host:
 
 ```bash
-npm install -g @kwala-dev/cli
+npm install -g @kwala-ai/cli
 kwala --help
 ```
 

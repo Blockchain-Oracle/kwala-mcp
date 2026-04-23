@@ -22,14 +22,14 @@ packages/
 
 ## Why two packages for one server?
 
-The `@kwala-dev/cli` package contains all tool implementations, the API client, on-chain deployer, wallet management, and the response cache. It exports a `createMcpServer()` factory function.
+The `@kwala-ai/cli` package contains all tool implementations, the API client, on-chain deployer, wallet management, and the response cache. It exports a `createMcpServer()` factory function.
 
-The `@kwala-dev/mcp` package is a thin entry point (~30 lines) that imports `createMcpServer()` from `@kwala-dev/cli`, creates a `StdioServerTransport`, and connects them. It exists as a separate package because `npx` needs a single-bin package to resolve correctly when MCP hosts spawn via `npx @kwala-dev/mcp`.
+The `@kwala-ai/mcp` package is a thin entry point (~30 lines) that imports `createMcpServer()` from `@kwala-ai/cli`, creates a `StdioServerTransport`, and connects them. It exists as a separate package because `npx` needs a single-bin package to resolve correctly when MCP hosts spawn via `npx @kwala-ai/mcp`.
 
 This means:
 
-- **MCP hosts** use `npx @kwala-dev/mcp` (single binary, clean npx resolution)
-- **CLI users** install `@kwala-dev/cli` globally for the `kwala` command
+- **MCP hosts** use `npx @kwala-ai/mcp` (single binary, clean npx resolution)
+- **CLI users** install `@kwala-ai/cli` globally for the `kwala` command
 - **Tool logic** lives in one place (`packages/cli/src/tools/`) and is shared by both
 
 ## Request flow
@@ -38,8 +38,8 @@ This means:
 User prompt
   -> MCP host (Claude, Cursor, etc.)
     -> stdio transport
-      -> @kwala-dev/mcp (entry point)
-        -> @kwala-dev/cli/createMcpServer()
+      -> @kwala-ai/mcp (entry point)
+        -> @kwala-ai/cli/createMcpServer()
           -> registerXxxTool(server) x 20
             -> zod validation
             -> withCache() (5-min TTL, read-only tools)
