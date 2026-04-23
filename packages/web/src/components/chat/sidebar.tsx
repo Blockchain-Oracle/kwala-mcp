@@ -56,10 +56,12 @@ const ChatItem = memo(function ChatItem({
   chat,
   isActive,
   onDelete,
+  onNavigate,
 }: {
   chat: Chat;
   isActive: boolean;
   onDelete: (id: string) => void;
+  onNavigate?: () => void;
 }) {
   const [showDelete, setShowDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -83,6 +85,7 @@ const ChatItem = memo(function ChatItem({
   return (
     <Link
       href={`/chat/${chat.id}`}
+      onClick={() => onNavigate?.()}
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
       className={cn(
@@ -121,7 +124,11 @@ const groupIcons: Record<string, React.ReactNode> = {
 
 const SIDEBAR_WIDTH = 280;
 
-export function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ onNavigate }: SidebarProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
@@ -157,7 +164,8 @@ export function Sidebar() {
   const handleNewSession = useCallback(() => {
     const sessionKey = Date.now().toString(36);
     router.push(`/chat?session=${sessionKey}`);
-  }, [router]);
+    onNavigate?.();
+  }, [router, onNavigate]);
 
   const groupedChats = data?.chats ? groupChatsByDate(data.chats) : null;
 
@@ -225,6 +233,7 @@ export function Sidebar() {
                           chat={chat}
                           isActive={pathname === `/chat/${chat.id}`}
                           onDelete={handleDelete}
+                          onNavigate={onNavigate}
                         />
                       ))}
                     </div>
