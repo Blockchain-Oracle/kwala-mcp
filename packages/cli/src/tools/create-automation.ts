@@ -230,11 +230,11 @@ export function registerCreateAutomationTool(server: McpServer): void {
             break;
           }
           case "time":
-            trigger.ExecuteAfter = "event";
+            trigger.ExecuteAfter = "immediate";
             trigger.RepeatEvery = normalizeInterval(params.interval_seconds!);
             break;
           case "cron":
-            trigger.ExecuteAfter = "event";
+            trigger.ExecuteAfter = "immediate";
             trigger.RepeatEvery = cronToInterval(params.cron_expression!);
             break;
           case "oracle_price":
