@@ -42,7 +42,11 @@ export function CreditBalanceCard({ data }: CreditBalanceCardProps) {
     <BaseCard title="Credit Balance" icon={<Coins className="w-4 h-4" />}>
       <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
         <p className="text-3xl font-bold text-primary">
-          {result.balance !== undefined ? String(result.balance) : "-"}
+          {result.balance !== undefined
+            ? typeof result.balance === "object" && result.balance !== null
+              ? String((result.balance as Record<string, unknown>).balance ?? "0")
+              : String(result.balance)
+            : "-"}
         </p>
         <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
           Credits

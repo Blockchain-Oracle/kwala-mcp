@@ -162,8 +162,8 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
   );
 
   const handleNewSession = useCallback(() => {
-    const sessionKey = Date.now().toString(36);
-    router.push(`/chat?session=${sessionKey}`);
+    router.push("/chat");
+    router.refresh();
     onNavigate?.();
   }, [router, onNavigate]);
 

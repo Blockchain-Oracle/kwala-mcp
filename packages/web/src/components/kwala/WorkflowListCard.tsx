@@ -42,7 +42,13 @@ export function WorkflowListCard({ data }: WorkflowListCardProps) {
     );
   }
 
-  const workflows = (result.workflows ?? []) as Array<Record<string, unknown>>;
+  // API returns { workflows: { total_workflows, workflows: [] | null } }
+  const workflowsData = result.workflows as Record<string, unknown> | Array<Record<string, unknown>> | null;
+  const workflows: Array<Record<string, unknown>> = Array.isArray(workflowsData)
+    ? workflowsData
+    : Array.isArray((workflowsData as Record<string, unknown>)?.workflows)
+      ? (workflowsData as Record<string, unknown>).workflows as Array<Record<string, unknown>>
+      : [];
 
   return (
     <BaseCard
