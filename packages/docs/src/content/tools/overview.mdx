@@ -1,0 +1,66 @@
+---
+title: Tools Overview
+description: All 20 Kwala AI tools at a glance
+---
+
+# Tools Overview
+
+Kwala AI provides **20 tools** grouped into five categories. Read-only tools are cached (5-minute TTL). Write tools (deploy, deactivate) send on-chain transactions to the KWALA chain.
+
+## Workflow Generation
+
+Generate and understand Kwalang YAML workflows.
+
+| Tool | Description |
+|---|---|
+| `kwala-create-automation` | Generate a complete Kwalang YAML workflow from natural language |
+| `kwala-explain-yaml` | Explain a workflow in plain English |
+| `kwala-list-templates` | Browse 6 pre-built workflow templates |
+| `kwala-build-trigger` | Generate a trigger YAML section |
+| `kwala-build-action` | Generate an action YAML block |
+
+## Deployment
+
+Deploy and manage workflows on the KWALA chain.
+
+| Tool | Description |
+|---|---|
+| `kwala-verify-workflow` | Verify YAML via Kwala's backend API |
+| `kwala-deploy-workflow` | Deploy end-to-end on KWALA chain (save, deploy, activate) |
+| `kwala-prepare-deploy` | Prepare deployment without activating |
+| `kwala-deactivate-workflow` | Stop a running workflow by expiring it immediately |
+| `kwala-workflow-status` | Check workflow deployment and execution status |
+| `kwala-list-workflows` | List your deployed workflows |
+
+## Explorer
+
+Browse network activity and fetch on-chain data.
+
+| Tool | Description |
+|---|---|
+| `kwala-explorer-stats` | Kwala network statistics (total actions, workflows) |
+| `kwala-explorer-actions` | Browse execution logs with pagination |
+| `kwala-get-workflow` | Fetch a deployed workflow's YAML by ID |
+| `kwala-fetch-abi` | Fetch a contract's ABI for any supported chain |
+
+## Account
+
+Manage wallet, credits, and notification settings.
+
+| Tool | Description |
+|---|---|
+| `kwala-wallet` | Show/create your KWALA chain wallet |
+| `kwala-credit-balance` | Check Kwala credit balance |
+| `kwala-configure` | Store Telegram/Discord/webhook notification settings |
+| `kwala-login` | Authenticate with Kwala via Google OAuth |
+
+## System
+
+| Tool | Description |
+|---|---|
+| `kwala-list-chains` | List all supported chains with IDs and tokens |
+| `kwala-tools` | List all available tools grouped by category |
+
+---
+
+See each category page for full parameter details and usage examples.

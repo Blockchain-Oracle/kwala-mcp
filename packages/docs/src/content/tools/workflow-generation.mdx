@@ -1,0 +1,106 @@
+---
+title: Workflow Generation
+description: Tools for generating and understanding Kwalang YAML workflows
+---
+
+import { Callout } from 'nextra/components'
+
+# Workflow Generation
+
+These 5 tools help you create, understand, and customize Kwalang YAML workflows. The flagship tool is `kwala-create-automation`, which generates complete workflows from natural language.
+
+## kwala-create-automation
+
+Generate a complete, deployable Kwalang YAML workflow from a natural language description.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Workflow name |
+| `trigger_type` | string | No | `event`, `time`, `cron`, `oracle_price`, `block`, `address_tracking` |
+| `actions` | array | Yes | Action definitions |
+| `chain` | string | No | Target chain name or ID (default: Base Sepolia) |
+| `contract_address` | string | No | Contract to watch (or token name like "USDC") |
+
+**Example prompt:** *"Create an automation that sends a Telegram alert when USDC is transferred on Base"*
+
+<Callout type="info">
+This tool auto-resolves token names (e.g., "USDC" on "Base"), fetches ABIs automatically, and uses stored Telegram/Discord credentials. You never need to provide base64-encoded ABIs or raw addresses for well-known tokens.
+</Callout>
+
+---
+
+## kwala-explain-yaml
+
+Explain a Kwalang YAML workflow in plain English. Useful for understanding workflows created by others or from templates.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `yaml` | string | Yes* | The YAML workflow string |
+| `workflow_id` | string | Yes* | ID of a deployed workflow to fetch and explain |
+
+*Provide either `yaml` or `workflow_id`.
+
+**Example prompt:** *"Explain this workflow"* (with YAML pasted)
+
+---
+
+## kwala-list-templates
+
+Browse 6 pre-built workflow templates covering common automation patterns.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `category` | string | No | `alerts`, `defi`, `nft`, `monitoring`, `notifications`, `all` |
+| `search` | string | No | Search term to filter templates |
+
+**Templates available:**
+- **Token Transfer Alert** -- Telegram notification on ERC-20 transfers
+- **Treasury Deposit Notifier** -- Discord alert on treasury activity
+- **Oracle Price Alert** -- Price threshold notification
+- **Address Tracker** -- Monitor any address for activity
+- **Auto Top-Up Wallet** -- Automatically transfer tokens on low balance
+- **NFT Reward Mint** -- Mint NFTs when purchase conditions are met
+
+---
+
+## kwala-build-trigger
+
+Generate just the trigger section of a Kwalang YAML workflow. Useful for step-by-step workflow construction.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `type` | string | Yes | `event`, `time`, `cron`, `oracle_price`, `block`, `address_tracking` |
+| `contract_address` | string | No | Contract to watch |
+| `chain` | string | No | Chain name or ID |
+| `event_name` | string | No | Solidity event signature |
+| `interval_seconds` | number | No | For time-based triggers |
+| `cron_expression` | string | No | For cron triggers |
+| `price` | number | No | For oracle price triggers |
+| `block_number` | number | No | For block triggers |
+
+---
+
+## kwala-build-action
+
+Generate a single action block for a Kwalang YAML workflow.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `type` | string | Yes | `call`, `notification`, `api`, `deploy` |
+| `name` | string | Yes | Action name |
+| `contract_address` | string | No | Target contract (for `call` type) |
+| `function_name` | string | No | Function signature (for `call` type) |
+| `params` | array | No | Function parameters (for `call` type) |
+| `channel` | string | No | `telegram`, `discord`, `webhook` (for `notification` type) |
+| `api_endpoint` | string | No | URL (for `api` type) |
+| `api_payload` | object | No | JSON payload (for `api` type) |

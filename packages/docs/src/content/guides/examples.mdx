@@ -1,0 +1,211 @@
+---
+title: Example Workflows
+description: 6 ready-to-deploy Kwalang YAML workflow examples
+---
+
+# Example Workflows
+
+These 6 workflows cover the most common automation patterns. Each can be deployed directly or used as a starting point for customization.
+
+## 1. Token Transfer Alert
+
+Send a Telegram notification whenever USDC is transferred on Ethereum.
+
+**Trigger type:** Event-based (ERC-20 Transfer event)
+
+```yaml
+Name: TokenTransferAlert
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 1
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: SendTelegramAlert
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "USDC Transfer: from re.event(0) to re.event(1), amount: re.event(2)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+---
+
+## 2. Treasury Deposit Notifier
+
+Monitor a treasury wallet on Base for any incoming or outgoing activity. Sends alerts to Discord and logs to a custom backend.
+
+**Trigger type:** Address tracking
+
+```yaml
+Name: TreasuryDepositNotifier
+Trigger:
+  TriggerSourceContract: "0xYourTreasuryAddress"
+  TriggerChainID: 8453
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+Actions:
+  - Name: NotifyDiscord
+    Type: post
+    APIEndpoint: "https://discord.com/api/webhooks/<YOUR_WEBHOOK>"
+    APIPayload:
+      content: "Treasury activity detected! Tx: re.event(0)"
+    RetriesUntilSuccess: 5
+  - Name: LogToBackend
+    Type: post
+    APIEndpoint: "https://your-api.com/webhook/treasury"
+    APIPayload:
+      receipt: "re.event(0)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+---
+
+## 3. Oracle Price Alert
+
+Get notified when SOL drops below $150. Runs for 30 days.
+
+**Trigger type:** Oracle price
+
+```yaml
+Name: SOLPriceDropAlert
+Trigger:
+  TriggerPrice: 150.0
+  ExecuteAfter: "oracle_price"
+  RepeatEvery: "oracle_price"
+  ExpiresIn: 2592000
+Actions:
+  - Name: AlertTelegram
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "SOL has dropped below $150!"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+---
+
+## 4. Address Tracker
+
+Track a wallet on Polygon for 7 days and forward all activity to a webhook.
+
+**Trigger type:** Address tracking with expiration
+
+```yaml
+Name: WalletActivityTracker
+Trigger:
+  TriggerSourceContract: "0xWalletToTrack"
+  TriggerChainID: 137
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+  ExpiresIn: 604800
+Actions:
+  - Name: ForwardToWebhook
+    Type: post
+    APIEndpoint: "https://your-api.com/webhook/activity"
+    APIPayload:
+      type: "address_activity"
+      receipt: "re.event(0)"
+    RetriesUntilSuccess: 5
+Execution:
+  Mode: sequential
+```
+
+---
+
+## 5. Auto Top-Up Wallet
+
+When a balance checker contract emits a `LowBalance` event, automatically transfer USDC to the low-balance address and notify the owner.
+
+**Trigger type:** Event-based with smart contract call action
+
+```yaml
+Name: AutoTopUpWallet
+Trigger:
+  TriggerSourceContract: "0xBalanceCheckerContract"
+  TriggerChainID: 8453
+  TriggerEventName: "LowBalance(address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: TransferUSDC
+    Type: call
+    TargetContract: "0xUSDCContractAddress"
+    TargetFunction: "function transfer(address to, uint256 amount)"
+    TargetParams:
+      - "re.event(0)"
+      - "1000000"
+    ChainID: 8453
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 3
+  - Name: NotifyOwner
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "Auto top-up sent 1 USDC to re.event(0)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+---
+
+## 6. NFT Reward Mint
+
+When a purchase exceeds $100 on a shop contract, mint a reward NFT to the buyer.
+
+**Trigger type:** Event-based with filter + smart contract call
+
+```yaml
+Name: NFTRewardOnPurchase
+Trigger:
+  TriggerSourceContract: "0xShopContract"
+  TriggerChainID: 80002
+  TriggerEventName: "PurchaseCompleted(address buyer, uint256 amount)"
+  TriggerEventFilter: "re.event(1) > 100"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: MintRewardNFT
+    Type: call
+    TargetContract: "0xRewardNFTContract"
+    TargetFunction: "function mintReward(address to)"
+    TargetParams:
+      - "re.event(0)"
+    ChainID: 80002
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 5
+  - Name: NotifyBuyer
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "Reward NFT minted for buyer re.event(0)!"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+---
+
+## Using templates
+
+All 6 examples are available as built-in templates. Use `kwala-list-templates` to browse them, or ask your agent:
+
+> *"Show me the available workflow templates"*
+
+Templates are starting points. The agent can customize them based on your specific contracts, chains, and notification preferences.

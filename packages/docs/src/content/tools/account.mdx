@@ -1,0 +1,79 @@
+---
+title: Account
+description: Wallet, credit balance, notification config, and authentication tools
+---
+
+import { Callout } from 'nextra/components'
+
+# Account
+
+These tools manage your wallet, Kwala credits, notification settings, and authentication.
+
+## kwala-wallet
+
+Show your KWALA chain wallet address. If no wallet exists, one is auto-generated and saved to `~/.kwala-mcp/config.json`.
+
+**Parameters:** None.
+
+**Returns:** Wallet address, chain info (KWALA chain 1905), and config file path.
+
+<Callout type="info">
+The wallet is auto-created on first use. You never need to create one manually.
+</Callout>
+
+---
+
+## kwala-credit-balance
+
+Check your Kwala credit balance. Credits are used to pay for workflow executions.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `address` | string | No | Wallet address (defaults to your stored wallet) |
+
+**Returns:** Current credit balance and usage stats.
+
+Credits can be purchased on BNB Chain (~49 USDT = 20 credits).
+
+---
+
+## kwala-configure
+
+Store notification settings (Telegram, Discord, webhook) and default chain. These settings are saved to `~/.kwala-mcp/config.json` and auto-used by all workflow generation tools.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `telegram_bot_token` | string | No | Telegram bot token from @BotFather |
+| `telegram_chat_id` | string | No | Telegram chat ID for notifications |
+| `discord_webhook_url` | string | No | Discord webhook URL |
+| `default_chain` | string | No | Default chain name or ID |
+
+**Example:**
+
+```bash
+kwala configure \
+  --telegram-token "123456:ABC-DEF..." \
+  --telegram-chat "968602918" \
+  --default-chain "Base"
+```
+
+After configuring, `kwala-create-automation` will auto-insert your Telegram/Discord credentials into generated workflows.
+
+---
+
+## kwala-login
+
+Authenticate with Kwala via Google OAuth. Required for certain backend operations like workflow activation notifications.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `jwt` | string | No | Provide a JWT directly instead of browser login |
+| `browser` | boolean | No | Open browser for OAuth flow (default: true) |
+
+The JWT token is stored in your config file and refreshed automatically.

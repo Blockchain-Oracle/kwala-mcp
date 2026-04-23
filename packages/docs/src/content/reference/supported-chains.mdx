@@ -1,0 +1,89 @@
+---
+title: Supported Chains
+description: All 11 EVM chains supported by Kwala Network with chain IDs, tokens, and aliases
+---
+
+# Supported Chains
+
+Kwala Network supports 6 mainnets, 4 testnets, and the internal Kalp Chain. All chain names support fuzzy matching in tools.
+
+## Mainnets
+
+| Chain | Chain ID | Symbol | Aliases |
+|---|---|---|---|
+| Ethereum | 1 | ETH | `eth`, `ethereum` |
+| BNB Chain | 56 | BNB | `bnb`, `bsc` |
+| Polygon | 137 | MATIC | `poly`, `polygon` |
+| Avalanche C-Chain | 43114 | AVAX | `avax`, `avalanche` |
+| Celo | 42220 | CELO | `celo` |
+| Base | 8453 | ETH | `base` |
+
+## Testnets
+
+| Chain | Chain ID | Symbol | Mainnet Equivalent | Aliases |
+|---|---|---|---|---|
+| Sepolia | 11155111 | ETH | Ethereum (1) | `sepolia` |
+| Polygon Amoy | 80002 | MATIC | Polygon (137) | `amoy`, `polygon amoy`, `polygon-amoy` |
+| Avalanche Fuji | 43113 | AVAX | Avalanche (43114) | `fuji`, `avalanche fuji` |
+| Base Sepolia | 84532 | ETH | Base (8453) | `base sepolia`, `base-sepolia`, `base_sepolia` |
+
+## Internal
+
+| Chain | Chain ID | Symbol | Aliases |
+|---|---|---|---|
+| Kalp Chain | 1905 | GINI | `kwala`, `kalp` |
+
+The Kalp Chain (KWALA chain) is where all workflows are deployed. It is used internally for deployment transactions only.
+
+## Supported tokens
+
+The following tokens are recognized by name across chains. When you say "USDC on Base", the tool automatically resolves the correct contract address.
+
+### USDC (USD Coin)
+
+| Chain | Address |
+|---|---|
+| Ethereum (1) | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
+| Base (8453) | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| Polygon (137) | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` |
+| BNB Chain (56) | `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d` |
+| Avalanche (43114) | `0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E` |
+| Celo (42220) | `0xcebA9300f2b948710d2653dD7B07f33A8B32118C` |
+| Base Sepolia (84532) | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
+| Sepolia (11155111) | `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238` |
+
+### USDT (Tether USD)
+
+| Chain | Address |
+|---|---|
+| Ethereum (1) | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
+| BNB Chain (56) | `0x55d398326f99059fF775485246999027B3197955` |
+| Polygon (137) | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` |
+| Avalanche (43114) | `0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7` |
+| Base (8453) | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` |
+
+### WETH (Wrapped Ether)
+
+| Chain | Address |
+|---|---|
+| Ethereum (1) | `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2` |
+| Base (8453) | `0x4200000000000000000000000000000000000006` |
+| Polygon (137) | `0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619` |
+| Avalanche (43114) | `0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB` |
+| Base Sepolia (84532) | `0x4200000000000000000000000000000000000006` |
+
+### WBTC (Wrapped Bitcoin)
+
+| Chain | Address |
+|---|---|
+| Ethereum (1) | `0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599` |
+| Polygon (137) | `0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6` |
+| Avalanche (43114) | `0x50b7545627a5162F82A992c33b87aDc75187B218` |
+
+### DAI (Dai Stablecoin)
+
+| Chain | Address |
+|---|---|
+| Ethereum (1) | `0x6B175474E89094C44Da98b954EedeAC495271d0F` |
+| Polygon (137) | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` |
+| Base (8453) | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |

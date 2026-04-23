@@ -1,0 +1,75 @@
+---
+title: Explorer
+description: Tools for browsing Kwala network activity and fetching on-chain data
+---
+
+# Explorer
+
+These tools let you browse network-wide statistics, execution logs, deployed workflow YAML, and contract ABIs.
+
+## kwala-explorer-stats
+
+Get Kwala network statistics including total action executions and deployed workflow counts.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `user_address` | string | No | Filter stats by user address |
+| `workflow_name` | string | No | Filter stats by workflow name |
+
+**Returns:** Total action count, deployed workflow count, and optional per-user/per-workflow breakdowns.
+
+---
+
+## kwala-explorer-actions
+
+Browse the execution log of all workflow actions across the network.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `page` | number | No | Page number (default: 1) |
+| `page_size` | number | No | Results per page (default: 10) |
+| `user_address` | string | No | Filter by user address |
+
+**Returns:** Paginated list of action executions with:
+- `workflow_id` -- Which workflow triggered the action
+- `action_id` -- The action name
+- `execution_time` -- How long it took (seconds)
+- `success` -- Whether it succeeded
+- `retries` -- Number of retry attempts
+- `gas_fees` -- Gas consumed
+- `error` -- Error message if failed
+
+---
+
+## kwala-get-workflow
+
+Fetch the full YAML source of a deployed workflow.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `workflow_id` | string | Yes | Workflow name or full ID (`name_0xAddress`) |
+
+**Returns:** The complete Kwalang YAML string as stored on-chain.
+
+---
+
+## kwala-fetch-abi
+
+Fetch a smart contract's ABI from any supported chain. Returns the ABI along with a parsed list of events and functions.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `address` | string | Yes | Contract address |
+| `chain` | string | Yes | Chain name or ID (e.g., "Base", "8453") |
+
+**Returns:** Full ABI JSON, plus extracted event signatures and function signatures for easy reference.
+
+This tool is used internally by `kwala-create-automation` to auto-fetch ABIs when generating workflows, but you can also use it directly to inspect any contract.

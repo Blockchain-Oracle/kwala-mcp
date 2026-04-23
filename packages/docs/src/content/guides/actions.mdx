@@ -1,0 +1,166 @@
+---
+title: Actions
+description: All action types supported by Kwalang YAML workflows
+---
+
+import { Callout } from 'nextra/components'
+
+# Actions
+
+A workflow can have up to **10 actions**. Actions execute in the order specified (sequential mode) or all at once (parallel mode). There are three main action types.
+
+## Type: call (smart contract function call)
+
+Invoke a function on any smart contract on any supported chain.
+
+```yaml
+- Name: "TransferTokens"
+  Type: "call"
+  TargetContract: "0xContractAddress"
+  TargetFunction: "function transfer(address to, uint256 amount)"
+  TargetParams:
+    - "0xRecipientAddress"       # Static value
+    - "1000000"                  # Static value
+  ChainID: 8453
+  EncodedABI: "NA"
+  Metadata: "NA"
+  RetriesUntilSuccess: 3
+```
+
+### Dynamic parameters
+
+Use `re.event(N)` to pass trigger event data into action parameters:
+
+```yaml
+TargetParams:
+  - "re.event(0)"               # From address from the trigger event
+  - "re.event(2)"               # Amount from the trigger event
+```
+
+### Fields
+
+| Field | Required | Description |
+|---|---|---|
+| `Name` | Yes | Action identifier |
+| `Type` | Yes | Must be `"call"` |
+| `TargetContract` | Yes | Contract address to call |
+| `TargetFunction` | Yes | Full Solidity function signature |
+| `TargetParams` | Yes | Array of parameters (positional) |
+| `ChainID` | Yes | Target chain ID |
+| `EncodedABI` | No | Pre-encoded ABI or `"NA"` |
+| `Metadata` | No | Action metadata or `"NA"` |
+| `RetriesUntilSuccess` | No | Additional retry attempts (total = 1 + N) |
+
+---
+
+## Type: post / api (REST API call)
+
+Call any Web2 REST endpoint. This is the primary way to send notifications (Telegram, Discord, webhooks).
+
+```yaml
+- Name: "NotifyTelegram"
+  Type: "post"
+  APIEndpoint: "https://api.telegram.org/bot<TOKEN>/sendMessage"
+  APIPayload:
+    chat_id: "968602918"
+    text: "Transfer detected: re.event(0) sent re.event(2) tokens to re.event(1)"
+  RetriesUntilSuccess: 5
+```
+
+### Telegram notification
+
+```yaml
+- Name: "SendAlert"
+  Type: "post"
+  APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+  APIPayload:
+    chat_id: "<YOUR_CHAT_ID>"
+    text: "Alert message with dynamic data: re.event(0)"
+  RetriesUntilSuccess: 3
+```
+
+### Discord notification
+
+```yaml
+- Name: "DiscordAlert"
+  Type: "post"
+  APIEndpoint: "https://discord.com/api/webhooks/<YOUR_WEBHOOK>"
+  APIPayload:
+    content: "Alert: re.event(0)"
+  RetriesUntilSuccess: 3
+```
+
+### Custom webhook
+
+```yaml
+- Name: "WebhookForward"
+  Type: "post"
+  APIEndpoint: "https://your-api.com/webhook/event"
+  APIPayload:
+    type: "blockchain_event"
+    data: "re.event(0)"
+  RetriesUntilSuccess: 3
+```
+
+### Fields
+
+| Field | Required | Description |
+|---|---|---|
+| `Name` | Yes | Action identifier |
+| `Type` | Yes | `"post"` or `"api"` |
+| `APIEndpoint` | Yes | Full URL to call |
+| `APIPayload` | Yes | JSON object sent as POST body |
+| `RetriesUntilSuccess` | No | Additional retry attempts |
+
+<Callout type="info">
+When you use `kwala-configure` to store Telegram or Discord credentials, `kwala-create-automation` automatically inserts them into generated workflows. You do not need to manually add bot tokens or webhook URLs.
+</Callout>
+
+---
+
+## Type: deploy (smart contract deployment)
+
+Deploy a new smart contract on-chain as part of a workflow.
+
+```yaml
+- Name: "DeployRewardNFT"
+  Type: "deploy"
+  Bytecode: "0x6080..."
+  EncodedABI: "0x..."
+  InitializationArgs:
+    - "MyNFT"
+    - "NFT"
+    - "1000"
+  ChainID: 80002
+  RetriesUntilSuccess: 3
+```
+
+### Fields
+
+| Field | Required | Description |
+|---|---|---|
+| `Name` | Yes | Action identifier |
+| `Type` | Yes | Must be `"deploy"` |
+| `Bytecode` | Yes | Contract bytecode |
+| `EncodedABI` | No | Constructor ABI encoding |
+| `InitializationArgs` | No | Constructor arguments |
+| `ChainID` | Yes | Target chain ID |
+| `RetriesUntilSuccess` | No | Additional retry attempts |
+
+---
+
+## Execution mode
+
+The `Execution` section controls how actions run:
+
+```yaml
+Execution:
+  Mode: "sequential"    # Actions run one after another
+```
+
+```yaml
+Execution:
+  Mode: "parallel"      # All actions run simultaneously
+```
+
+Sequential is the default and recommended mode. Use parallel only when actions are independent of each other.

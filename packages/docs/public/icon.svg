@@ -1,0 +1,11 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hexagonal frame -->
+  <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" stroke="#a855f7" stroke-width="1.8" fill="none"/>
+  <!-- Central node (automation hub) -->
+  <circle cx="16" cy="12" r="3" fill="#a855f7"/>
+  <!-- Connection paths (workflow arrows) -->
+  <path d="M10 20 L16 16 L22 20" stroke="#a855f7" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Endpoint nodes (chains) -->
+  <circle cx="10" cy="20" r="1.5" fill="#a855f7"/>
+  <circle cx="22" cy="20" r="1.5" fill="#a855f7"/>
+</svg>

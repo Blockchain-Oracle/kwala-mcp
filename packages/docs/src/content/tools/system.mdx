@@ -1,0 +1,44 @@
+---
+title: System
+description: Chain registry and tool discovery
+---
+
+# System
+
+## kwala-list-chains
+
+List all supported chains with their chain IDs, native tokens, and network type.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `network` | string | No | `mainnet`, `testnet`, or `all` (default: `all`) |
+
+**Returns:**
+
+| Chain | Chain ID | Network | Symbol |
+|---|---|---|---|
+| Ethereum | 1 | Mainnet | ETH |
+| BNB Chain | 56 | Mainnet | BNB |
+| Polygon | 137 | Mainnet | MATIC |
+| Avalanche C-Chain | 43114 | Mainnet | AVAX |
+| Celo | 42220 | Mainnet | CELO |
+| Base | 8453 | Mainnet | ETH |
+| Sepolia | 11155111 | Testnet | ETH |
+| Polygon Amoy | 80002 | Testnet | MATIC |
+| Avalanche Fuji | 43113 | Testnet | AVAX |
+| Base Sepolia | 84532 | Testnet | ETH |
+| Kalp Chain | 1905 | Internal | GINI |
+
+Chain names support fuzzy matching: "Base", "base", "ETH", "bsc", "poly", "avax" all resolve correctly.
+
+---
+
+## kwala-tools
+
+List all 20 available tools grouped by category. Useful for discovering what the server can do.
+
+**Parameters:** None.
+
+**Returns:** All tools with names, descriptions, and categories.

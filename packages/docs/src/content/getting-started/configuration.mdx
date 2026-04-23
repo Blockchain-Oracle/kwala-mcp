@@ -1,0 +1,98 @@
+---
+title: Configuration
+description: Set up wallet, Telegram, Discord, webhooks, and default chain for Kwala AI
+---
+
+import { Callout } from 'nextra/components'
+
+# Configuration
+
+Kwala AI stores configuration at `~/.kwala-mcp/config.json`. This includes your wallet, notification settings, and authentication tokens. Once configured, all tools auto-use your settings -- you never need to pass tokens or addresses repeatedly.
+
+## Wallet
+
+On first run, Kwala automatically generates a wallet on the KWALA chain (chain ID 1905). You can view it anytime:
+
+```bash
+kwala wallet
+```
+
+Or via MCP: ask your agent *"Show my Kwala wallet"*.
+
+The wallet address is used for all deployment transactions. The private key is stored locally and never transmitted.
+
+<Callout type="warning">
+Back up `~/.kwala-mcp/config.json`. If you lose it, you lose access to your deployed workflows.
+</Callout>
+
+## Telegram notifications
+
+To receive Telegram alerts from your workflows:
+
+1. Message [@BotFather](https://t.me/BotFather) on Telegram and create a bot
+2. Copy the bot token
+3. Send a message to your bot, then call `https://api.telegram.org/bot<TOKEN>/getUpdates` to find your chat ID
+
+Configure once:
+
+```bash
+kwala configure --telegram-token YOUR_BOT_TOKEN --telegram-chat YOUR_CHAT_ID
+```
+
+Or via MCP: *"Configure Telegram with bot token ... and chat ID ..."*
+
+After this, all `create-automation` workflows that include Telegram notifications will auto-use your stored credentials.
+
+## Discord notifications
+
+To receive Discord alerts:
+
+1. Go to your Discord server > Server Settings > Integrations > Webhooks
+2. Create a webhook and copy the URL
+
+```bash
+kwala configure --discord-webhook https://discord.com/api/webhooks/...
+```
+
+## Default chain
+
+Set a default chain so you do not need to specify it every time:
+
+```bash
+kwala configure --default-chain Base
+```
+
+Accepts chain names ("Base", "Ethereum", "Polygon") or chain IDs ("8453", "1", "137"). Fuzzy matching is supported.
+
+## Authentication
+
+Some operations (like workflow activation via the backend) require Kwala authentication:
+
+```bash
+kwala login
+```
+
+This opens a Google OAuth flow in your browser. The JWT token is stored in your config file and refreshed automatically.
+
+## Config file structure
+
+```json
+{
+  "wallet": {
+    "address": "0x...",
+    "privateKey": "0x..."
+  },
+  "telegram": {
+    "botToken": "123456:ABC...",
+    "chatId": "968602918"
+  },
+  "discord": {
+    "webhookUrl": "https://discord.com/api/webhooks/..."
+  },
+  "defaultChain": "Base",
+  "auth": {
+    "jwt": "eyJ...",
+    "expiresAt": 1745000000
+  }
+}
+```

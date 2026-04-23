@@ -1,0 +1,127 @@
+---
+title: Architecture
+description: How the Kwala AI monorepo is structured — CLI core, MCP wrapper, deployment flow
+---
+
+# Architecture
+
+Kwala AI is a monorepo with five packages. This page explains the structure and how everything connects.
+
+## Package overview
+
+```
+packages/
+  cli/          # Core: 20 tools, API client, deployer, wallet, cache, CLI binary
+  mcp/          # Thin wrapper: imports cli, wires stdio transport
+  skills/       # Agent Skill: SKILL.md for cross-client install
+    kwala/
+      SKILL.md
+  docs/         # Nextra documentation site
+  web/          # Next.js landing page + AI chat
+```
+
+## Why two packages for one server?
+
+The `@kwala-dev/cli` package contains all tool implementations, the API client, on-chain deployer, wallet management, and the response cache. It exports a `createMcpServer()` factory function.
+
+The `@kwala-dev/mcp` package is a thin entry point (~30 lines) that imports `createMcpServer()` from `@kwala-dev/cli`, creates a `StdioServerTransport`, and connects them. It exists as a separate package because `npx` needs a single-bin package to resolve correctly when MCP hosts spawn via `npx @kwala-dev/mcp`.
+
+This means:
+
+- **MCP hosts** use `npx @kwala-dev/mcp` (single binary, clean npx resolution)
+- **CLI users** install `@kwala-dev/cli` globally for the `kwala` command
+- **Tool logic** lives in one place (`packages/cli/src/tools/`) and is shared by both
+
+## Request flow
+
+```
+User prompt
+  -> MCP host (Claude, Cursor, etc.)
+    -> stdio transport
+      -> @kwala-dev/mcp (entry point)
+        -> @kwala-dev/cli/createMcpServer()
+          -> registerXxxTool(server) x 20
+            -> zod validation
+            -> withCache() (5-min TTL, read-only tools)
+            -> kwalaGet() or kwalaPost() (REST API)
+            -> deployer.ts (on-chain transactions)
+          -> ok(data) or err(message)
+        -> MCP response
+      -> stdio back to host
+    -> AI formats response for user
+```
+
+## Deployment flow (on-chain)
+
+Workflow deployment happens on the **KWALA chain** (chain ID 1905), a custom EVM chain:
+
+```
+1. POST /workflow/verify          (REST, no auth)
+   -> Validates YAML syntax and schema
+
+2. saveWorkflow(yaml)             (on-chain tx to 0x3e0c...613e)
+   -> Writes workflow to the KWALA chain
+
+3. deployWorkflow(yaml)           (on-chain tx)
+   -> Name mutated: "MyWorkflow" -> "MyWorkflow_0xYourAddress"
+   -> Deploys the workflow
+
+4. GET /workflow/chaincode/{id}   (REST, no auth)
+   -> Returns the chaincode address
+
+5. triggerWorkflow(chaincodeAddr) (on-chain tx)
+   -> Activates the workflow — it starts listening for events
+```
+
+All on-chain transactions use raw signed transactions sent via the KWALA RPC at `https://rpc-ohio.kwala.network`.
+
+## Smart contract
+
+| Function | Signature | Purpose |
+|---|---|---|
+| `saveWorkflow` | `saveWorkflow(string yaml)` | Save workflow to chain |
+| `deployWorkflow` | `deployWorkflow(string calldata yaml)` | Deploy workflow |
+| `triggerWorkflow` | `triggerWorkflow(address chaincodeAddress)` | Activate workflow |
+| `updateExpiresIn` | `updateExpiresIn(address chaincodeAddress, uint256 expiresIn)` | Update expiration |
+
+Contract address: `0x3e0c606d0ce3f0dec6c569a586a59128a1d9613e`
+
+## Caching
+
+Read-only tools (explorer stats, chain list, workflow status) use `withCache()`:
+
+- Cache key: `toolName:JSON.stringify(params)`
+- TTL: 5 minutes
+- Cached responses are prefixed with `[cached]`
+- Only successful responses are cached
+- Write tools call `invalidateCacheAll()` after mutations
+
+## Tool registration pattern
+
+Every tool follows the same pattern:
+
+```ts
+export function registerXxxTool(server: McpServer): void {
+  server.registerTool(
+    "kwala-xxx",
+    {
+      title: "Human Title",
+      description: "What it does.",
+      inputSchema: z.object({ ... }),
+    },
+    async (params) => {
+      // validate, call API or deploy, return ok(data) or err(message)
+    },
+  );
+}
+```
+
+Tools are registered in `server.ts` grouped by category.
+
+## UX design principles
+
+1. **Auto-resolve everything.** Token names, chain names, ABIs, wallet addresses -- never ask the user for something the tool can figure out.
+2. **Default to testnet.** Unless explicitly told mainnet, use testnet chain IDs.
+3. **Store once, use everywhere.** Telegram/Discord credentials are configured once and auto-used by all workflow generation.
+4. **Show next steps.** After creating a workflow, suggest verify then deploy.
+5. **Structured errors.** Every error response includes a `suggestion` field for recovery.

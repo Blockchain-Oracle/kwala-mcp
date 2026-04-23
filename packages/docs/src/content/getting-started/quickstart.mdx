@@ -1,0 +1,95 @@
+---
+title: Quickstart
+description: Create, verify, and deploy your first blockchain automation in under 5 minutes
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# Quickstart
+
+This guide walks you through creating and deploying a blockchain automation using Kwala AI. You will go from a natural language prompt to a live, on-chain workflow.
+
+<Callout type="info">
+Make sure you have [installed Kwala AI](/getting-started/installation) before starting.
+</Callout>
+
+<Steps>
+
+### Describe your automation
+
+Tell your AI agent what you want to automate. For example:
+
+> "Notify me on Telegram when USDC is transferred on Base"
+
+The agent calls `kwala-create-automation` and generates a complete Kwalang YAML workflow.
+
+### Verify the workflow
+
+The agent automatically calls `kwala-verify-workflow` to validate the YAML against Kwala's backend API. This checks both syntax and schema compliance.
+
+If verification fails, the agent adjusts the YAML and tries again.
+
+### Deploy on-chain
+
+The agent calls `kwala-deploy-workflow` which executes the full deployment pipeline:
+
+1. **Save** -- writes the workflow to the KWALA chain smart contract
+2. **Deploy** -- deploys the workflow (name is mutated to `name_0xYourAddress`)
+3. **Get chaincode** -- fetches the deployed chaincode address
+4. **Activate** -- triggers the workflow to start listening for events
+
+### Monitor execution
+
+Use `kwala-workflow-status` to check if your workflow is running and view execution history. Use `kwala-explorer-actions` to browse detailed execution logs.
+
+</Steps>
+
+## Example: full conversation
+
+```
+You: Notify me on Telegram when USDC is transferred on Ethereum
+
+Agent: I'll create a workflow for that. Let me generate the YAML...
+
+[calls kwala-create-automation]
+-> Generated TokenTransferAlert workflow
+
+[calls kwala-verify-workflow]
+-> Verification passed: syntax_check: true, schema_validation: true
+
+[calls kwala-deploy-workflow]
+-> Step 1: Saved to KWALA chain (tx: 0x...)
+-> Step 2: Deployed (tx: 0x...)
+-> Step 3: Chaincode address: 0x...
+-> Step 4: Activated (tx: 0x...)
+
+Your workflow is live! It will send a Telegram alert every time
+USDC is transferred on Ethereum.
+```
+
+## CLI alternative
+
+You can also do this from the terminal:
+
+```bash
+# Create a workflow YAML file
+kwala create-automation \
+  --description "Alert me on Telegram when USDC is transferred on Ethereum" \
+  --output my-workflow.yaml
+
+# Verify it
+kwala verify-workflow my-workflow.yaml
+
+# Deploy it
+kwala deploy-workflow my-workflow.yaml
+
+# Check status
+kwala workflow-status TokenTransferAlert
+```
+
+## Next steps
+
+- [Configure notifications](/getting-started/configuration) -- Set up Telegram, Discord, webhooks
+- [Browse templates](/tools/workflow-generation) -- Start from pre-built workflows
+- [Kwalang YAML spec](/guides/kwalang-yaml) -- Understand the full schema
+- [Example workflows](/guides/examples) -- 6 ready-to-deploy examples

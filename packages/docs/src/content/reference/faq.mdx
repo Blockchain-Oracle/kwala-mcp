@@ -1,0 +1,80 @@
+---
+title: FAQ
+description: Frequently asked questions about Kwala AI
+---
+
+# FAQ
+
+## General
+
+### What is Kwala Network?
+
+Kwala is a serverless Web3 backend automation platform. Developers write declarative YAML workflows ("Kwalang") that react to blockchain events and execute on-chain or off-chain actions. Workflows run on distributed Kwala nodes using the Kwala Virtual Machine (KVM).
+
+### What is Kwala AI?
+
+Kwala AI is an MCP (Model Context Protocol) server that gives AI agents the ability to create, verify, deploy, and monitor Kwala Network automations through natural language. No dashboard needed.
+
+### Do I need API keys?
+
+No. Core functionality requires no API keys. A wallet is auto-generated on first run. Some features (like workflow activation via the backend) use Google OAuth authentication.
+
+### Which AI clients are supported?
+
+Any MCP-compatible client: Claude Code, Claude Desktop, Cursor, Windsurf, VS Code Copilot, Gemini CLI, Codex, Zed, Continue, Cline, Goose, and more.
+
+---
+
+## Workflows
+
+### Can I edit a deployed workflow?
+
+No. Workflows are immutable once deployed. To change a workflow, deactivate the existing one with `kwala-deactivate-workflow` and deploy a new version.
+
+### What is the maximum number of actions per workflow?
+
+10 actions per workflow.
+
+### What happens to the workflow name during deployment?
+
+The `Name` field is mutated: your wallet address is appended. For example, `Name: MyWorkflow` becomes `MyWorkflow_0xYourAddress`. This combined string is the workflow ID used in all API lookups.
+
+### How do I stop a running workflow?
+
+Use `kwala-deactivate-workflow` with the workflow name or full ID. This sets the expiration to the current time, stopping the workflow permanently.
+
+### What chains can my workflow watch?
+
+Your trigger can watch events on any of the 6 supported mainnets (Ethereum, BNB Chain, Polygon, Avalanche, Celo, Base) or 4 testnets (Sepolia, Polygon Amoy, Avalanche Fuji, Base Sepolia).
+
+### Where do workflows actually run?
+
+Workflows are deployed on-chain to the KWALA chain (chain ID 1905) and executed by distributed Kwala nodes. The nodes watch the target chain for trigger events and execute actions when conditions are met.
+
+---
+
+## Deployment
+
+### How much does deployment cost?
+
+Kwala sponsors gas fees via ERC-4337 smart wallets, so basic deployment is free. Workflow executions consume Kwala credits (~49 USDT = 20 credits on BNB Chain).
+
+### What is the KWALA chain?
+
+The KWALA chain (chain ID 1905) is a custom EVM chain used by Kwala Network for workflow deployment and management. RPC endpoint: `https://rpc-ohio.kwala.network`.
+
+### What smart contract is used for deployment?
+
+All deployment transactions go to `0x3e0c606d0ce3f0dec6c569a586a59128a1d9613e` on the KWALA chain.
+
+---
+
+## Troubleshooting
+
+| Error | Cause | Fix |
+|---|---|---|
+| "No ABI found" | Contract not verified on the chain | Provide `abi_json` manually in build-trigger/build-action |
+| "Insufficient funds" | Wallet needs KWALA gas tokens | Fund wallet on KWALA chain (1905) |
+| "Verification failed" | Invalid YAML structure | Check the `errors` array in the response |
+| "Chaincode not found" | Deploy still propagating | Wait 10 seconds, call `workflow-status` again |
+| "Unknown chain" | Unrecognized chain name | Use `list-chains` to see valid names and IDs |

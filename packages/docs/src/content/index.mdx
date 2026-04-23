@@ -1,0 +1,76 @@
+---
+title: Introduction
+description: Kwala AI — MCP server for blockchain automation on Kwala Network. 20 tools for AI agents.
+---
+
+# Kwala AI
+
+**Kwala AI** is a [Model Context Protocol](https://modelcontextprotocol.io) server that gives AI agents the ability to create, verify, deploy, and monitor blockchain automations on [Kwala Network](https://kwala.network) using natural language.
+
+Connect it to Claude Code, Cursor, Windsurf, VS Code Copilot, Gemini CLI, or any MCP-compatible client and start automating with plain English.
+
+## What can it do?
+
+Kwala AI exposes **20 tools** across five categories:
+
+| Category | Tools | Description |
+|---|---|---|
+| Workflow Generation | create-automation, explain-yaml, list-templates, build-trigger, build-action | Generate Kwalang YAML from natural language |
+| Deployment | verify-workflow, deploy-workflow, deactivate-workflow, workflow-status, list-workflows | Deploy and manage on-chain workflows |
+| Explorer | explorer-stats, explorer-actions, get-workflow, fetch-abi | Browse network activity and contracts |
+| Account | wallet, credit-balance, configure, login | Wallet and notification management |
+| System | list-chains, tools | Chain registry and tool discovery |
+
+### Example prompts
+
+- *"Notify me on Telegram when USDC is transferred on Base"*
+- *"Create a workflow that tracks my treasury wallet on Polygon"*
+- *"Alert me when SOL drops below $150"*
+- *"Deploy a workflow that mints an NFT when someone makes a purchase over $100"*
+- *"Show me the status of my deployed workflows"*
+
+## Quick install
+
+**MCP server** — one command for any supported client:
+
+```bash
+# Claude Code
+claude mcp add kwala npx @kwala-dev/mcp
+
+# Gemini CLI
+gemini mcp add kwala npx -y @kwala-dev/mcp
+
+# Cursor / Windsurf / VS Code / Claude Desktop
+# Add to your MCP config:
+#   { "command": "npx", "args": ["-y", "@kwala-dev/mcp"] }
+```
+
+For Cursor, Windsurf, VS Code, Zed, Continue, Cline, and Goose -- see the [Installation guide](/getting-started/installation).
+
+**Agent Skill** -- teaches your agent when and how to use each tool:
+
+```bash
+pnpm dlx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala
+```
+
+**Standalone CLI** -- terminal-native, no AI required:
+
+```bash
+npm install -g @kwala-dev/cli
+kwala --help
+```
+
+## npm Packages
+
+- [`@kwala-dev/mcp`](https://www.npmjs.com/package/@kwala-dev/mcp) -- MCP server (thin wrapper)
+- [`@kwala-dev/cli`](https://www.npmjs.com/package/@kwala-dev/cli) -- CLI + core library (20 tools)
+
+## Next steps
+
+- [Installation & setup](/getting-started/installation) -- Claude Code, Cursor, Windsurf, and 12+ clients
+- [Quickstart](/getting-started/quickstart) -- Create, verify, and deploy your first workflow
+- [Tool reference](/tools) -- All 20 tools with parameters and examples
+- [Kwalang YAML spec](/guides/kwalang-yaml) -- Full YAML schema documentation
+- [Architecture](/guides/architecture) -- How the MCP + CLI split works
+- [Example workflows](/guides/examples) -- 6 pre-built workflow examples
+- [Supported chains](/reference/supported-chains) -- All 11 EVM chains with token addresses

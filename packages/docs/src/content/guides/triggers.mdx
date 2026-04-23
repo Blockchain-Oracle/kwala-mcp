@@ -1,0 +1,117 @@
+---
+title: Triggers
+description: All 6 trigger types supported by Kwalang YAML workflows
+---
+
+# Triggers
+
+Kwala supports 6 trigger types. Each trigger defines what starts or repeats a workflow.
+
+## 1. Event-Based (smart contract event)
+
+Fires when a specific smart contract emits an event. This is the most common trigger type.
+
+```yaml
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 1
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerSourceContractABI: "base64encodedABI"
+  TriggerEventFilter: "NA"
+  ExecuteAfter: "event"
+  RepeatEvery: "event"
+```
+
+**Use cases:** Token transfer alerts, swap monitoring, governance vote tracking, NFT minting detection.
+
+**Filter examples:**
+```yaml
+# Only transfers above 1000 tokens
+TriggerEventFilter: "re.event(2) > 1000"
+
+# Only transfers to a specific address
+TriggerEventFilter: "re.event(1) == 0xRecipientAddress"
+```
+
+## 2. Time-Based (interval)
+
+Executes at fixed intervals. Does not require a contract.
+
+```yaml
+Trigger:
+  ExecuteAfter: "event"
+  RepeatEvery: 3600            # Every hour (seconds)
+  ExpiresIn: "2592000"         # Stop after 30 days
+```
+
+**Common intervals:**
+- `60` -- every minute
+- `3600` -- every hour
+- `86400` -- daily
+- `604800` -- weekly
+
+**Use cases:** Periodic balance checks, scheduled reports, heartbeat monitoring.
+
+## 3. Time-Based (cron)
+
+Uses cron expressions for precise scheduling.
+
+```yaml
+Trigger:
+  ExecuteAfter: "event"
+  RepeatEvery: "0 9 * * *"    # Daily at 9am UTC
+  ExpiresIn: 1735689600
+```
+
+**Cron format:** `minute hour day month weekday`
+
+| Expression | Schedule |
+|---|---|
+| `0 9 * * *` | Daily at 9:00 AM UTC |
+| `0 */6 * * *` | Every 6 hours |
+| `0 0 * * 1` | Every Monday at midnight |
+| `*/15 * * * *` | Every 15 minutes |
+
+**Use cases:** Daily portfolio summaries, weekly reports, scheduled token distributions.
+
+## 4. Oracle Price
+
+Fires when a token reaches a price threshold.
+
+```yaml
+Trigger:
+  TriggerPrice: 150.0
+  ExecuteAfter: "oracle_price"
+  RepeatEvery: "oracle_price"
+```
+
+**Use cases:** Price alerts, automated trading signals, liquidation warnings.
+
+## 5. Block Number
+
+Fires when a specific block number is reached.
+
+```yaml
+Trigger:
+  ExecuteAfter: "block:18000000"
+```
+
+**Use cases:** Time-locked operations, post-upgrade triggers, specific block milestones.
+
+## 6. Address Tracking
+
+Fires on any activity involving a specific address (incoming or outgoing transactions).
+
+```yaml
+Trigger:
+  TriggerSourceContract: "0xAddressToTrack"
+  TriggerChainID: 8453
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+```
+
+Unlike event-based triggers, address tracking does not require a specific event signature. It captures all transactions involving the address.
+
+When triggered, `re.event(0)` returns the full transaction receipt including `from`, `to`, `transactionHash`, `blockNumber`, and `logs`.
+
+**Use cases:** Treasury monitoring, whale watching, wallet activity alerts.

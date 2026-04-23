@@ -1,0 +1,141 @@
+---
+title: Kwalang YAML Spec
+description: Complete reference for the Kwalang YAML workflow format used by Kwala Network
+---
+
+import { Callout } from 'nextra/components'
+
+# Kwalang YAML Spec
+
+Kwalang is the declarative YAML format used by Kwala Network to define blockchain automations. A workflow has three sections: metadata, trigger, and actions.
+
+## Full schema
+
+```yaml
+# --- METADATA ---
+Name: string                          # Workflow name (required)
+
+# --- TRIGGER SECTION ---
+Trigger:
+
+  # Primary event source (what starts the workflow)
+  TriggerSourceContract: "0x..."      # Contract address to watch
+  TriggerChainID: 1                   # Chain ID of the source contract
+  TriggerEventName: "Transfer(address,address,uint256)"  # Solidity event signature
+  TriggerEventFilter: "NA"            # Filter expression or "NA"
+  TriggerSourceContractABI: "base64..." # Base64-encoded ABI of the source contract
+
+  # Recurring event source (optional, for multi-trigger workflows)
+  RecurringSourceContract: "0x..."    # Secondary contract to watch
+  RecurringChainID: 1                 # Chain ID of recurring source
+  RecurringEventName: "EventName(type1,type2)"
+  RecurringEventFilter: "NA"
+  RecurringSourceContractABI: "base64..."
+
+  # Timing & scheduling
+  ExecuteAfter: "event"               # When to first execute
+  RepeatEvery: "event"                # How often to re-execute
+  ExpiresIn: 1735689600               # When to stop
+
+  # Oracle price triggers
+  TriggerPrice: 195.0                 # Price threshold
+  RecurringPrice: 195.0               # Recurring price threshold
+
+  # Metadata & notifications
+  Meta: "string"                      # Arbitrary metadata
+  ActionStatusNotificationPOSTURL: "https://..."  # Webhook for status callbacks
+  ActionStatusNotificationAPIKey: "string"
+
+# --- ACTIONS SECTION (max 10) ---
+Actions:
+  - Name: "ActionName"                # Action name (required)
+    Type: "call"                       # Action type (required)
+    # ... type-specific fields
+
+# --- EXECUTION SECTION ---
+Execution:
+  Mode: "sequential"                   # "sequential" or "parallel"
+```
+
+## ExecuteAfter values
+
+| Value | Description |
+|---|---|
+| `"event"` | Execute immediately when the event fires |
+| `1735689600` | Unix timestamp -- delayed start |
+| `"block:18000000"` | After a specific block number |
+| `"oracle_price"` | On oracle price condition |
+| `"address_tracking"` | On any address activity |
+
+## RepeatEvery values
+
+| Value | Description |
+|---|---|
+| `"event"` | Every time the event fires |
+| `60` | Every 60 seconds |
+| `3600` | Every hour |
+| `86400` | Daily |
+| `604800` | Weekly |
+| `"0 9 * * *"` | Cron expression (daily 9am UTC) |
+| `"0 */6 * * *"` | Cron: every 6 hours |
+| `"oracle_price"` | On each oracle price match |
+| `"address_tracking"` | On each address activity |
+
+## ExpiresIn
+
+- Unix timestamp: `1735689600` -- stop at this time
+- Duration in seconds: `"2592000"` -- stop after 30 days
+
+## TriggerEventFilter
+
+Filter expressions use `re.event(N)` to reference event parameters by position:
+
+```yaml
+# No filter (match all events)
+TriggerEventFilter: "NA"
+
+# Exact match
+TriggerEventFilter: "re.event(2) == 1000"
+
+# Comparison
+TriggerEventFilter: "re.event(2) > 500"
+
+# Range
+TriggerEventFilter: "re.event(2) >= 100 && re.event(2) <= 1000"
+
+# Multiple values
+TriggerEventFilter: "re.event(0) in [addr1, addr2]"
+```
+
+## Dynamic data: re.event(N)
+
+When an event fires, its parameters are accessible via `re.event(0)`, `re.event(1)`, etc., mapping to the event signature's parameter positions.
+
+For `Transfer(address from, address to, uint256 amount)`:
+- `re.event(0)` = `from` address
+- `re.event(1)` = `to` address
+- `re.event(2)` = `amount`
+
+For **address tracking**, `re.event(0)` returns the full transaction receipt:
+
+```json
+{
+  "from": "0x...",
+  "to": "0x...",
+  "contractAddress": "0x...",
+  "transactionHash": "0x...",
+  "chainId": 8453,
+  "blockNumber": 12345678,
+  "status": 1,
+  "logs": []
+}
+```
+
+## Constraints
+
+<Callout type="warning">
+- Maximum **10 actions** per workflow
+- Workflows are **immutable** once deployed -- cannot be edited after deployment
+- The `Name` field is mutated during deployment: `Name` becomes `Name_0xYourAddress`
+- ABIs must be **base64-encoded** (Kwala AI handles this automatically)
+</Callout>

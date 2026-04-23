@@ -1,0 +1,109 @@
+---
+title: Deployment
+description: Tools for deploying and managing workflows on the KWALA chain
+---
+
+import { Callout } from 'nextra/components'
+
+# Deployment
+
+These tools handle the full lifecycle of deploying workflows to the KWALA chain (chain ID 1905). The deployment pipeline is: verify, save, deploy, get chaincode, activate.
+
+## kwala-verify-workflow
+
+Verify a Kwalang YAML workflow against Kwala's backend API. This checks syntax, schema compliance, and structural validity.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `yaml` | string | Yes | The YAML workflow string |
+
+**How it works:** Sends a `POST` to `/workflow/verify` (no auth required). Returns `syntax_check` and `schema_validation` booleans.
+
+<Callout type="info">
+Always verify before deploying. The deploy tool can auto-verify, but verifying separately lets you catch errors before spending gas.
+</Callout>
+
+---
+
+## kwala-deploy-workflow
+
+Deploy a workflow end-to-end on the KWALA chain. This is the main deployment tool that handles the full pipeline.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `yaml` | string | Yes | The YAML workflow string |
+| `auto_activate` | boolean | No | Whether to activate after deploy (default: true) |
+
+**Pipeline:**
+1. Verify YAML via REST API
+2. Mutate workflow name: `Name` becomes `Name_0xYourAddress`
+3. Call `saveWorkflow(yaml)` on the KWALA chain smart contract
+4. Call `deployWorkflow(yaml)` on the same contract
+5. Fetch chaincode address via `GET /workflow/chaincode/{id}`
+6. Call `triggerWorkflow(chaincodeAddress)` to activate
+
+Returns step-by-step results with transaction hashes for each on-chain operation.
+
+<Callout type="warning">
+Workflows are **immutable once deployed**. You cannot edit a deployed workflow. To change it, deactivate the old one and deploy a new version.
+</Callout>
+
+---
+
+## kwala-prepare-deploy
+
+Prepare a workflow for deployment without activating it. Useful when you want to review before going live.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `yaml` | string | Yes | The YAML workflow string |
+
+---
+
+## kwala-deactivate-workflow
+
+Stop a running workflow by setting its expiration to the current time.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `workflow_id` | string | Yes | Workflow name or full ID (`name_0xAddress`) |
+
+<Callout type="warning">
+Deactivation is **permanent**. Once deactivated, a workflow cannot be reactivated. Deploy a new workflow instead.
+</Callout>
+
+---
+
+## kwala-workflow-status
+
+Check the deployment status and execution history of a workflow.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `workflow_id` | string | Yes | Workflow name or full ID |
+
+Returns workflow status (CLAIMED, DEPLOYED, ACTIVE, EXPIRED), execution count, last execution time, and error history.
+
+---
+
+## kwala-list-workflows
+
+List all workflows deployed by a specific address.
+
+**Parameters:**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `address` | string | No | Deployer address (defaults to your wallet) |
+| `page` | number | No | Page number (default: 1) |
+| `page_size` | number | No | Results per page (default: 10) |

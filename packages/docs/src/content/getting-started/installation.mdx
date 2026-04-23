@@ -1,0 +1,241 @@
+---
+title: Installation
+description: Add Kwala AI to Claude Code, Cursor, Windsurf, and 12+ MCP clients
+---
+
+import { Callout, Tabs } from 'nextra/components'
+
+# Installation
+
+Kwala AI installs in two ways: as an **MCP server** (every major agent client supports it) or as a **standalone CLI** (for terminal use). Pick whichever fits your workflow -- or install both.
+
+## Install the MCP server
+
+Kwala AI works natively with 12+ MCP clients. Pick yours:
+
+<Tabs items={['Claude Code', 'Claude Desktop', 'Cursor', 'Windsurf', 'VS Code', 'Gemini CLI', 'Codex', 'Zed', 'Continue', 'Cline', 'Goose']}>
+
+<Tabs.Tab>
+```bash
+claude mcp add kwala npx @kwala-dev/mcp
+```
+
+Claude Code downloads and runs the server automatically on next session.
+</Tabs.Tab>
+
+<Tabs.Tab>
+Open your config file:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "kwala": {
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"]
+    }
+  }
+}
+```
+
+Fully quit and restart Claude Desktop.
+</Tabs.Tab>
+
+<Tabs.Tab>
+Create `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "kwala": {
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"]
+    }
+  }
+}
+```
+
+Or use the UI: Settings > Tools & MCP > Add new MCP server.
+</Tabs.Tab>
+
+<Tabs.Tab>
+Edit `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "kwala": {
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"]
+    }
+  }
+}
+```
+</Tabs.Tab>
+
+<Tabs.Tab>
+VS Code Copilot uses a different schema -- note `servers` key (not `mcpServers`). Create `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "kwala": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"]
+    }
+  }
+}
+```
+
+Copilot Chat must be in Agent mode for MCP tools to appear.
+</Tabs.Tab>
+
+<Tabs.Tab>
+```bash
+gemini mcp add kwala npx -y @kwala-dev/mcp
+```
+</Tabs.Tab>
+
+<Tabs.Tab>
+```bash
+codex mcp add kwala npx -y @kwala-dev/mcp
+```
+</Tabs.Tab>
+
+<Tabs.Tab>
+Edit `~/.config/zed/settings.json`:
+
+```json
+{
+  "context_servers": {
+    "kwala": {
+      "source": "custom",
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"],
+      "env": {}
+    }
+  }
+}
+```
+</Tabs.Tab>
+
+<Tabs.Tab>
+Create `.continue/mcpServers/kwala.yaml`:
+
+```yaml
+name: Kwala AI
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: Kwala
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@kwala-dev/mcp"
+```
+
+MCP only works in Continue's Agent mode.
+</Tabs.Tab>
+
+<Tabs.Tab>
+Edit `cline_mcp_settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "kwala": {
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+</Tabs.Tab>
+
+<Tabs.Tab>
+```bash
+goose configure
+```
+
+Choose: Add Extension > Command-line Extension (stdio)
+- Name: `kwala`
+- Command: `npx -y @kwala-dev/mcp`
+</Tabs.Tab>
+
+</Tabs>
+
+<Callout type="info">
+**npm packages:** [`@kwala-dev/mcp`](https://www.npmjs.com/package/@kwala-dev/mcp) | [`@kwala-dev/cli`](https://www.npmjs.com/package/@kwala-dev/cli)
+</Callout>
+
+---
+
+## Environment variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
+
+No API keys are required for core functionality. To set env vars, add an `env` block to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "kwala": {
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"],
+      "env": {
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Agent Skill
+
+Install the Kwala skill so your agent knows when and how to use the tools:
+
+```bash
+pnpm dlx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala
+```
+
+---
+
+## Standalone CLI
+
+For terminal use without an MCP host:
+
+```bash
+npm install -g @kwala-dev/cli
+kwala --help
+```
+
+See the CLI commands:
+
+```bash
+kwala wallet              # Show your KWALA chain wallet
+kwala list-chains         # List supported chains
+kwala list-templates      # Browse workflow templates
+kwala verify-workflow     # Verify a YAML file
+kwala deploy-workflow     # Deploy on-chain
+kwala tools               # List all tools
+```
+
+---
+
+## Wallet setup
+
+The first time the MCP server starts, it auto-generates a wallet at `~/.kwala-mcp/config.json`.
+
+**Back up this file.** It contains your private key.
+
+The wallet is created on the KWALA chain (chain ID 1905). It is used for deploying workflows on-chain. Kwala sponsors gas fees via ERC-4337 smart wallets, so you do not need to fund the wallet for basic operations.
