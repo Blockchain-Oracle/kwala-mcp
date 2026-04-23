@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useSendTransaction } from "wagmi";
 import type {
   TransactionState,
   TransactionStep,
@@ -9,37 +9,6 @@ import type {
   DeploymentProgress,
 } from "@/lib/types/transactions";
 import { KWALA_TX_DEFAULTS } from "@/lib/types/transactions";
-
-const KWALA_RPC_URL = "https://rpc-ohio.kwala.network";
-
-/**
- * Send a raw signed transaction directly to KWALA RPC.
- * KWALA gateway only accepts eth_sendRawTransaction, not eth_sendTransaction.
- */
-async function sendRawToKwala(signedTx: string): Promise<string> {
-  const res = await fetch(KWALA_RPC_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "eth_sendRawTransaction",
-      params: [signedTx],
-      id: 1,
-    }),
-  });
-  const json = await res.json() as { result?: unknown; error?: { message: string } };
-
-  if (json.error) {
-    throw new Error(`KWALA RPC: ${json.error.message}`);
-  }
-
-  // KWALA returns {txHash, from, to, validation} object
-  const result = json.result;
-  if (typeof result === "object" && result !== null) {
-    return ((result as Record<string, unknown>).txHash as string) ?? JSON.stringify(result);
-  }
-  return String(result);
-}
 
 interface UseKwalaTransactionReturn {
   progress: DeploymentProgress | null;
@@ -62,7 +31,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
   const [error, setError] = useState<string | null>(null);
 
   const { address } = useAccount();
-  const { data: walletClient } = useWalletClient();
+  const { sendTransactionAsync } = useSendTransaction();
 
   const reset = useCallback(() => {
     setProgress(null);
@@ -74,9 +43,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
 
   const execute = useCallback(
     async (workflowName: string, steps: TransactionStep[]) => {
-      if (!walletClient || !address) {
-        throw new Error("Wallet not connected");
-      }
+      if (!address) throw new Error("Wallet not connected");
 
       reset();
 
@@ -111,9 +78,12 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
         try {
           console.log(`[kwala-tx] Step ${i + 1}/${steps.length}: ${step.name}`);
 
-          // Sign the transaction with MetaMask
-          const signedTx = await walletClient.signTransaction({
-            account: address,
+          prog.steps[i] = { ...prog.steps[i], status: "broadcasting" };
+          prog.status = "broadcasting";
+          setProgress({ ...prog });
+          setStatus("broadcasting");
+
+          const result = await sendTransactionAsync({
             to: step.to as `0x${string}`,
             data: step.data as `0x${string}`,
             chainId: step.chainId ?? KWALA_TX_DEFAULTS.chainId,
@@ -121,20 +91,15 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
             gas: BigInt(step.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit),
             type: "legacy",
             value: BigInt(0),
-            nonce: 0,
           });
 
-          console.log("[kwala-tx] Signed, broadcasting via eth_sendRawTransaction...");
+          console.log("[kwala-tx] Raw result:", result);
 
-          prog.steps[i] = { ...prog.steps[i], status: "broadcasting" };
-          prog.status = "broadcasting";
-          setProgress({ ...prog });
-          setStatus("broadcasting");
+          const hash = typeof result === "object" && result !== null
+            ? ((result as Record<string, unknown>).txHash as string) ?? String(result)
+            : String(result);
 
-          // Send raw signed tx directly to KWALA RPC
-          const hash = await sendRawToKwala(signedTx);
-
-          console.log("[kwala-tx] TX hash:", hash);
+          console.log("[kwala-tx] Hash:", hash);
 
           hashes.push(hash);
           setTxHashes([...hashes]);
@@ -146,13 +111,13 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           };
           setProgress({ ...prog });
 
-          // Wait between steps
+          // KWALA gateway needs time between transactions
           if (i < steps.length - 1) {
             prog.status = "confirming";
             setProgress({ ...prog });
             setStatus("confirming");
-            console.log("[kwala-tx] Waiting 3s before next step...");
-            await new Promise((resolve) => setTimeout(resolve, 3000));
+            console.log("[kwala-tx] Waiting 8s before next step...");
+            await new Promise((resolve) => setTimeout(resolve, 8000));
           }
         } catch (err) {
           console.error("[kwala-tx] Failed:", err);
@@ -178,7 +143,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
       setStatus("success");
       return hashes;
     },
-    [walletClient, address, reset]
+    [sendTransactionAsync, address, reset]
   );
 
   return {
