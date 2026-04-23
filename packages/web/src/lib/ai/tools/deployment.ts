@@ -30,82 +30,40 @@ function extractWorkflowName(yamlStr: string): string {
 
 export const prepareDeploy = tool({
   description:
-    "Prepare unsigned transactions for deploying a workflow via browser wallet. Returns encoded calldata for save and deploy steps that the user signs with MetaMask.",
+    "Deploy a workflow on-chain. Verifies, saves, deploys, and activates the workflow server-side using the stored CLI wallet. Returns deployment status with transaction hashes.",
   inputSchema: z.object({
     yaml: z.string().describe("The Kwalang YAML workflow to deploy."),
     user_address: z
       .string()
-      .describe("The connected wallet address that will sign the transactions."),
+      .describe("The connected wallet address."),
   }),
   execute: async ({ yaml: yamlStr, user_address }) => {
-    // Local validation
-    const local = validateWorkflow(yamlStr);
-    if (!local.valid) {
-      return { error: `Validation failed: ${local.errors?.join("; ")}` };
-    }
-
-    // API verification
     try {
-      const verifyResult = await kwalaPost<{
-        syntax_check: boolean;
-        schema_validation: boolean;
-        error?: string;
-      }>("/workflow/verify", {
-        yaml: yamlStr,
-        user_address,
+      // Call the server-side deploy API which uses the CLI wallet
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+      const res = await fetch(`${baseUrl}/api/deploy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ yaml: yamlStr, user_address }),
       });
 
-      if (!verifyResult.syntax_check || !verifyResult.schema_validation) {
-        return { error: `Kwala verification failed: ${verifyResult.error ?? "Fix the YAML and try again."}` };
+      const result = await res.json();
+
+      if (!res.ok) {
+        return { error: result.error ?? "Deployment failed" };
       }
-    } catch (e) {
-      return { error: `Verification failed: ${e instanceof Error ? e.message : String(e)}` };
-    }
-
-    // Prepare unsigned transactions
-    try {
-      const workflowName = extractWorkflowName(yamlStr);
-      const workflowId = `${workflowName}_${user_address}`;
-      const mutatedYaml = mutateYamlName(yamlStr, user_address);
-
-      const saveData = iface.encodeFunctionData("saveWorkflow", [mutatedYaml]);
-      const deployData = iface.encodeFunctionData("deployWorkflow", [mutatedYaml]);
 
       return {
-        prepared: true,
-        workflow_id: workflowId,
-        workflow_name: workflowName,
-        yaml: mutatedYaml,
-        rpc_url: "https://rpc-ohio.kwala.network",
-        contract_address: KWALA_CONTRACT_ADDRESS,
-        transactions: [
-          {
-            name: "save",
-            to: KWALA_CONTRACT_ADDRESS,
-            data: saveData,
-            chainId: KWALA_CHAIN_ID,
-            gasPrice: KWALA_GAS_PRICE,
-            gasLimit: KWALA_GAS_LIMIT,
-            value: "0",
-          },
-          {
-            name: "deploy",
-            to: KWALA_CONTRACT_ADDRESS,
-            data: deployData,
-            chainId: KWALA_CHAIN_ID,
-            gasPrice: KWALA_GAS_PRICE,
-            gasLimit: KWALA_GAS_LIMIT,
-            value: "0",
-          },
-        ],
-        instructions: [
-          "Sign each transaction with your wallet in order: save, then deploy.",
-          "After deploy, wait for CLAIMED status, then sign the activate transaction.",
-        ],
-        note: "These are unsigned transactions. Your browser wallet will sign and broadcast them to KWALA chain (1905).",
+        deployed: result.deployed,
+        workflow_id: result.workflow_id,
+        workflow_name: result.workflow_name,
+        chaincode_address: result.chaincode_address,
+        steps: result.steps,
+        explorer: result.explorer,
+        note: "Workflow deployed server-side. Use workflowStatus to check execution progress.",
       };
     } catch (e) {
-      return { error: `Failed to prepare: ${e instanceof Error ? e.message : String(e)}` };
+      return { error: `Deployment failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   },
 });
