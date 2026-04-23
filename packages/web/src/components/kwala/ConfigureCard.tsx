@@ -50,48 +50,81 @@ export function ConfigureCard({ data }: ConfigureCardProps) {
     );
   }
 
-  const config = (result.config ?? result) as Record<string, unknown>;
-  const updated = result.updated as boolean;
+  // "updated" is a string[] when settings were changed, absent when viewing
+  const updatedList = result.updated as string[] | undefined;
+  const isUpdated = Array.isArray(updatedList) && updatedList.length > 0;
+
+  // Read mode: notifications.configured / notifications.not_configured
+  const notifications = result.notifications as Record<string, unknown> | undefined;
+  const configured = (notifications?.configured ?? []) as string[];
+  const notConfigured = (notifications?.not_configured ?? []) as string[];
+
+  const hasTelegram = configured.includes("Telegram") ||
+    !!(notifications?.telegram);
+  const hasDiscord = configured.includes("Discord") ||
+    !!(notifications?.discord);
 
   return (
     <BaseCard
-      title={updated ? "Configuration Updated" : "Current Configuration"}
+      title={isUpdated ? "Configuration Updated" : "Current Configuration"}
       icon={<Settings className="w-4 h-4" />}
-      variant={updated ? "success" : "default"}
+      variant={isUpdated ? "success" : "default"}
     >
+      {isUpdated && (
+        <div className="mb-3 text-xs text-green-400">
+          Updated: {updatedList.join(", ")}
+        </div>
+      )}
+
       <div className="space-y-3">
         <div className="flex items-center justify-between py-2 border-b border-border/50">
           <div className="flex items-center gap-2">
-            <StatusIcon configured={!!config.telegram_bot_token} />
+            <StatusIcon configured={hasTelegram} />
             <span className="text-sm text-foreground">Telegram</span>
           </div>
           <span className="text-xs text-muted-foreground font-mono">
-            {config.telegram_bot_token ? "Configured" : "Not set"}
+            {hasTelegram ? "Configured" : "Not set"}
           </span>
         </div>
 
         <div className="flex items-center justify-between py-2 border-b border-border/50">
           <div className="flex items-center gap-2">
-            <StatusIcon configured={!!config.discord_webhook_url} />
+            <StatusIcon configured={hasDiscord} />
             <span className="text-sm text-foreground">Discord</span>
           </div>
           <span className="text-xs text-muted-foreground font-mono">
-            {config.discord_webhook_url ? "Configured" : "Not set"}
+            {hasDiscord ? "Configured" : "Not set"}
           </span>
         </div>
 
-        {config.default_chain ? (
+        {result.default_chain ? (
           <DataRow
             label="Default Chain"
-            value={config.default_chain as string}
+            value={result.default_chain as string}
             highlight
           />
         ) : null}
       </div>
 
+      {result.wallet ? (
+        <DataRow label="Wallet" value={result.wallet as string} mono />
+      ) : null}
+
       {result.config_path ? (
         <p className="text-xs text-muted-foreground mt-3 font-mono">
           {result.config_path as string}
+        </p>
+      ) : null}
+
+      {result.tip ? (
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          {result.tip as string}
+        </p>
+      ) : null}
+
+      {result.message ? (
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          {result.message as string}
         </p>
       ) : null}
     </BaseCard>

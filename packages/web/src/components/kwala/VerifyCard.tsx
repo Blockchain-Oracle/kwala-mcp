@@ -38,7 +38,7 @@ export function VerifyCard({ data }: VerifyCardProps) {
     );
   }
 
-  const isValid = result.valid === true || result.syntax_check === true;
+  const isValid = result.verified === true || result.valid === true || result.syntax_check === true;
 
   return (
     <BaseCard
@@ -52,6 +52,9 @@ export function VerifyCard({ data }: VerifyCardProps) {
       }
       variant={isValid ? "success" : "error"}
     >
+      {result.workflow_name ? (
+        <DataRow label="Workflow" value={result.workflow_name as string} highlight />
+      ) : null}
       {result.syntax_check !== undefined && (
         <DataRow
           label="Syntax Check"
@@ -64,6 +67,13 @@ export function VerifyCard({ data }: VerifyCardProps) {
           label="Schema Validation"
           value={result.schema_validation ? "Passed" : "Failed"}
           highlight={!!result.schema_validation}
+        />
+      )}
+      {result.ready_to_deploy !== undefined && (
+        <DataRow
+          label="Ready to Deploy"
+          value={result.ready_to_deploy ? "Yes" : "No"}
+          highlight={!!result.ready_to_deploy}
         />
       )}
       {Array.isArray(result.warnings) ? (

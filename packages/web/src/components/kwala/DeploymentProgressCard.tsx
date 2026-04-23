@@ -26,12 +26,17 @@ interface DeployResult {
   workflow_name?: string;
   yaml?: string;
   steps?: DeployStep[];
+  /** deploy-workflow returns "status", prepare-deploy may use "final_status" */
+  status?: string;
   final_status?: string;
+  deployed?: boolean;
   workflow_id?: string;
   chaincode_address?: string;
+  explorer?: { workflow?: string; dashboard?: string };
   error?: string;
   suggestion?: string;
-  /** Transaction steps for client-side signing */
+  note?: string;
+  /** Transaction steps for client-side signing (prepare-deploy) */
   transactions?: Array<{
     name: string;
     to: string;
@@ -40,6 +45,9 @@ interface DeployResult {
     gasPrice?: string;
     gasLimit?: string;
   }>;
+  /** prepare-deploy fields */
+  prepared?: boolean;
+  instructions?: string[];
 }
 
 interface DeploymentProgressCardProps {
@@ -108,8 +116,9 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
     return <ErrorCard error={result.error} toolName="Deploy Workflow" />;
   }
 
+  const effectiveStatus = result.status ?? result.final_status;
   const isSuccess =
-    result.final_status === "active" || result.final_status === "deployed";
+    result.deployed === true || effectiveStatus === "active" || effectiveStatus === "deployed";
 
   // Phase 1: Client-side signing mode
   // If we have transactions from kwala-prepare-deploy, show wallet signing UI
@@ -200,8 +209,24 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
           copyable
         />
       ) : null}
-      {result.final_status ? (
-        <DataRow label="Status" value={result.final_status} highlight />
+      {effectiveStatus ? (
+        <DataRow label="Status" value={effectiveStatus} highlight />
+      ) : null}
+      {result.explorer?.workflow ? (
+        <a
+          href={result.explorer.workflow}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-xs text-primary hover:underline mt-2"
+        >
+          <ExternalLink className="w-3 h-3" />
+          View on Explorer
+        </a>
+      ) : null}
+      {result.note ? (
+        <p className="text-xs text-muted-foreground mt-2 italic">
+          {result.note}
+        </p>
       ) : null}
     </BaseCard>
   );

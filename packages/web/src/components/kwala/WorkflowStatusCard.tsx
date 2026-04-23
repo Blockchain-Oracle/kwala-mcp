@@ -95,10 +95,10 @@ export function WorkflowStatusCard({ data }: WorkflowStatusCardProps) {
         </div>
       ) : null}
 
-      {chaincode?.address ? (
+      {(chaincode?.address ?? chaincode?.chaincode_address) ? (
         <DataRow
           label="Chaincode Address"
-          value={chaincode.address as string}
+          value={(chaincode.address ?? chaincode.chaincode_address) as string}
           mono
           copyable
         />

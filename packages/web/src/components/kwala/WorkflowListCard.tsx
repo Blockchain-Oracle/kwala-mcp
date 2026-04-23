@@ -42,7 +42,7 @@ export function WorkflowListCard({ data }: WorkflowListCardProps) {
     );
   }
 
-  // API returns { workflows: { total_workflows, workflows: [] | null } }
+  // Tool returns { address, workflows: { total_workflows, workflows: [] | null } }
   const workflowsData = result.workflows as Record<string, unknown> | Array<Record<string, unknown>> | null;
   const workflows: Array<Record<string, unknown>> = Array.isArray(workflowsData)
     ? workflowsData
@@ -50,9 +50,13 @@ export function WorkflowListCard({ data }: WorkflowListCardProps) {
       ? (workflowsData as Record<string, unknown>).workflows as Array<Record<string, unknown>>
       : [];
 
+  const totalWorkflows = !Array.isArray(workflowsData) && workflowsData
+    ? (workflowsData as Record<string, unknown>).total_workflows as number | undefined
+    : undefined;
+
   return (
     <BaseCard
-      title={`Deployed Workflows (${result.count ?? workflows.length})`}
+      title={`Deployed Workflows (${totalWorkflows ?? workflows.length})`}
       icon={<List className="w-4 h-4" />}
     >
       {workflows.length === 0 ? (

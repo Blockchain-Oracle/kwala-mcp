@@ -9,9 +9,17 @@ import { cn } from "@/lib/utils";
 interface AutomationResult {
   yaml?: string;
   name?: string;
+  workflow_name?: string;
   description?: string;
   trigger_type?: string;
   chain?: string;
+  chain_id?: number;
+  actions_count?: number;
+  execution_mode?: string;
+  expires?: string;
+  validation?: { valid: boolean; errors?: string[] };
+  warnings?: string[];
+  next_steps?: string[];
   error?: string;
 }
 
@@ -52,7 +60,7 @@ export function AutomationCard({ data, onDeploy }: AutomationCardProps) {
   }
 
   const yaml = result.yaml;
-  const name = result.name;
+  const name = result.workflow_name ?? result.name;
   const description = result.description;
 
   const handleCopy = () => {
@@ -107,6 +115,41 @@ export function AutomationCard({ data, onDeploy }: AutomationCardProps) {
       ) : null}
       {result.chain ? (
         <DataRow label="Chain" value={result.chain} />
+      ) : null}
+      {result.actions_count !== undefined ? (
+        <DataRow label="Actions" value={String(result.actions_count)} />
+      ) : null}
+      {result.execution_mode ? (
+        <DataRow label="Execution" value={result.execution_mode} />
+      ) : null}
+      {result.expires ? (
+        <DataRow label="Expires" value={result.expires} />
+      ) : null}
+
+      {result.validation && !result.validation.valid && result.validation.errors ? (
+        <div className="mt-2">
+          <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1">
+            Validation Errors
+          </p>
+          {result.validation.errors.map((e, i) => (
+            <p key={i} className="text-xs text-red-400 font-mono bg-red-500/5 p-1.5 rounded mb-1">
+              {e}
+            </p>
+          ))}
+        </div>
+      ) : null}
+
+      {result.warnings && result.warnings.length > 0 ? (
+        <div className="mt-2">
+          <p className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider mb-1">
+            Warnings
+          </p>
+          {result.warnings.map((w, i) => (
+            <p key={i} className="text-xs text-yellow-400 font-mono bg-yellow-500/5 p-1.5 rounded mb-1">
+              {w}
+            </p>
+          ))}
+        </div>
       ) : null}
 
       {isDeployable && (
