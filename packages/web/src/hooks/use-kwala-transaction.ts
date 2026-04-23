@@ -85,19 +85,37 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           setProgress({ ...prog });
           setStatus("broadcasting");
 
-          const result = await sendTransactionAsync({
+          const txParams = {
             to: step.to as `0x${string}`,
             data: step.data as `0x${string}`,
             chainId: step.chainId ?? KWALA_TX_DEFAULTS.chainId,
             gasPrice: BigInt(step.gasPrice ?? KWALA_TX_DEFAULTS.gasPrice),
             gas: BigInt(step.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit),
-            type: "legacy",
+            type: "legacy" as const,
+            value: BigInt(0),
+          };
+
+          console.log(`[kwala-tx] Step ${i + 1}/${steps.length}: ${step.name}`);
+          console.log("[kwala-tx] Params:", {
+            to: txParams.to,
+            chainId: txParams.chainId,
+            gasPrice: txParams.gasPrice.toString(),
+            gas: txParams.gas.toString(),
+            dataLength: txParams.data.length,
+            type: txParams.type,
           });
+
+          const result = await sendTransactionAsync(txParams);
+
+          console.log("[kwala-tx] Raw result:", result);
+          console.log("[kwala-tx] Result type:", typeof result);
 
           // KWALA RPC returns object {txHash, from, to, validation} — extract the hash
           const hash = typeof result === "object" && result !== null
             ? ((result as Record<string, unknown>).txHash as string) ?? String(result)
             : String(result);
+
+          console.log("[kwala-tx] Extracted hash:", hash);
 
           hashes.push(hash);
           setTxHashes([...hashes]);
@@ -118,6 +136,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
             await new Promise((resolve) => setTimeout(resolve, 1500));
           }
         } catch (err) {
+          console.error("[kwala-tx] Transaction failed:", err);
           const errorMsg =
             err instanceof Error ? err.message : "Transaction failed";
 
