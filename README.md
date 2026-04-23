@@ -1,6 +1,6 @@
 # Kwala MCP
 
-MCP server that lets AI agents create, deploy, and monitor blockchain automations on [Kwala Network](https://kwala.network) using natural language. 17 tools. One-line install.
+MCP server that lets AI agents create, deploy, and monitor blockchain automations on [Kwala Network](https://kwala.network) using natural language. 20 tools. One-line install.
 
 ## Quick Start
 
@@ -46,6 +46,7 @@ Works with every major agent client (Claude Code, Claude Desktop, Cursor, Windsu
 | --- | --- |
 | `kwala-verify-workflow` | Verify YAML via Kwala's backend API |
 | `kwala-deploy-workflow` | Deploy and activate a workflow on-chain |
+| `kwala-deactivate-workflow` | Stop a running workflow by expiring it immediately |
 | `kwala-workflow-status` | Check workflow deployment and execution status |
 | `kwala-list-workflows` | List your deployed workflows |
 
@@ -64,6 +65,8 @@ Works with every major agent client (Claude Code, Claude Desktop, Cursor, Windsu
 | --- | --- |
 | `kwala-wallet` | Show/create your KWALA chain wallet |
 | `kwala-credit-balance` | Check Kwala credit balance |
+| `kwala-configure` | Store Telegram/Discord/webhook notification settings |
+| `kwala-login` | Authenticate with Kwala via Google OAuth |
 
 ### System
 
@@ -157,7 +160,7 @@ kwala tools
 ```
 packages/
   mcp/     @kwala-dev/mcp   — Thin MCP stdio wrapper (imports from cli)
-  cli/     @kwala-dev/cli   — 17 tools, API client, wallet, deployer, CLI
+  cli/     @kwala-dev/cli   — 20 tools, API client, wallet, deployer, CLI
   web/     Landing page     — Next.js frontend
   docs/    Documentation    — Nextra docs site
   skills/  Agent Skill      — SKILL.md for cross-client install

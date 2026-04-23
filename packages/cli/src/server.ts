@@ -47,7 +47,7 @@ export function createMcpServer(): McpServer {
   registerBuildTriggerTool(server);
   registerBuildActionTool(server);
 
-  // ── Deployment (4) ──
+  // ── Deployment (5) ──
   registerVerifyWorkflowTool(server);
   registerDeployWorkflowTool(server);
   registerDeactivateWorkflowTool(server);

@@ -1,12 +1,12 @@
 # kwala-mcp
 
 ## What this is
-MCP server for Kwala Network blockchain automation. 19 tools for AI agents to create, verify, deploy, and monitor Kwalang YAML workflows via natural language.
+MCP server for Kwala Network blockchain automation. 20 tools for AI agents to create, verify, deploy, and monitor Kwalang YAML workflows via natural language.
 
 Install: `claude mcp add kwala npx @kwala-dev/mcp`
 
 ## Project structure
-- `packages/cli` — @kwala-dev/cli: core library, 19 tools, server factory, CLI
+- `packages/cli` — @kwala-dev/cli: core library, 20 tools, server factory, CLI
 - `packages/mcp` — @kwala-dev/mcp: thin stdio wrapper (~30 lines)
 - `packages/web` — Web app (Next.js): landing page, explorer, chat with generative UI
 - `packages/docs` — Documentation site (Nextra) — maintained by teammates
@@ -15,9 +15,9 @@ Install: `claude mcp add kwala npx @kwala-dev/mcp`
 - `context/` — Reference repos and patterns (not published)
 - `docs/` — Full spec and design docs (not published)
 
-## Tools (19 total)
+## Tools (20 total)
 **Workflow Generation (5):** create-automation, explain-yaml, list-templates, build-trigger, build-action
-**Deployment (4):** verify-workflow, deploy-workflow, workflow-status, list-workflows
+**Deployment (5):** verify-workflow, deploy-workflow, deactivate-workflow, workflow-status, list-workflows
 **Explorer (4):** explorer-stats, explorer-actions, get-workflow, fetch-abi
 **Account (4):** wallet, credit-balance, configure, login
 **System (2):** list-chains, tools
@@ -41,7 +41,6 @@ Install: `claude mcp add kwala npx @kwala-dev/mcp`
 - RPC: `https://rpc-ohio.kwala.network`
 - Contract: `0x3e0c606d0ce3f0dec6c569a586a59128a1d9613e`
 - API base: `https://kwala-test.kalp.network` (most endpoints no auth)
-- Auth: Google OAuth → JWT for `POST /auth/workflow/deploy`
 - Wallet config: `~/.kwala-mcp/config.json` (wallet + notifications + auth)
 
 ## Tech stack
@@ -61,8 +60,7 @@ pnpm dev:cli        # CLI dev mode
 2. saveWorkflow(yaml) — raw signed tx to contract (no ethers provider, manual nonce)
 3. deployWorkflow(yaml) — raw signed tx (Name mutated: name_0xaddress)
 4. GET /workflow/chaincode/{id} — chaincode address (retries 3x)
-5. POST /auth/workflow/deploy (JWT auth) — tells backend to start monitoring
-6. Fallback: triggerWorkflow(chaincodeAddress) — on-chain activation (may 500)
+5. Wait for CLAIMED status, then triggerWorkflow(chaincodeAddress) — on-chain activation
 
 ## KWALA RPC quirks
 - No batch JSON-RPC support (returns parse error)

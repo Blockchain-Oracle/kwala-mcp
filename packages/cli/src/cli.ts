@@ -23,7 +23,7 @@ function fatal(msg: string): never {
 
 const program = new Command()
   .name("kwala")
-  .description("CLI for Kwala Network blockchain automations. 19 tools for creating, verifying, deploying, and monitoring Kwalang workflows.")
+  .description("CLI for Kwala Network blockchain automations. 20 tools for creating, verifying, deploying, and monitoring Kwalang workflows.")
   .version("0.1.0");
 
 // Default action: start MCP server
@@ -39,11 +39,11 @@ program.action(async () => {
 
 program
   .command("tools")
-  .description("List all 19 available Kwala MCP tools")
+  .description("List all 20 available Kwala MCP tools")
   .action(() => {
     output({
       "Workflow Generation": ["create-automation", "explain-yaml", "list-templates", "build-trigger", "build-action"],
-      "Deployment": ["verify-workflow", "deploy-workflow", "workflow-status", "list-workflows"],
+      "Deployment": ["verify-workflow", "deploy-workflow", "deactivate-workflow", "workflow-status", "list-workflows"],
       "Explorer": ["explorer-stats", "explorer-actions", "get-workflow", "fetch-abi"],
       "Account": ["wallet", "credit-balance", "configure", "login"],
       "System": ["list-chains", "tools"],
@@ -292,6 +292,70 @@ program
         page_size: opts.size,
       });
       output({ address: addr, workflows: data });
+    } catch (e) {
+      fatal(e instanceof Error ? e.message : String(e));
+    }
+  });
+
+program
+  .command("deactivate-workflow")
+  .description("Stop a running workflow by expiring it immediately")
+  .argument("<id>", "Workflow ID or name")
+  .action(async (id) => {
+    let fullId = id;
+    if (!id.includes("_0x")) fullId = `${id}_${getAddress()}`;
+    process.stderr.write(`Deactivating ${fullId}...\n`);
+    try {
+      const { Interface, Wallet, Transaction } = await import("ethers");
+      const fs = await import("node:fs");
+      const configPath = getConfigPath();
+      const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      const wallet = new Wallet(config.privateKey);
+
+      // Get chaincode address
+      const chaincodeRes = await kwalaGet(`/workflow/chaincode/${fullId}`) as Record<string, string>;
+      if (!chaincodeRes.chaincode_address) {
+        fatal(`No chaincode found for "${fullId}". Is the workflow deployed?`);
+      }
+      const chaincodeAddress = chaincodeRes.chaincode_address.startsWith("0x")
+        ? chaincodeRes.chaincode_address
+        : `0x${chaincodeRes.chaincode_address}`;
+
+      // Set expiration to now
+      const iface = new Interface(["function updateExpiresIn(address chaincodeAddress, uint256 expiresIn)"]);
+      const now = Math.floor(Date.now() / 1000);
+      const data = iface.encodeFunctionData("updateExpiresIn", [chaincodeAddress, now]);
+
+      const tx = Transaction.from({
+        to: "0x3e0c606d0ce3f0dec6c569a586a59128a1d9613e",
+        data,
+        nonce: 0,
+        gasPrice: 1_000_000_000n,
+        gasLimit: 500_000n,
+        chainId: 1905,
+        type: 0,
+        value: 0,
+      });
+
+      const signed = await wallet.signTransaction(tx);
+      const res = await fetch("https://rpc-ohio.kwala.network", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", method: "eth_sendRawTransaction", params: [signed], id: 1 }),
+      });
+      const json = (await res.json()) as { result?: { txHash?: string }; error?: { message: string } };
+
+      if (json.error) {
+        fatal(`Failed to deactivate: ${json.error.message}`);
+      }
+
+      output({
+        deactivated: true,
+        workflow_id: fullId,
+        chaincode_address: chaincodeAddress,
+        tx_hash: json.result?.txHash,
+        message: `Workflow "${fullId}" has been stopped.`,
+      });
     } catch (e) {
       fatal(e instanceof Error ? e.message : String(e));
     }

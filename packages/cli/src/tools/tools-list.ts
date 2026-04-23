@@ -7,7 +7,7 @@ export function registerToolsListTool(server: McpServer): void {
     "kwala-tools",
     {
       title: "List All Kwala Tools",
-      description: "Returns a categorized list of all 19 MCP tools available in kwala-mcp.",
+      description: "Returns a categorized list of all 20 MCP tools available in kwala-mcp.",
       inputSchema: z.object({}),
     },
     async () => {
@@ -22,6 +22,7 @@ export function registerToolsListTool(server: McpServer): void {
         "Deployment": [
           { tool: "kwala-verify-workflow", description: "Verify YAML via Kwala's backend API" },
           { tool: "kwala-deploy-workflow", description: "Deploy and activate a workflow on-chain" },
+          { tool: "kwala-deactivate-workflow", description: "Stop a running workflow by expiring it immediately" },
           { tool: "kwala-workflow-status", description: "Check workflow deployment and execution status" },
           { tool: "kwala-list-workflows", description: "List your deployed workflows" },
         ],

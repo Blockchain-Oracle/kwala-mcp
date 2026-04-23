@@ -390,15 +390,3 @@ export function registerCreateAutomationTool(server: McpServer): void {
     },
   );
 }
-
-// Helper — imported but not used as a standalone function here
-function resolveFunctionSignature(abi: unknown[], name: string): string | undefined {
-  for (const item of abi) {
-    const entry = item as Record<string, unknown>;
-    if (entry.type !== "function" || entry.name !== name) continue;
-    const inputs = entry.inputs as Array<{ type: string; name: string }> | undefined;
-    if (!inputs) return `function ${name}()`;
-    return `function ${name}(${inputs.map((i) => `${i.type} ${i.name}`).join(", ")})`;
-  }
-  return undefined;
-}

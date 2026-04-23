@@ -1,6 +1,6 @@
 ---
 name: kwala
-description: Kwala Network MCP — create, verify, deploy, and monitor blockchain automations via natural language. 19 tools for Kwalang YAML workflows across 6 EVM chains.
+description: Kwala Network MCP — create, verify, deploy, and monitor blockchain automations via natural language. 20 tools for Kwalang YAML workflows across 6 EVM chains.
 ---
 
 # Kwala MCP Skill
@@ -43,7 +43,7 @@ kwala --help
 1. **MCP tools** (`kwala-*`) — preferred, cached responses, structured output
 2. **CLI** (`kwala <command>`) — fallback, always works, JSON to stdout
 
-## Tool catalog (19 tools)
+## Tool catalog (20 tools)
 
 ### Workflow Generation (5 tools)
 
@@ -55,12 +55,13 @@ kwala --help
 | `kwala-build-trigger` | Generate a trigger YAML section | `type`, `contract_address?`, `chain?`, `event_name?` |
 | `kwala-build-action` | Generate an action YAML block | `type` (call/notification/api/deploy), `name`, channel-specific params |
 
-### Deployment (4 tools)
+### Deployment (5 tools)
 
 | Tool | Description | Key params |
 |------|-------------|------------|
 | `kwala-verify-workflow` | Verify YAML against Kwala's backend API | `yaml` |
 | `kwala-deploy-workflow` | Deploy end-to-end on KWALA chain (save → deploy → activate) | `yaml`, `auto_activate?` |
+| `kwala-deactivate-workflow` | Stop a running workflow by expiring it immediately | `workflow_id` (accepts name or full ID) |
 | `kwala-workflow-status` | Check workflow status | `workflow_id` (accepts name or full ID) |
 | `kwala-list-workflows` | List deployed workflows | `address?`, `page?` |
 
@@ -87,7 +88,7 @@ kwala --help
 | Tool | Description | Key params |
 |------|-------------|------------|
 | `kwala-list-chains` | List supported chains + tokens | `network?` (mainnet/testnet/all) |
-| `kwala-tools` | List all 19 tools | (none) |
+| `kwala-tools` | List all 20 tools | (none) |
 
 ## Decision tree
 
@@ -101,6 +102,7 @@ kwala --help
 | Check if YAML is valid | `kwala-verify-workflow` | Local + API validation |
 | Deploy a workflow | `kwala-deploy-workflow` | Full on-chain pipeline |
 | Check deployment status | `kwala-workflow-status` | Accepts name or full ID |
+| Stop/deactivate a workflow | `kwala-deactivate-workflow` | Sets expiration to now, cannot be undone |
 | See all deployed workflows | `kwala-list-workflows` | Defaults to stored wallet |
 | Check network activity | `kwala-explorer-stats` | Total actions + workflows |
 | See execution logs | `kwala-explorer-actions` | Paginated |
