@@ -28,6 +28,7 @@ import { registerBuildActionTool } from "./tools/build-action.js";
 // Deployment
 import { registerVerifyWorkflowTool } from "./tools/verify-workflow.js";
 import { registerDeployWorkflowTool } from "./tools/deploy-workflow.js";
+import { registerDeactivateWorkflowTool } from "./tools/deactivate-workflow.js";
 import { registerWorkflowStatusTool } from "./tools/workflow-status.js";
 import { registerListWorkflowsTool } from "./tools/list-workflows.js";
 
@@ -49,6 +50,7 @@ export function createMcpServer(): McpServer {
   // ── Deployment (4) ──
   registerVerifyWorkflowTool(server);
   registerDeployWorkflowTool(server);
+  registerDeactivateWorkflowTool(server);
   registerWorkflowStatusTool(server);
   registerListWorkflowsTool(server);
 
@@ -68,6 +70,6 @@ export function createMcpServer(): McpServer {
   registerToolsListTool(server);
   registerListChainsTool(server);
 
-  logger.info("kwala-mcp: 19 tools registered");
+  logger.info("kwala-mcp: 20 tools registered");
   return server;
 }
