@@ -10,7 +10,10 @@ export function getSystemPrompt(options: SystemPromptOptions = {}): string {
 Address: \`${walletAddress}\`
 Use this address when the user says "my wallet", "my balance", "my workflows", etc. Do not ask the user for their wallet address.
 When deploying workflows, use \`prepareDeploy\` with this address -- it returns unsigned transactions the user signs with their wallet.
-Always pass \`user_address: "${walletAddress}"\` to tools that accept it (prepareDeploy, workflowStatus, listWorkflows, deactivateWorkflow, getWorkflow, checkBalance, getWalletInfo, verifyWorkflow).`
+Pass this address to tools using their expected parameter names:
+- prepareDeploy, workflowStatus, deactivateWorkflow, getWorkflow, verifyWorkflow: \`user_address: "${walletAddress}"\`
+- listWorkflows, checkBalance: \`address: "${walletAddress}"\`
+- getWalletInfo: \`wallet_address: "${walletAddress}"\``
     : "";
 
   return `You are Kwala AI, the intelligent assistant for Kwala Network blockchain automation. You help users create, deploy, and monitor on-chain workflows using the Kwalang YAML language.

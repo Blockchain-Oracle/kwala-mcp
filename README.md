@@ -195,14 +195,14 @@ export OPENAI_API_KEY=sk-...
 # or
 export ANTHROPIC_API_KEY=sk-ant-...
 
-# Run everything (MCP HTTP server + web app):
+# Run the web app:
 pnpm dev
 
 # Visit http://localhost:3000       (landing page)
 # Visit http://localhost:3000/chat  (AI chat with generative UI)
 ```
 
-The chat connects to the MCP server over HTTP, calls tools, and renders results as cards (deployment progress, wallet info, workflow status, chain selectors, YAML previews, etc).
+The chat calls kwala tools directly and renders results as cards (deployment progress, wallet info, workflow status, chain selectors, YAML previews, etc).
 
 ### Environment Variables
 
@@ -212,8 +212,6 @@ The chat connects to the MCP server over HTTP, calls tools, and renders results 
 | `OPENAI_API_KEY` | One of these | OpenAI API key for GPT-4o |
 | `ANTHROPIC_MODEL` | No | Model name (default: `claude-sonnet-4-20250514`) |
 | `OPENAI_MODEL` | No | Model name (default: `gpt-4o`) |
-| `MCP_HTTP_URL` | No | MCP server URL (default: `http://localhost:3001/mcp`) |
-| `MCP_HTTP_PORT` | No | HTTP transport port (default: `3001`) |
 
 ## First-Time Setup
 
@@ -239,14 +237,13 @@ To get a Telegram bot token: message @BotFather on Telegram, create a bot, copy 
 ```bash
 pnpm install
 pnpm build       # Build all packages
-pnpm dev         # Run MCP HTTP server + web app in parallel
+pnpm dev         # Run web app
 ```
 
 Individual packages:
 
 ```bash
 pnpm dev:mcp     # MCP stdio server with tsx watch
-pnpm dev:http    # MCP HTTP transport server (port 3001)
 pnpm dev:cli     # CLI with tsx watch
 pnpm dev:web     # Web app (port 3000)
 ```

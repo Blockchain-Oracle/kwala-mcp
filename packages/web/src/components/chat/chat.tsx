@@ -31,7 +31,7 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
     transport: new DefaultChatTransport({
       api: "/api/chat",
       body: { id },
-      headers: { [WALLET_ADDRESS_HEADER]: address ?? "" },
+      headers: () => ({ [WALLET_ADDRESS_HEADER]: address ?? "" }),
     }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onFinish: () => {

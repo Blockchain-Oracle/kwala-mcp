@@ -75,7 +75,7 @@ export const prepareDeploy = tool({
         prepared: true,
         workflow_id: workflowId,
         workflow_name: workflowName,
-        mutated_yaml: mutatedYaml,
+        yaml: mutatedYaml,
         rpc_url: "https://rpc-ohio.kwala.network",
         contract_address: KWALA_CONTRACT_ADDRESS,
         transactions: [
