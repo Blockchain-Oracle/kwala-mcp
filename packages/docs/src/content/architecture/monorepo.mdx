@@ -1,0 +1,104 @@
+---
+title: Monorepo Layout
+description: What each package in kwala-mcp does and how they depend on each other
+---
+
+# Monorepo Layout
+
+`kwala-mcp` is a pnpm workspace with five packages. Only two are published to npm; the others are development and documentation assets.
+
+```
+kwala-mcp/
+├── packages/
+│   ├── cli/          # @kwala-dev/cli  — core library + all 20 tools + CLI entry
+│   ├── mcp/          # @kwala-dev/mcp  — thin stdio MCP wrapper (~30 lines)
+│   ├── web/          # Next.js 15 landing page (port 3000)
+│   ├── docs/         # Nextra 4 documentation site (port 3001, this site)
+│   └── skills/       # SKILL.md for cross-client agent install
+├── workflows/        # Six example Kwalang YAML files
+├── docs/             # FULL_SPEC.md (internal design doc, 937 lines)
+├── context/          # Reference repos, patterns (gitignored)
+├── package.json      # Root workspace
+├── pnpm-workspace.yaml
+├── tsconfig.json     # Base TypeScript config
+├── CLAUDE.md         # Instructions for Claude Code when working in the monorepo
+└── README.md
+```
+
+## Package relationships
+
+```
+@kwala-dev/mcp (published)
+  └── @kwala-dev/cli (published)
+        ├── @modelcontextprotocol/sdk   (MCP protocol)
+        ├── zod                          (schema validation — root overrides to 4.3.6)
+        ├── yaml                         (Kwalang parse/stringify)
+        ├── pino                         (logging — never console.log)
+        ├── commander                    (CLI)
+        └── ethers                       (raw RPC calls to KWALA chain)
+```
+
+Only `@kwala-dev/mcp` and `@kwala-dev/cli` ship to npm. `web`, `docs`, and `skills` are consumer-facing but not npm artifacts — they're built and deployed (Vercel for web/docs, GitHub repo for skills) as separate surfaces.
+
+## What lives where
+
+### `packages/cli` — `@kwala-dev/cli`
+
+The heart of the project. Exports a `createMcpServer()` factory and a `kwala` CLI binary. Layout:
+
+```
+packages/cli/src/
+├── cli.ts            Commander CLI entry point
+├── server.ts         createMcpServer() — registers all 20 tools
+├── tools/            One file per tool (20 files)
+│   ├── create-automation.ts
+│   ├── verify-workflow.ts
+│   ├── deploy-workflow.ts
+│   ├── deactivate-workflow.ts
+│   └── …              (+16 more)
+└── lib/              Shared utilities
+    ├── logger.ts     pino -> stderr (never console.log)
+    ├── format.ts     ok(data) / err(message) response helpers
+    ├── cache.ts      5-min TTL cache for read-only tools
+    ├── api.ts        HTTP client for kwala-test.kalp.network
+    ├── deployer.ts   Raw-RPC deployer for KWALA chain 1905
+    ├── schema.ts     Kwalang Zod schema + validator
+    ├── templates.ts  Built-in workflow templates
+    ├── chains.ts     Chain registry (IDs, names, RPCs)
+    ├── tokens.ts     Token name -> address resolver per chain
+    └── types.ts      TypeScript types
+```
+
+Every tool file follows the pattern `registerXxxTool(server: McpServer)`. Responses are uniform: `ok(data)` / `err(message)`.
+
+### `packages/mcp` — `@kwala-dev/mcp`
+
+A ~30-line stdio wrapper. Imports `createMcpServer()` from `@kwala-dev/cli`, hooks it to stdio transport, connects. This split is why `npx @kwala-dev/mcp` works cleanly across every MCP host.
+
+### `packages/web`
+
+The kwala-mcp landing page (Next.js 15 + Tailwind, App Router). Runs on port `3000` in dev. Deployed to Vercel. Build artifact is the marketing site users see after clicking a link from the README.
+
+### `packages/docs` (this site)
+
+Nextra 4 documentation site. Runs on port `3001` in dev so it doesn't clash with `web`. Sourced from `docs/FULL_SPEC.md`, the root `README.md`, and `workflows/*.yaml`. Deployed to Vercel.
+
+### `packages/skills`
+
+A single `SKILL.md` that teaches any agent client how to use the 20 tools. Installed via `pnpm dlx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala`. Not shipped to npm.
+
+## Running it locally
+
+```bash
+pnpm install                               # one-time
+pnpm dev:mcp                               # MCP server (tsx watch)
+pnpm dev:cli                               # CLI (tsx watch)
+pnpm dev:web                               # landing page on :3000
+pnpm dev:docs                              # documentation on :3001
+pnpm build                                 # recursive build of every package
+pnpm test                                  # recursive tests
+```
+
+## Contributing
+
+Work on a feature branch, open a PR against `main`, tag `@Blockchain-Oracle` for review. Full conventions live in the root `CLAUDE.md`.

@@ -1,0 +1,79 @@
+---
+title: Architecture
+description: How Kwala MCP routes natural language to on-chain automation
+---
+
+# End-to-End Flow
+
+Kwala MCP is the glue between an AI agent and the Kwala Network deployment pipeline. Here's the whole flow in one diagram:
+
+```
+Natural language prompt
+   │
+   ▼
+MCP client (Claude, Cursor, Windsurf, Gemini CLI, …)
+   │ picks a tool from @kwala-dev/mcp
+   ▼
+@kwala-dev/cli — server.ts : createMcpServer()
+   │ tools/*.ts (20 tools, zod-validated)
+   │ lib/*      (api, deployer, schema, cache, wallet)
+   ▼
+┌──────────────────────┐   ┌──────────────────────────────┐
+│ Kwala backend API    │   │ KWALA chain (chain ID 1905)  │
+│ kwala-test.kalp.net  │   │ rpc-ohio.kwala.network       │
+│ (REST, mostly no     │   │ contract:                    │
+│ auth)                │   │   0x3e0c606d...a1d9613e      │
+└──────────────────────┘   └──────────────────────────────┘
+       │                               │
+       │ verify-workflow               │ saveWorkflow
+       │ explorer-stats                │ deployWorkflow
+       │ explorer-actions              │ triggerWorkflow (activate)
+       ▼                               ▼
+ Kwala Virtual Machine watches your target chain
+   │
+   ▼
+Trigger fires → Actions run (call / post / deploy)
+```
+
+## Deployment pipeline (chain 1905)
+
+`kwala-deploy-workflow` runs three on-chain transactions against the Kwala contract. The deployer talks to the RPC endpoint directly instead of going through ethers.js `Provider`/`Contract`, because the KWALA RPC has a few quirks that standard ethers abstractions trip over:
+
+1. **`saveWorkflow(yaml)`** — stores the YAML on-chain. Returns a workflow ID.
+2. **`deployWorkflow(yaml)`** — mutates the workflow name to `<Name>_0x<yourWalletAddress>` so it's globally unique, then allocates a **chaincode address** for the workflow.
+3. **Wait for `CLAIMED`** — polls `GET /workflow/chaincode/{id}` up to three times until the chaincode status transitions to `CLAIMED`.
+4. **`triggerWorkflow(chaincodeAddress)`** — activates the workflow. Only after this call does Kwala actually start watching the target chain.
+
+If any step fails, the deployer surfaces the exact stage and error message. There are no silent fallbacks.
+
+### KWALA RPC quirks the deployer handles
+
+- **No batch JSON-RPC** — the node rejects batched requests with a parse error. Every call is single.
+- **Non-standard block format** — blocks are returned as integers rather than objects, and `parentHash` is missing. Block-aware code unwraps accordingly.
+- **`eth_sendRawTransaction` return shape** — instead of just a tx hash the endpoint returns `{ txHash, from, to, validation }`. The deployer extracts `txHash` before surfacing it to you.
+- **Nonces don't increment conventionally** — the deployer manages nonces manually rather than relying on the pending-tx count.
+
+All of this lives in `packages/cli/src/lib/deployer.ts`. You never touch it — but knowing it exists explains why the MCP tool can drive a full deploy in one call.
+
+## Lifecycle diagram
+
+```
+Prompt             "Alert me on Telegram when USDC transfers on Ethereum."
+   │
+   ▼
+create-automation  → generates Kwalang YAML
+   │
+   ▼
+verify-workflow    → POST /workflow/verify  → {verified: true}
+   │
+   ▼
+deploy-workflow    → saveWorkflow → deployWorkflow → wait CLAIMED → triggerWorkflow
+   │                                                                     │
+   ▼                                                                     ▼
+workflow-status    ← execution history while Kwala watches the chain ────┘
+   │
+   ▼
+(when done) deactivate-workflow → expires on-chain immediately
+```
+
+- Keep browsing: [Monorepo layout](/architecture/monorepo)
