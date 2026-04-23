@@ -15,10 +15,11 @@ Install: `claude mcp add kwala npx @kwala-dev/mcp`
 - `context/` — Reference repos and patterns (not published)
 - `docs/` — Full spec and design docs (not published)
 
-## Tools (17 total)
+## Tools (18 total)
 **Workflow Generation:** create-automation, explain-yaml, list-templates, build-trigger, build-action
 **Deployment:** verify-workflow, deploy-workflow, workflow-status, list-workflows
 **Explorer:** explorer-stats, explorer-actions, get-workflow, fetch-abi
+**Account:** wallet, credit-balance, configure
 **Account:** wallet, credit-balance
 **System:** list-chains, tools
 

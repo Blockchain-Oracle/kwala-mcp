@@ -41,7 +41,17 @@ export function registerWorkflowStatusTool(server: McpServer): void {
           };
 
           if (status.status === "fulfilled") {
-            result.status = status.value;
+            const s = status.value as Record<string, unknown>;
+            if (s.status === "" || s.status === undefined) {
+              return err(
+                `Workflow "${fullId}" not found.`,
+                {
+                  suggestion: "Check the workflow ID. Use kwala-list-workflows to see your deployed workflows.",
+                  retry_safe: true,
+                },
+              );
+            }
+            result.status = s;
           }
 
           if (chaincode.status === "fulfilled") {
@@ -50,7 +60,7 @@ export function registerWorkflowStatusTool(server: McpServer): void {
 
           if (status.status === "rejected" && chaincode.status === "rejected") {
             return err(
-              `Could not fetch status for ${fullId}`,
+              `Could not fetch status for "${fullId}".`,
               {
                 suggestion: "Check the workflow ID. Use kwala-list-workflows to see your deployed workflows.",
                 retry_safe: true,

@@ -55,8 +55,15 @@ export function registerExplainYamlTool(server: McpServer): void {
       }
 
       try {
-        const parsed = YAML.parse(yamlStr) as Record<string, unknown>;
-        return ok(explain(parsed));
+        const parsed = YAML.parse(yamlStr);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          return err("Not a valid Kwalang workflow. Expected YAML with Name, Trigger, and Actions fields.");
+        }
+        const wf = parsed as Record<string, unknown>;
+        if (!wf.Name && !wf.Trigger && !wf.Actions) {
+          return err("Not a valid Kwalang workflow: missing Name, Trigger, and Actions fields. Use kwala-list-templates to see example workflows.");
+        }
+        return ok(explain(wf));
       } catch (e) {
         return err(
           `Failed to parse YAML: ${e instanceof Error ? e.message : String(e)}`,

@@ -6,6 +6,7 @@ import { resolveChainId } from "../lib/chains.js";
 import { resolveWellKnownFunction } from "../lib/abi.js";
 import { resolveToken } from "../lib/tokens.js";
 import { actionDefaults } from "../lib/defaults.js";
+import { getConfig } from "../lib/wallet.js";
 import { logger } from "../lib/logger.js";
 
 export function registerBuildActionTool(server: McpServer): void {
@@ -85,24 +86,30 @@ export function registerBuildActionTool(server: McpServer): void {
             let payload: Record<string, unknown>;
 
             if (channel === "telegram") {
-              if (!params.bot_token || !params.chat_id) {
-                return err("bot_token and chat_id are required for Telegram notifications.", {
+              const config = getConfig();
+              const botToken = params.bot_token ?? config.notifications?.telegram?.bot_token;
+              const chatId = params.chat_id ?? config.notifications?.telegram?.chat_id;
+              if (!botToken || !chatId) {
+                return err("Telegram not configured. Either pass bot_token/chat_id here, or run kwala-configure to store them once.", {
                   missing_params: [
-                    ...(params.bot_token ? [] : ["bot_token"]),
-                    ...(params.chat_id ? [] : ["chat_id"]),
+                    ...(botToken ? [] : ["bot_token"]),
+                    ...(chatId ? [] : ["chat_id"]),
                   ],
+                  suggestion: "Run kwala-configure with telegram_bot_token and telegram_chat_id to save them permanently.",
                 });
               }
-              endpoint = `https://api.telegram.org/bot${params.bot_token}/sendMessage`;
+              endpoint = `https://api.telegram.org/bot${botToken}/sendMessage`;
               payload = {
-                chat_id: params.chat_id,
+                chat_id: chatId,
                 text: params.message ?? "Workflow event triggered",
               };
             } else if (channel === "discord") {
-              if (!params.webhook_url) {
-                return err("webhook_url is required for Discord notifications.", { missing_params: ["webhook_url"] });
+              const config = getConfig();
+              const webhookUrl = params.webhook_url ?? config.notifications?.discord?.webhook_url;
+              if (!webhookUrl) {
+                return err("Discord not configured. Either pass webhook_url here, or run kwala-configure to store it once.", { missing_params: ["webhook_url"] });
               }
-              endpoint = params.webhook_url;
+              endpoint = webhookUrl;
               payload = { content: params.message ?? "Workflow event triggered" };
             } else {
               if (!params.webhook_url) {

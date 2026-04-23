@@ -94,7 +94,13 @@ export function registerCreateAutomationTool(server: McpServer): void {
         const testnet = params.testnet ?? true;
         const storedConfig = getConfig();
         const chainInput = params.chain ?? storedConfig.default_chain ?? "base";
-        const chainId = resolveChainId(chainInput, testnet) ?? 84532;
+        const resolvedChainId = resolveChainId(chainInput, testnet);
+        if (!resolvedChainId && params.chain) {
+          return err(`Unsupported chain: "${params.chain}". Use kwala-list-chains to see supported chains (Ethereum, Base, Polygon, BNB, Avalanche, Celo + testnets).`, {
+            suggestion: "Use kwala-list-chains to see all supported chains and tokens.",
+          });
+        }
+        const chainId = resolvedChainId ?? 84532;
         const chain = getChain(chainId);
 
         // ── Build Trigger ──
@@ -238,7 +244,9 @@ export function registerCreateAutomationTool(server: McpServer): void {
             trigger.RepeatEvery = "oracle_price";
             break;
           case "block":
+            trigger.TriggerChainID = chainId;
             trigger.ExecuteAfter = `block:${params.block_number}`;
+            trigger.RepeatEvery = `block:${params.block_number}`;
             break;
           case "address_tracking":
             trigger.TriggerSourceContract = contractAddr;
