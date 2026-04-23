@@ -1,0 +1,76 @@
+---
+title: Explorer
+description: Four read-only tools for inspecting Kwala network activity, workflows, and contract ABIs
+---
+
+# Explorer tools
+
+Read-only tools for exploring the Kwala Network. All four are cached for 5 minutes.
+
+## `kwala-explorer-stats`
+
+Kwala network statistics — total workflows, executions, active chains, and per-chain breakdowns.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `address` | `string?` | Filter stats by a specific wallet address. |
+| `workflow_name` | `string?` | Filter stats by a specific workflow name. |
+
+**Output.** Aggregate counters plus per-chain and per-workflow breakdowns.
+
+**Example prompt**
+
+> *"Show me Kwala network stats."*
+
+## `kwala-explorer-actions`
+
+Browse workflow execution logs. Each row records when a workflow fired, what action it ran, and the on-chain outcome.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `page` | `number?` | Default: 1. |
+| `page_size` | `number?` | Default: 10 (max 50). |
+| `address` | `string?` | Filter by wallet address. |
+
+**Output.** `{ actions: [{ workflow_name, action_name, timestamp, status, tx_hash }], total, page }`.
+
+**Example prompt**
+
+> *"Show the last 20 action executions for my wallet."*
+
+## `kwala-get-workflow`
+
+Fetch the YAML and metadata for a single deployed workflow.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `workflow_id` | `string` | Workflow name or ID. |
+
+**Output.** `{ workflow_name, yaml, status, chaincode_address, created_at, expires_at }`.
+
+**Example prompt**
+
+> *"Fetch the YAML for TokenTransferAlert."*
+
+## `kwala-fetch-abi`
+
+Fetch a contract's ABI for any supported chain. The ABI is used internally whenever another tool needs to resolve a function or event signature — you usually won't call this one directly, but it's available for inspection.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `address` | `string` | Contract address (`0x…`). |
+| `chain` | `string` | Chain name or ID. |
+
+**Output.** `{ address, chain, abi }`.
+
+**Example prompt**
+
+> *"Fetch the ABI for 0xA0b8…EB48 on ethereum."*

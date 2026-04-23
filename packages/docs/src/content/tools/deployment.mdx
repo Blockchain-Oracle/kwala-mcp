@@ -1,0 +1,101 @@
+---
+title: Deployment
+description: Five tools for verifying, deploying, deactivating, and tracking Kwalang workflows
+---
+
+# Deployment tools
+
+The deployment pipeline is three on-chain transactions (save → deploy → activate) plus a REST verification step. [`kwala-deploy-workflow`](#kwala-deploy-workflow) runs the whole thing end-to-end; the other tools let you inspect or stop workflows.
+
+## `kwala-verify-workflow`
+
+REST verification against the Kwala backend. No wallet, no gas, no auth.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `yaml` | `string` | The Kwalang YAML to verify. |
+
+**Output.** `{ verified, workflow_name, errors?: string[] }`. On failure the errors array contains machine-readable validation messages.
+
+**Example prompt**
+
+> *"Verify this workflow before I deploy it: <paste YAML>"*
+
+## `kwala-deploy-workflow`
+
+End-to-end deploy. Signs three raw transactions to the Kwala contract on chain `1905`:
+
+1. `saveWorkflow(yaml)` — stores the YAML on-chain
+2. `deployWorkflow(yaml)` — mutates the workflow name to `<Name>_0x<yourAddress>` and allocates a chaincode address
+3. Waits for the chaincode status to transition to `CLAIMED`, then calls `triggerWorkflow(chaincodeAddress)` to activate it
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `yaml` | `string` | Verified Kwalang YAML. |
+| `activate` | `boolean?` | Activate immediately after deploy. Default: `true`. |
+
+**Output.** `{ workflow_name, chaincode_address, tx_hashes, explorer_url, status }`.
+
+**Note.** The active flag must be `true` for the workflow to actually execute. The KWALA RPC has a few quirks (no batched JSON-RPC, non-standard block format, `eth_sendRawTransaction` returns an object not a hash) — the deployer uses raw RPC calls and handles all of them. You only see the final result.
+
+**Example prompt**
+
+> *"Deploy this workflow: <paste YAML>"*
+
+## `kwala-deactivate-workflow`
+
+Stop a running workflow by expiring it on-chain. Workflows on Kwala are immutable, so deactivating is the only way to stop one.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `workflow_id` | `string?` | Workflow name or ID. Omit when using `deactivate_all`. |
+| `deactivate_all` | `boolean?` | Stop every deployed workflow at once. |
+| `list_active` | `boolean?` | List active workflows first (useful for interactive agents). |
+
+**Output.** For a single workflow: `{ workflow_name, tx_hash }`. For `deactivate_all`: an array of `{ workflow_name, tx_hash }`.
+
+**Example prompts**
+
+> *"List my active workflows, then deactivate the one called TokenTransferAlert."*
+>
+> *"Deactivate all my workflows."*
+
+## `kwala-workflow-status`
+
+Check the current deployment and execution status of a single workflow.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `workflow_id` | `string` | Workflow name or ID. |
+
+**Output.** `{ workflow_name, status, chaincode_address, created_at, expires_at, last_execution, executions_count, explorer_url }`.
+
+**Example prompt**
+
+> *"What's the status of TokenTransferAlert?"*
+
+## `kwala-list-workflows`
+
+List every workflow deployed by your wallet.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `address` | `string?` | Wallet address. Defaults to your stored wallet. |
+| `page` | `number?` | Page number. Default: 1. |
+| `page_size` | `number?` | Results per page. Default: 10. |
+
+**Output.** `{ workflows: [{ name, status, chaincode_address, created_at, expires_at }], total, page, page_size }`.
+
+**Example prompt**
+
+> *"List all my deployed workflows."*

@@ -1,0 +1,38 @@
+---
+title: Tool Reference
+description: All 20 Kwala MCP tools grouped by category
+---
+
+# Tool Reference
+
+Kwala MCP exposes **20 tools** across five categories. Each one is usable from any MCP client (Claude Code, Cursor, Windsurf, Gemini CLI, …) and from the standalone `kwala` CLI.
+
+## Tools by category
+
+| Category | Count | Pages |
+| --- | --- | --- |
+| [Workflow Generation](/tools/workflow-generation) | 5 | `create-automation`, `explain-yaml`, `list-templates`, `build-trigger`, `build-action` |
+| [Deployment](/tools/deployment) | 5 | `verify-workflow`, `deploy-workflow`, `deactivate-workflow`, `workflow-status`, `list-workflows` |
+| [Explorer](/tools/explorer) | 4 | `explorer-stats`, `explorer-actions`, `get-workflow`, `fetch-abi` |
+| [Account](/tools/account) | 4 | `wallet`, `credit-balance`, `configure`, `login` |
+| [System](/tools/system) | 2 | `list-chains`, `tools` |
+
+## Conventions
+
+All tools follow a few shared conventions; the page-per-tool docs don't repeat them.
+
+**Naming.** The MCP tool name is `kwala-<action>` (e.g. `kwala-deploy-workflow`). The matching CLI command drops the prefix (`kwala deploy-workflow path/to.yaml`).
+
+**Responses.** Every tool returns either an `ok` payload with the data or an `err` payload with a human-readable message. No silent fallbacks — if a chain, token, or credential is missing, the tool errors.
+
+**Wallet auto-fill.** Tools that need a wallet address read it from `~/.kwala-mcp/config.json`. You never pass it as a parameter.
+
+**Chain resolution.** Anywhere a `chain` parameter appears, it accepts a fuzzy name (`"Base"`, `"ethereum"`, `"Polygon Amoy"`) or a chain ID (`8453`, `1`, `80002`). Unknown chains error cleanly. See [`kwala-list-chains`](/tools/system#kwala-list-chains) for the full list.
+
+**Token resolution.** Token names (`"USDC"`, `"USDT"`) resolve to the correct contract address for the target chain. Pass them in `target_contract` or similar fields instead of addresses.
+
+**ABI fetching.** Tools that need a function signature fetch the contract's ABI on your behalf and pick the right overload. You never supply a base64-encoded ABI yourself.
+
+**Caching.** Read-only tools (explorer, list-chains, list-templates, fetch-abi, wallet, credit-balance) use a 5-minute in-memory cache. Write tools (deploy, deactivate, configure) invalidate the cache after mutating.
+
+**Notification creds.** Telegram bot tokens, Discord webhooks, and generic webhook URLs are stored once via [`kwala-configure`](/tools/account#kwala-configure) and auto-injected into any workflow that references them. You never paste a token into a YAML file.

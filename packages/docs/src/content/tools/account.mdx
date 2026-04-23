@@ -1,0 +1,76 @@
+---
+title: Account
+description: Four tools for managing your KWALA wallet, credits, notification credentials, and Kwala login
+---
+
+# Account tools
+
+All four tools read or write your local config at `~/.kwala-mcp/config.json`. Nothing leaves your machine except signed transactions and (for `kwala-login`) a JWT exchange with the Kwala backend.
+
+## `kwala-wallet`
+
+Show (or create) the wallet that Kwala MCP uses on the KWALA chain (`1905`).
+
+**Input.** None.
+
+**Output.** `{ address, chain_id: 1905, rpc: "https://rpc-ohio.kwala.network", balance, created_at }`.
+
+On first call the tool generates a fresh wallet and writes it to `~/.kwala-mcp/config.json`. The private key never leaves the file.
+
+**Example prompt**
+
+> *"Show my Kwala wallet."*
+
+## `kwala-credit-balance`
+
+Check your remaining Kwala credit balance. Executions consume credits.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `address` | `string?` | Wallet address. Uses your stored wallet if omitted. |
+
+**Output.** `{ address, credits, usd_equivalent }`.
+
+**Example prompt**
+
+> *"How many Kwala credits do I have left?"*
+
+## `kwala-configure`
+
+Store Telegram/Discord/webhook credentials and a default chain, set once and auto-used by every other tool that needs them.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `telegram_bot_token` | `string?` | From @BotFather. |
+| `telegram_chat_id` | `string?` | Chat ID where notifications are sent. |
+| `discord_webhook` | `string?` | Discord webhook URL. |
+| `webhook_url` | `string?` | Generic webhook URL. |
+| `default_chain` | `string?` | Default chain name (e.g. `"Base"`). |
+
+**Output.** `{ stored: [list of keys written], config_path }`.
+
+**Note.** After this, workflows built by [`kwala-create-automation`](/tools/workflow-generation#kwala-create-automation) or [`kwala-build-action`](/tools/workflow-generation#kwala-build-action) that ask for notifications will have the credentials injected automatically — you never paste a bot token into a YAML file.
+
+**Example prompt**
+
+> *"Configure my Telegram bot token to 123456:ABC… and chat id to -1001234567890."*
+
+## `kwala-login`
+
+Authenticate with Kwala via Google OAuth. Required for some dashboard-backed features; not required for verify or deploy.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `jwt` | `string?` | JWT token returned by Kwala after Google sign-in. Paste it here to complete login. |
+
+**Output.** On first call (no `jwt`): `{ login_url }`. Open the URL, sign in with Google, grab the `token` / `jwt` cookie from the browser, and call the tool again with `jwt` set. On success: `{ user, logged_in_at }`.
+
+**Example prompt**
+
+> *"Log me into Kwala."*

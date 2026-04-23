@@ -1,0 +1,114 @@
+---
+title: Workflow Generation
+description: Five tools for turning natural language (or structured input) into valid Kwalang YAML
+---
+
+# Workflow Generation tools
+
+Five tools for building Kwalang YAML — either end-to-end from a natural-language description (`create-automation`), piece-by-piece (`build-trigger`, `build-action`), from a catalog of proven patterns (`list-templates`), or in reverse for auditing (`explain-yaml`).
+
+## `kwala-create-automation`
+
+Flagship tool. Generates a complete, deployable Kwalang YAML workflow from structured parameters. Auto-fetches ABIs, resolves token addresses, and builds the full workflow. The resulting YAML can be passed directly to [`kwala-verify-workflow`](/tools/deployment#kwala-verify-workflow) and [`kwala-deploy-workflow`](/tools/deployment#kwala-deploy-workflow).
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `string` | Workflow name (e.g. `USDCTransferAlert`). |
+| `description` | `string` | Plain-English description. Used to guide generation. |
+| `trigger_type` | `"event" \| "time" \| "cron" \| "oracle_price" \| "block" \| "address_tracking"` | What triggers the workflow. |
+| `trigger_source` | `string?` | Contract or address (for `event` and `address_tracking`). Accepts token names like `"USDC"`. |
+| `chain` | `string?` | Chain name or ID. Defaults to Base Sepolia. |
+| `event_name` | `string?` | Event name, e.g. `"Transfer"` — auto-resolved to the full signature from the ABI. |
+| `event_filter` | `string?` | Filter expression such as `"re.event(2) > 1000"`. Defaults to `"NA"`. |
+| `interval_seconds` | `number?` | For `time` triggers. |
+| `cron_expression` | `string?` | For `cron` triggers. |
+| `trigger_price` | `number?` | Threshold price for `oracle_price` triggers. |
+| `block_number` | `number?` | Target block for `block` triggers. |
+| `expires_in` | `string?` | Seconds as string or Unix timestamp. |
+| `actions` | `Action[]` | 1–10 actions. Each has `name`, `type` (`call`/`notification`/`api`), and type-specific fields. |
+
+**Output.** The generated Kwalang YAML as a string, plus a parsed summary of the trigger and actions.
+
+**Example prompt**
+
+> *"Create a workflow named `TreasuryDepositAlert` that triggers on every USDC transfer to `0xabc…` on Base, and sends a Telegram message with the sender and amount."*
+
+## `kwala-explain-yaml`
+
+Explain any Kwalang workflow in plain English — useful for reviewing a workflow before deploying it or understanding one pulled from the explorer.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `yaml` | `string` | Raw Kwalang YAML. |
+| `verbose` | `boolean?` | Expand every field. Default: false. |
+
+**Output.** `workflow_name`, a natural-language summary, and a per-action breakdown.
+
+**Example prompt**
+
+> *"Explain this workflow: <paste YAML>"*
+
+## `kwala-list-templates`
+
+Browse the catalog of pre-built workflow templates — use them as starting points or reference examples.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `category` | `string?` | Filter (`alerts`, `defi`, `monitoring`, …). Defaults to all. |
+| `search` | `string?` | Keyword filter. |
+
+**Output.** Array of `{ name, description, category, yaml }`.
+
+**Example prompt**
+
+> *"Show me all alert templates."*
+
+## `kwala-build-trigger`
+
+Generate only the `Trigger:` YAML block. Useful when composing a workflow piece by piece.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `type` | `"event" \| "time" \| "cron" \| "oracle_price" \| "block" \| "address_tracking"` | Trigger type. |
+| `source` | `string?` | Contract or address (required for `event` and `address_tracking`). |
+| `chain` | `string?` | Chain name or ID. |
+| `event_name` | `string?` | Auto-resolved to full signature. |
+| `event_filter` | `string?` | Filter expression. Default: `"NA"`. |
+| `interval_seconds` | `number?` | For `time` triggers. |
+| `cron_expression` | `string?` | For `cron` triggers. |
+| `trigger_price` | `number?` | For `oracle_price` triggers. |
+| `block_number` | `number?` | For `block` triggers. |
+| `expires_in` | `string?` | Seconds or Unix timestamp. |
+
+**Output.** YAML fragment ready to splice into a workflow.
+
+## `kwala-build-action`
+
+Generate a single action YAML block (`call`, `notification`, `api`, or `deploy`).
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `type` | `"call" \| "notification" \| "api" \| "deploy"` | Action type. |
+| `name` | `string` | Action name, e.g. `TransferUSDC`. |
+| `contract_address` | `string?` | Target contract (for `call`). |
+| `function_name` | `string?` | Function name — auto-resolved to full signature from ABI. |
+| `params` | `string[]?` | Function params. `re.event(N)` pulls dynamic data. |
+| `chain` | `string?` | Chain name or ID. |
+| `channel` | `"telegram" \| "discord" \| "webhook"?` | For `notification`. |
+| `bot_token` / `chat_id` / `webhook_url` | `string?` | Notification creds (auto-populated if stored via `kwala-configure`). |
+| `message` | `string?` | Notification body; `re.event(N)` works here too. |
+| `api_endpoint` / `api_payload` | `string?` | For `api`. |
+| `bytecode` / `constructor_args` | `string[]?` | For `deploy`. |
+| `retries` | `number?` | Retry attempts. Default: 3. |
+
+**Output.** A YAML fragment for one action.

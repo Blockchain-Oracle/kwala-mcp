@@ -1,0 +1,50 @@
+---
+title: System
+description: Two utility tools for introspecting supported chains and the tool catalog itself
+---
+
+# System tools
+
+## `kwala-list-chains`
+
+List every chain Kwala supports — mainnets, testnets, and the internal KWALA chain.
+
+**Input**
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `network_type` | `"mainnet" \| "testnet" \| "all"?` | Filter by network type. Default: `all`. |
+
+**Output.** Array of `{ name, chain_id, network_type, symbol, rpc }`.
+
+**The 11 supported chains**
+
+| Chain | Chain ID | Network | Symbol |
+| --- | --- | --- | --- |
+| Ethereum | 1 | Mainnet | ETH |
+| BNB Chain | 56 | Mainnet | BNB |
+| Polygon | 137 | Mainnet | MATIC |
+| Avalanche C-Chain | 43114 | Mainnet | AVAX |
+| Celo | 42220 | Mainnet | CELO |
+| Base | 8453 | Mainnet | ETH |
+| Sepolia | 11155111 | Testnet | ETH |
+| Polygon Amoy | 80002 | Testnet | MATIC |
+| Avalanche Fuji | 43113 | Testnet | AVAX |
+| Base Sepolia | 84532 | Testnet | ETH |
+| Kalp (KWALA) | 1905 | Internal | GINI |
+
+**Example prompt**
+
+> *"List all mainnet chains Kwala supports."*
+
+## `kwala-tools`
+
+Return a categorized list of every Kwala MCP tool. Useful when you want the agent to re-confirm what's available mid-conversation.
+
+**Input.** None.
+
+**Output.** `{ categories: [{ category, tools: [{ name, description }] }], total: 20 }`.
+
+**Example prompt**
+
+> *"List all Kwala MCP tools."*
