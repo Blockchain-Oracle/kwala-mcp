@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 interface TransactionWrapperProps {
   children?: ReactNode;
   workflowName: string;
+  workflowId?: string;
   steps: TransactionStep[];
   buttonText?: string;
   onSuccess?: (txHashes: string[]) => void;
@@ -96,6 +97,7 @@ function getButtonLabel(state: TransactionState): ReactNode {
 export function TransactionWrapper({
   children,
   workflowName,
+  workflowId,
   steps,
   buttonText,
   onSuccess,
@@ -156,7 +158,7 @@ export function TransactionWrapper({
               </span>
             </div>
             <a
-              href={`https://kwala-explorer.lovable.app/workflow/${hash}`}
+              href={`https://kwala-explorer.lovable.app/workflow/${workflowId ?? workflowName}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:text-primary/80 shrink-0"

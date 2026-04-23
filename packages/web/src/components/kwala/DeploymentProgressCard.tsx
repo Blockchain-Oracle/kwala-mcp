@@ -139,6 +139,7 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
       >
         <TransactionWrapper
           workflowName={result.workflow_name ?? "Workflow"}
+          workflowId={result.workflow_id as string | undefined}
           steps={txSteps}
           buttonText="Sign & Deploy"
         >
