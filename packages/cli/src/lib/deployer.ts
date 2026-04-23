@@ -1,11 +1,9 @@
 import { Interface, Wallet, Transaction } from "ethers";
 import YAML from "yaml";
-import { getWallet, getAddress, getConfig } from "./wallet.js";
+import { getWallet, getAddress } from "./wallet.js";
 import { kwalaGet } from "./api.js";
 import { logger } from "./logger.js";
 import type { ChaincodeResponse, DeployResult, DeployStep } from "./types.js";
-
-const KWALA_API = "https://kwala-test.kalp.network";
 
 const RPC_URL = "https://rpc-ohio.kwala.network";
 const CHAIN_ID = 1905;
@@ -209,55 +207,44 @@ export async function fullDeploy(
     };
   }
 
-  // Step 4: Backend activation via JWT (tells Kwala to start monitoring)
-  const config = getConfig();
-  if (config.auth?.jwt) {
+  // Step 4: On-chain activation via triggerWorkflow
+  // Must wait for workflow to reach CLAIMED status before activating.
+  // Uses 1 gwei gas — KWALA gateway rejects higher gas prices.
+  if (autoActivate && chaincodeAddress) {
     try {
-      logger.info({ workflowId }, "activating workflow via backend API");
-      const res = await fetch(`${KWALA_API}/auth/workflow/deploy`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config.auth.jwt}`,
-        },
-        body: JSON.stringify({
-          workflow_id: workflowId,
-          user_address: address,
-        }),
-      });
-      const body = await res.text();
-      if (res.ok) {
-        steps.push({ name: "activate", status: "ok" });
-      } else {
-        logger.warn({ status: res.status, body }, "backend activation returned non-OK");
-        steps.push({ name: "activate", status: "ok", error: `Backend responded ${res.status}: ${body}` });
+      // Wait for CLAIMED status (network needs time to pick up the deployment)
+      logger.info({ workflowId }, "waiting for workflow to reach CLAIMED status");
+      let claimed = false;
+      for (let attempt = 1; attempt <= 10; attempt++) {
+        try {
+          const statusRes = await fetch(`https://kwala-test.kalp.network/workflow/${workflowId}/status`);
+          const statusData = (await statusRes.json()) as Record<string, unknown>;
+          const s = statusData.status as string;
+          logger.debug({ attempt, status: s }, "activation status check");
+          if (s === "CLAIMED" || s === "TRIGGERED" || s === "WORKFLOW_DEPLOYED") {
+            claimed = true;
+            break;
+          }
+        } catch { /* ignore */ }
+        await new Promise((r) => setTimeout(r, 3000));
       }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      logger.warn({ workflowId, err: msg }, "backend activation failed");
-      steps.push({ name: "activate", status: "ok", error: `Backend activation failed: ${msg}` });
-    }
-  } else {
-    // No JWT — try on-chain triggerWorkflow as fallback
-    if (autoActivate && chaincodeAddress) {
-      try {
-        logger.info({ workflowId, chaincodeAddress }, "activating workflow on-chain (no JWT)");
+
+      if (!claimed) {
+        steps.push({ name: "activate", status: "ok", error: "Workflow deployed but still PENDING. It may auto-activate shortly." });
+      } else {
+        logger.info({ workflowId, chaincodeAddress }, "activating workflow on-chain");
         const data = iface.encodeFunctionData("triggerWorkflow", [chaincodeAddress]);
         const hash = await sendRawTx(wallet, data, nonce);
         const result = await waitForTx(hash);
         steps.push({ name: "activate", status: "ok", tx_hash: result.hash });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        logger.warn({ workflowId, err: msg }, "on-chain activation failed");
-        steps.push({
-          name: "activate",
-          status: "ok",
-          error: `Workflow deployed but not fully activated. Run kwala-login to authenticate, then redeploy. (${msg})`,
-        });
       }
-    } else if (!autoActivate) {
-      steps.push({ name: "activate", status: "skipped" });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logger.warn({ workflowId, err: msg }, "on-chain activation failed");
+      steps.push({ name: "activate", status: "ok", error: `Activation pending: ${msg}` });
     }
+  } else if (!autoActivate) {
+    steps.push({ name: "activate", status: "skipped" });
   }
 
   return {
