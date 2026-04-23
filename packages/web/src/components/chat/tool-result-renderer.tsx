@@ -9,7 +9,6 @@ import {
   AutomationCard,
   TemplateGalleryCard,
   ChainSelectorCard,
-  ConfigureCard,
   CreditBalanceCard,
   VerifyCard,
   WorkflowListCard,
@@ -91,72 +90,59 @@ export function ToolResultRenderer({
 
   switch (toolName) {
     // Workflow Generation
-    case "kwala-create-automation":
+    case "createAutomation":
       return (
         <AutomationCard
           data={result}
           onDeploy={addToolOutput && toolCallId ? handleDeployRequest : undefined}
         />
       );
-    case "kwala-explain-yaml":
+    case "explainYaml":
       return <GenericResultCard toolName={toolName} data={result} />;
-    case "kwala-list-templates":
+    case "listTemplates":
       return (
         <TemplateGalleryCard
           data={result}
           onSelect={addToolOutput && toolCallId ? handleTemplateSelect : undefined}
         />
       );
-    case "kwala-build-trigger":
-      return <GenericResultCard toolName={toolName} data={result} />;
-    case "kwala-build-action":
-      return <GenericResultCard toolName={toolName} data={result} />;
 
     // Deployment
-    case "kwala-verify-workflow":
+    case "verifyWorkflow":
       return <VerifyCard data={result} />;
-    case "kwala-deploy-workflow":
-    case "kwala-prepare-deploy":
+    case "prepareDeploy":
       return (
         <DeploymentProgressCard data={result as Record<string, unknown>} />
       );
-    case "kwala-workflow-status":
+    case "workflowStatus":
       return <WorkflowStatusCard data={result} />;
-    case "kwala-list-workflows":
+    case "listWorkflows":
       return <WorkflowListCard data={result} />;
-    case "kwala-deactivate-workflow":
+    case "deactivateWorkflow":
       return <GenericResultCard toolName={toolName} data={result} />;
 
     // Explorer
-    case "kwala-explorer-stats":
+    case "explorerStats":
       return <ExplorerStatsCard data={result} />;
-    case "kwala-explorer-actions":
+    case "explorerActions":
       return <GenericResultCard toolName={toolName} data={result} />;
-    case "kwala-get-workflow":
+    case "getWorkflow":
       return <GenericResultCard toolName={toolName} data={result} />;
-    case "kwala-fetch-abi":
+    case "fetchAbi":
       return <GenericResultCard toolName={toolName} data={result} />;
 
     // Account
-    case "kwala-wallet":
+    case "getWalletInfo":
       return <WalletCard data={result} />;
-    case "kwala-credit-balance":
+    case "checkBalance":
       return <CreditBalanceCard data={result} />;
-    case "kwala-configure":
-      return <ConfigureCard data={result} />;
-    case "kwala-login":
-      return <GenericResultCard toolName={toolName} data={result} />;
-
-    // System
-    case "kwala-list-chains":
+    case "listChains":
       return (
         <ChainSelectorCard
           data={result}
           onSelect={addToolOutput && toolCallId ? handleChainSelect : undefined}
         />
       );
-    case "kwala-tools":
-      return <GenericResultCard toolName={toolName} data={result} />;
 
     default:
       return <GenericResultCard toolName={toolName} data={result} />;
