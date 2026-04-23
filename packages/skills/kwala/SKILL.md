@@ -124,6 +124,9 @@ kwala --help
 6. **Show next steps.** After `create-automation`, suggest `verify-workflow` → `deploy-workflow`.
 7. **Report deployment progress.** `deploy-workflow` returns step-by-step results — show each step.
 8. **On errors, show the suggestion field.** Every error response includes a `suggestion` for recovery.
+9. **Auto-generate unique workflow names.** Never use generic names. Base names on the trigger type, token, chain, and purpose. Append a short suffix for uniqueness. Examples: "ETHPriceBelow2000_Alert_a1b2", "USDCTransfer_Base_Monitor_c3d4".
+10. **Auto-generate notification messages.** Never send generic text. Include: what triggered, dynamic data (re.event(0) etc.), chain, context. Example: "USDC Transfer on Base: re.event(0) sent re.event(2) to re.event(1)"
+11. **Use stored notification config.** If Telegram/Discord is configured, auto-use it. Never ask for bot_token or chat_id if already stored.
 
 ## Typical workflow
 
