@@ -1,0 +1,63 @@
+---
+title: Auto Top-up Wallet
+description: Send 1 USDC whenever a LowBalance event fires, and notify yourself on Telegram
+---
+
+# Auto Top-up Wallet
+
+When a `LowBalance(address, uint256)` event fires from your balance-checker contract, automatically transfer 1 USDC to the address and ping yourself on Telegram. Demonstrates combining a `call` action with a `post` action in one sequential workflow.
+
+## YAML
+
+```yaml
+Name: AutoTopUpWallet
+Trigger:
+  TriggerSourceContract: "0xBalanceCheckerContract"
+  TriggerChainID: 8453
+  TriggerEventName: "LowBalance(address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: TransferUSDC
+    Type: call
+    TargetContract: "0xUSDCContractAddress"
+    TargetFunction: "function transfer(address to, uint256 amount)"
+    TargetParams:
+      - "re.event(0)"
+      - "1000000"
+    ChainID: 8453
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 3
+  - Name: NotifyOwner
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "Auto top-up sent 1 USDC to re.event(0)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+## What it does
+
+- **Trigger:** event. Fires whenever your custom `0xBalanceCheckerContract` on Base emits `LowBalance(address wallet, uint256 currentBalance)`.
+- **Action 1 — `call`:** invokes `transfer(address,uint256)` on the USDC contract with `re.event(0)` (the low-balance wallet) as the recipient and `1000000` (1 USDC, 6 decimals) as the amount.
+- **Action 2 — `post`:** Telegram confirmation.
+- **Sequential:** Telegram only fires after the transfer succeeds.
+
+## Adapt it
+
+- Replace USDC with any ERC-20 by updating `TargetContract` and the amount (remember to match decimals).
+- Feed the top-up amount from the event itself by using `re.event(1)` in `TargetParams`.
+- Swap `Mode: sequential` for `parallel` if you want the Telegram alert even when the transfer fails.
+
+## Deploy it
+
+```bash
+kwala verify-workflow workflows/auto-topup-wallet.yaml
+kwala deploy-workflow workflows/auto-topup-wallet.yaml
+kwala workflow-status AutoTopUpWallet
+```

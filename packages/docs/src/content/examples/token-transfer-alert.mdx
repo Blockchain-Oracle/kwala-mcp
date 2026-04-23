@@ -1,0 +1,58 @@
+---
+title: Token Transfer Alert
+description: Fire a Telegram message on every USDC transfer on Ethereum
+---
+
+# Token Transfer Alert
+
+Fire a Telegram message every time a `Transfer` event is emitted by USDC on Ethereum mainnet. Good starter workflow for getting comfortable with event triggers and `re.event(N)` interpolation.
+
+## YAML
+
+```yaml
+Name: TokenTransferAlert
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 1
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: SendTelegramAlert
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "USDC Transfer: from re.event(0) to re.event(1), amount: re.event(2)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+## What it does
+
+- **Trigger:** watches the USDC contract on Ethereum (chain ID `1`) for any `Transfer(address from, address to, uint256 amount)` event. `TriggerEventFilter: "NA"` means every transfer matches.
+- **Action:** POSTs to the Telegram Bot API with a message containing the `from` address (`re.event(0)`), `to` address (`re.event(1)`), and `amount` (`re.event(2)`).
+- **Retries:** Telegram failures retry up to three times before giving up.
+
+## Adapt it
+
+- Swap in a different ERC-20 by changing `TriggerSourceContract` and `TriggerChainID`.
+- Only alert on large transfers — add a filter:
+
+  ```yaml
+  TriggerEventFilter: "re.event(2) >= 1000000000"  # USDC has 6 decimals → $1,000
+  ```
+
+- Replace Telegram with Discord by pointing `APIEndpoint` at your Discord webhook and using `content:` instead of `chat_id`/`text`.
+
+## Deploy it
+
+```bash
+kwala verify-workflow workflows/token-transfer-alert.yaml
+kwala deploy-workflow workflows/token-transfer-alert.yaml
+kwala workflow-status TokenTransferAlert
+```
+
+Or from any MCP client: *"Deploy the token-transfer-alert workflow with my configured Telegram creds."*

@@ -1,0 +1,62 @@
+---
+title: NFT Reward Mint
+description: Mint a reward NFT and notify the buyer whenever a filtered PurchaseCompleted event fires
+---
+
+# NFT Reward Mint
+
+When a `PurchaseCompleted(address buyer, uint256 amount)` event fires on your shop contract (Polygon Amoy), and the `amount` is greater than `100`, mint a reward NFT to the buyer and ping them on Telegram. Demonstrates event filtering with `TriggerEventFilter` plus two chained actions.
+
+## YAML
+
+```yaml
+Name: NFTRewardOnPurchase
+Trigger:
+  TriggerSourceContract: "0xShopContract"
+  TriggerChainID: 80002
+  TriggerEventName: "PurchaseCompleted(address buyer, uint256 amount)"
+  TriggerEventFilter: "re.event(1) > 100"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: MintRewardNFT
+    Type: call
+    TargetContract: "0xRewardNFTContract"
+    TargetFunction: "function mintReward(address to)"
+    TargetParams:
+      - "re.event(0)"
+    ChainID: 80002
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 5
+  - Name: NotifyBuyer
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "Reward NFT minted for buyer re.event(0)!"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+## What it does
+
+- **Trigger:** event. Watches `0xShopContract` on Polygon Amoy (chain ID `80002`) for `PurchaseCompleted(address buyer, uint256 amount)` events.
+- **Filter:** `re.event(1) > 100` — only fires when the `amount` parameter exceeds 100 (interpret units per your contract).
+- **Action 1 — `call`:** mints a reward by calling `mintReward(address)` on your reward NFT contract, passing the buyer's address (`re.event(0)`).
+- **Action 2 — `post`:** Telegram confirmation.
+
+## Adapt it
+
+- Change the filter threshold or add compound conditions like `re.event(1) >= 100 && re.event(1) <= 1000`.
+- Mint a different contract by swapping `TargetContract` and `TargetFunction`.
+- Promote to mainnet by switching `TriggerChainID` and `ChainID` to `137` (Polygon) or another supported chain.
+
+## Deploy it
+
+```bash
+kwala verify-workflow workflows/nft-reward-mint.yaml
+kwala deploy-workflow workflows/nft-reward-mint.yaml
+kwala workflow-status NFTRewardOnPurchase
+```

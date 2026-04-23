@@ -1,0 +1,29 @@
+---
+title: Examples
+description: Six production-ready Kwala workflows — copy, adapt, deploy
+---
+
+# Examples
+
+Six reference workflows — one per file in [`workflows/`](https://github.com/Blockchain-Oracle/kwala-mcp/tree/main/workflows) — covering the main trigger types and action patterns you'll reach for. Each example page shows the YAML verbatim, a plain-English walkthrough, how to adapt it, and the one-liner to deploy.
+
+| Example | Trigger | Actions |
+| --- | --- | --- |
+| [Token Transfer Alert](/examples/token-transfer-alert) | Ethereum USDC `Transfer` event | Telegram alert |
+| [Treasury Deposit Notifier](/examples/treasury-deposit-notifier) | Address tracking on a Base wallet | Discord webhook + backend log |
+| [Oracle Price Alert](/examples/oracle-price-alert) | Oracle price < $150 | Telegram alert |
+| [Address Tracker](/examples/address-tracker) | Any Polygon wallet activity | Forward receipt to webhook |
+| [Auto Top-up Wallet](/examples/auto-topup-wallet) | `LowBalance` event on Base | USDC transfer + Telegram alert |
+| [NFT Reward Mint](/examples/nft-reward-mint) | Filtered `PurchaseCompleted` event | Mint reward NFT + notify buyer |
+
+## Deploying any of these
+
+Clone the repo (or just copy the YAML) and use the CLI:
+
+```bash
+kwala verify-workflow workflows/<name>.yaml        # REST, no gas
+kwala deploy-workflow workflows/<name>.yaml        # save + deploy + activate on chain 1905
+kwala workflow-status <WorkflowName>               # see execution history
+```
+
+Every example ships with `<YOUR_BOT_TOKEN>`, `<YOUR_CHAT_ID>`, etc. as placeholders. Run [`kwala-configure`](/tools/account#kwala-configure) once to store the real values; tools built on top of these YAMLs (for example [`kwala-create-automation`](/tools/workflow-generation#kwala-create-automation)) inject them automatically.

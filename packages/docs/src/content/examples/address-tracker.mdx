@@ -1,0 +1,50 @@
+---
+title: Address Tracker
+description: Forward every transaction a Polygon wallet participates in to your own backend
+---
+
+# Address Tracker
+
+Watch a Polygon wallet for any activity for one week and forward every receipt to your own webhook. The minimal address-tracking workflow — one trigger, one action.
+
+## YAML
+
+```yaml
+Name: WalletActivityTracker
+Trigger:
+  TriggerSourceContract: "0xWalletToTrack"
+  TriggerChainID: 137
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+  ExpiresIn: 604800
+Actions:
+  - Name: ForwardToWebhook
+    Type: post
+    APIEndpoint: "https://your-api.com/webhook/activity"
+    APIPayload:
+      type: "address_activity"
+      receipt: "re.event(0)"
+    RetriesUntilSuccess: 5
+Execution:
+  Mode: sequential
+```
+
+## What it does
+
+- **Trigger:** address tracking on a wallet on Polygon (chain ID `137`). Fires on every transaction the wallet participates in.
+- **Action:** POST the full transaction receipt to your backend. `re.event(0)` is the receipt object (`from`, `to`, `transactionHash`, `logs[]`, …).
+- **Expiration:** `604800` seconds = 7 days.
+
+## Adapt it
+
+- Swap `TriggerChainID` to follow the same wallet on a different chain.
+- Drop `ExpiresIn` to run indefinitely (until you deactivate).
+- Push the events directly to Kafka, PubSub, or a database through your webhook endpoint.
+
+## Deploy it
+
+```bash
+kwala verify-workflow workflows/address-tracker.yaml
+kwala deploy-workflow workflows/address-tracker.yaml
+kwala workflow-status WalletActivityTracker
+```

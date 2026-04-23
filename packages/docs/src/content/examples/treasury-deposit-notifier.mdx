@@ -1,0 +1,56 @@
+---
+title: Treasury Deposit Notifier
+description: Announce every treasury transaction on Discord and log it to your backend
+---
+
+# Treasury Deposit Notifier
+
+Watch a specific wallet on Base for any activity and forward each receipt to Discord + your own backend. Uses an **address-tracking** trigger, so you don't need to know the ABI of whatever contracts interact with the wallet.
+
+## YAML
+
+```yaml
+Name: TreasuryDepositNotifier
+Trigger:
+  TriggerSourceContract: "0xYourTreasuryAddress"
+  TriggerChainID: 8453
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+Actions:
+  - Name: NotifyDiscord
+    Type: post
+    APIEndpoint: "https://discord.com/api/webhooks/<YOUR_WEBHOOK>"
+    APIPayload:
+      content: "Treasury activity detected! Tx: re.event(0)"
+    RetriesUntilSuccess: 5
+  - Name: LogToBackend
+    Type: post
+    APIEndpoint: "https://your-api.com/webhook/treasury"
+    APIPayload:
+      receipt: "re.event(0)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+## What it does
+
+- **Trigger:** address tracking on a wallet on Base (chain ID `8453`). Kwala fires on every transaction the address participates in — deposits, withdrawals, approvals, contract calls.
+- **Actions (sequential):**
+  1. Post a Discord webhook message containing the transaction.
+  2. Forward the full receipt to your backend `/webhook/treasury`.
+- In this trigger mode, `re.event(0)` is the full transaction receipt (`from`, `to`, `transactionHash`, `logs[]`, …). See [`re.event(N)` dynamic data](/kwalang/re-event) for the shape.
+
+## Adapt it
+
+- Swap Discord for Slack by pointing the webhook URL at your Slack incoming webhook.
+- Add a filter in your backend to only index deposits (filter on `to == <treasury>` or on specific log topics).
+- Change `ExecuteAfter` / `RepeatEvery` to an event signature if you only care about specific events (e.g. an ERC-20 Transfer targeting the treasury).
+
+## Deploy it
+
+```bash
+kwala verify-workflow workflows/treasury-deposit-notifier.yaml
+kwala deploy-workflow workflows/treasury-deposit-notifier.yaml
+kwala workflow-status TreasuryDepositNotifier
+```

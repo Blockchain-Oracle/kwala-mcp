@@ -1,0 +1,49 @@
+---
+title: Oracle Price Alert
+description: Send a Telegram alert when SOL drops below $150 (or any price threshold)
+---
+
+# Oracle Price Alert
+
+Fire a Telegram alert whenever an oracle reports SOL below $150. No contract addresses, no events — the oracle price trigger handles the feed plumbing for you.
+
+## YAML
+
+```yaml
+Name: SOLPriceDropAlert
+Trigger:
+  TriggerPrice: 150.0
+  ExecuteAfter: "oracle_price"
+  RepeatEvery: "oracle_price"
+  ExpiresIn: 2592000
+Actions:
+  - Name: AlertTelegram
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "SOL has dropped below $150!"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+## What it does
+
+- **Trigger:** oracle-price. `TriggerPrice: 150.0` tells Kwala to fire whenever SOL crosses below $150. The `oracle_price` sentinel in `ExecuteAfter` and `RepeatEvery` tells Kwala to consult the price feed each cycle.
+- **Action:** a Telegram alert.
+- **Expiration:** 2,592,000 seconds (30 days), after which the workflow stops on its own.
+
+## Adapt it
+
+- Change `TriggerPrice` to any threshold and swap the alert text.
+- Add a `RecurringPrice` if you want a different threshold on subsequent checks.
+- Extend `Actions` to also trigger a DEX trade (using a `call` action on your preferred DEX router) if the price is acting as a stop-loss.
+
+## Deploy it
+
+```bash
+kwala verify-workflow workflows/oracle-price-alert.yaml
+kwala deploy-workflow workflows/oracle-price-alert.yaml
+kwala workflow-status SOLPriceDropAlert
+```
