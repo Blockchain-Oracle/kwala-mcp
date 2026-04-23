@@ -14,6 +14,8 @@
 # resolve the monorepo. The APP_NAME filter picks the target workspace.
 
 # -- Install phase --
+# onlyIncludeFiles controls cache invalidation: nixpacks only rebuilds
+# the install layer when one of these files changes.
 [phases.install]
 cmds = ["NODE_ENV=development pnpm install --frozen-lockfile"]
 cacheDirectories = [".pnpm-store"]
@@ -28,6 +30,7 @@ onlyIncludeFiles = [
 ]
 
 # -- Build phase --
+# pnpm --filter builds only the target workspace.
 [phases.build]
 dependsOn = ["install"]
 cmds = ["pnpm --filter ${APP_NAME:-@kwala-dev/web} build"]
