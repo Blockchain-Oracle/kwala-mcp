@@ -23,13 +23,12 @@ import {
 
 export const maxDuration = 60;
 
-// MCP client — fresh per request to avoid stale SSE sessions
+// MCP client — fresh per request, closed after response
 async function getMCPClient() {
-  const url = process.env.MCP_HTTP_URL ?? "http://localhost:3001/sse";
-  const client = await createMCPClient({
-    transport: { type: "sse", url },
+  const url = process.env.MCP_HTTP_URL ?? "http://localhost:3001/mcp";
+  return createMCPClient({
+    transport: { type: "http", url },
   });
-  return client;
 }
 
 function generateUUID(): string {
@@ -113,7 +112,8 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages: responseMessages }) => {
-        // Save assistant messages
+        await mcpClient.close();
+
         const assistantMessages = responseMessages.filter(
           (m) => m.role === "assistant"
         );
@@ -128,7 +128,6 @@ export async function POST(request: Request) {
             })),
           });
 
-          // Update title if first response
           if (!existingChat) {
             const firstUserMessage = messages.find((m) => m.role === "user");
             const firstPart = firstUserMessage?.parts?.[0];
@@ -141,6 +140,7 @@ export async function POST(request: Request) {
         }
       },
       onError: (error) => {
+        mcpClient.close().catch(() => {});
         console.error("[Chat API] Stream error:", error);
         return "An error occurred while processing your request.";
       },

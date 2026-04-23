@@ -1,55 +1,82 @@
 #!/usr/bin/env node
 import express from "express";
 import cors from "cors";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { randomUUID } from "node:crypto";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { createMcpServer } from "@kwala-dev/cli";
 
 const PORT = Number(process.env.MCP_HTTP_PORT ?? 3001);
 
 async function main(): Promise<void> {
   const app = express();
-  app.use(cors());
+  app.use(cors({
+    exposedHeaders: ["Mcp-Session-Id"],
+    origin: "*",
+  }));
   app.use(express.json());
 
-  // Map of sessionId -> { server, transport }
-  const sessions = new Map<
-    string,
-    { transport: SSEServerTransport }
-  >();
+  const transports = new Map<string, StreamableHTTPServerTransport>();
 
-  // SSE endpoint — client GETs this to establish SSE connection
-  app.get("/sse", async (_req, res) => {
-    const transport = new SSEServerTransport("/messages", res);
-    const server = createMcpServer();
+  app.post("/mcp", async (req, res) => {
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
-    sessions.set(transport.sessionId, { transport });
-
-    res.on("close", () => {
-      sessions.delete(transport.sessionId);
-    });
-
-    await server.connect(transport);
-  });
-
-  // Messages endpoint — client POSTs JSON-RPC messages here
-  app.post("/messages", async (req, res) => {
-    const sessionId = req.query.sessionId as string;
-    const session = sessions.get(sessionId);
-    if (!session) {
-      res.status(400).json({ error: "Invalid session" });
+    if (sessionId && transports.has(sessionId)) {
+      const transport = transports.get(sessionId)!;
+      await transport.handleRequest(req, res, req.body);
       return;
     }
-    await session.transport.handlePostMessage(req, res, req.body);
+
+    if (!sessionId && isInitializeRequest(req.body)) {
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => randomUUID(),
+        onsessioninitialized: (sid) => {
+          transports.set(sid, transport);
+        },
+      });
+
+      transport.onclose = () => {
+        if (transport.sessionId) {
+          transports.delete(transport.sessionId);
+        }
+      };
+
+      const server = createMcpServer();
+      await server.connect(transport);
+      await transport.handleRequest(req, res, req.body);
+      return;
+    }
+
+    res.status(400).json({ error: "Invalid request: no session ID or not an initialize request" });
   });
 
-  // Health check
+  app.get("/mcp", async (req, res) => {
+    const sessionId = req.headers["mcp-session-id"] as string;
+    const transport = sessionId ? transports.get(sessionId) : undefined;
+    if (!transport) {
+      res.status(400).json({ error: "No active session" });
+      return;
+    }
+    await transport.handleRequest(req, res);
+  });
+
+  app.delete("/mcp", async (req, res) => {
+    const sessionId = req.headers["mcp-session-id"] as string;
+    const transport = sessionId ? transports.get(sessionId) : undefined;
+    if (!transport) {
+      res.status(400).json({ error: "No active session" });
+      return;
+    }
+    await transport.handleRequest(req, res);
+  });
+
   app.get("/health", (_req, res) => {
-    res.json({ status: "ok", sessions: sessions.size });
+    res.json({ status: "ok", sessions: transports.size });
   });
 
   app.listen(PORT, () => {
     process.stderr.write(
-      `[kwala-mcp] SSE transport listening on http://localhost:${PORT}/sse\n`
+      `[kwala-mcp] HTTP transport listening on http://localhost:${PORT}/mcp\n`
     );
   });
 }
