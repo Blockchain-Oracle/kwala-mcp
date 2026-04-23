@@ -23,17 +23,13 @@ import {
 
 export const maxDuration = 60;
 
-// MCP client singleton (lazy init)
-let mcpClientPromise: ReturnType<typeof createMCPClient> | null = null;
-
-function getMCPClient() {
-  if (!mcpClientPromise) {
-    const url = process.env.MCP_HTTP_URL ?? "http://localhost:3001/mcp";
-    mcpClientPromise = createMCPClient({
-      transport: { type: "sse", url },
-    });
-  }
-  return mcpClientPromise;
+// MCP client — fresh per request to avoid stale SSE sessions
+async function getMCPClient() {
+  const url = process.env.MCP_HTTP_URL ?? "http://localhost:3001/sse";
+  const client = await createMCPClient({
+    transport: { type: "sse", url },
+  });
+  return client;
 }
 
 function generateUUID(): string {

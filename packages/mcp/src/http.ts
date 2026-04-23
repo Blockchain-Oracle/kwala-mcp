@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import express from "express";
 import cors from "cors";
-import { randomUUID } from "node:crypto";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createMcpServer } from "@kwala-dev/cli";
 
 const PORT = Number(process.env.MCP_HTTP_PORT ?? 3001);
@@ -12,64 +11,45 @@ async function main(): Promise<void> {
   app.use(cors());
   app.use(express.json());
 
-  // Map of sessionId -> transport
-  const transports = new Map<string, StreamableHTTPServerTransport>();
+  // Map of sessionId -> { server, transport }
+  const sessions = new Map<
+    string,
+    { transport: SSEServerTransport }
+  >();
 
-  app.post("/mcp", async (req, res) => {
-    const sessionId =
-      (req.headers["mcp-session-id"] as string) ?? randomUUID();
+  // SSE endpoint — client GETs this to establish SSE connection
+  app.get("/sse", async (_req, res) => {
+    const transport = new SSEServerTransport("/messages", res);
+    const server = createMcpServer();
 
-    let transport = transports.get(sessionId);
+    sessions.set(transport.sessionId, { transport });
 
-    if (!transport) {
-      transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => sessionId,
-      });
+    res.on("close", () => {
+      sessions.delete(transport.sessionId);
+    });
 
-      transports.set(sessionId, transport);
-
-      const server = createMcpServer();
-      await server.connect(transport);
-
-      // Clean up on close
-      transport.onclose = () => {
-        transports.delete(sessionId);
-      };
-    }
-
-    await transport.handleRequest(req, res, req.body);
+    await server.connect(transport);
   });
 
-  // Handle GET for SSE stream (session resumption)
-  app.get("/mcp", async (req, res) => {
-    const sessionId = req.headers["mcp-session-id"] as string;
-    const transport = sessionId ? transports.get(sessionId) : undefined;
-    if (!transport) {
-      res.status(400).json({ error: "No active session" });
+  // Messages endpoint — client POSTs JSON-RPC messages here
+  app.post("/messages", async (req, res) => {
+    const sessionId = req.query.sessionId as string;
+    const session = sessions.get(sessionId);
+    if (!session) {
+      res.status(400).json({ error: "Invalid session" });
       return;
     }
-    await transport.handleRequest(req, res);
-  });
-
-  // Handle DELETE for session cleanup
-  app.delete("/mcp", async (req, res) => {
-    const sessionId = req.headers["mcp-session-id"] as string;
-    const transport = sessionId ? transports.get(sessionId) : undefined;
-    if (!transport) {
-      res.status(400).json({ error: "No active session" });
-      return;
-    }
-    await transport.handleRequest(req, res);
+    await session.transport.handlePostMessage(req, res, req.body);
   });
 
   // Health check
   app.get("/health", (_req, res) => {
-    res.json({ status: "ok", sessions: transports.size });
+    res.json({ status: "ok", sessions: sessions.size });
   });
 
   app.listen(PORT, () => {
     process.stderr.write(
-      `[kwala-mcp] HTTP transport listening on http://localhost:${PORT}/mcp\n`
+      `[kwala-mcp] SSE transport listening on http://localhost:${PORT}/sse\n`
     );
   });
 }
