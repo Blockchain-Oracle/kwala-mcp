@@ -102,7 +102,7 @@ const CATEGORIES: Category[] = [
         title: "Setup Telegram",
         description: "Configure Telegram notifications",
         prompt:
-          "I want to set up my Telegram notifications. My bot token is 8762443620:AAEZoRJ6b1xwzkFcj-PMekrQHXtewsB4p4g and my chat ID is 8028166336. Save this configuration.",
+          "I want to set up my Telegram notifications. Help me configure it.",
       },
       {
         title: "View Config",
