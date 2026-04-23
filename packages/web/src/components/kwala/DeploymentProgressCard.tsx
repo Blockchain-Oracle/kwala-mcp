@@ -120,10 +120,17 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
   const isSuccess =
     result.deployed === true || effectiveStatus === "active" || effectiveStatus === "deployed";
 
-  // Legacy: if old cached messages still have transactions array, ignore it
-  // Deployments now happen server-side via /api/deploy
-  if (false && result.transactions) {
-    const txSteps: TransactionStep[] = [];
+  // Client-side signing: show TransactionWrapper when transactions are present
+  if (result.transactions && (result.transactions as unknown[]).length > 0) {
+    const rawSteps = result.transactions as Array<Record<string, unknown>>;
+    const txSteps: TransactionStep[] = rawSteps.map((s) => ({
+      name: String(s.name ?? ""),
+      to: String(s.to ?? ""),
+      data: String(s.data ?? ""),
+      chainId: Number(s.chainId ?? KWALA_TX_DEFAULTS.chainId),
+      gasPrice: String(s.gasPrice ?? KWALA_TX_DEFAULTS.gasPrice),
+      gasLimit: String(s.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit),
+    }));
 
     return (
       <BaseCard
