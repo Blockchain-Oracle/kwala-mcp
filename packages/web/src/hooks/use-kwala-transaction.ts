@@ -125,8 +125,8 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
             prog.status = "confirming";
             setProgress({ ...prog });
             setStatus("confirming");
-            console.log("[kwala-tx] Waiting 8s before next step...");
-            await new Promise((resolve) => setTimeout(resolve, 8000));
+            console.log("[kwala-tx] Waiting 15s for KWALA gateway to process...");
+            await new Promise((resolve) => setTimeout(resolve, 15000));
           }
         } catch (err) {
           console.error("[kwala-tx] Failed:", err);
