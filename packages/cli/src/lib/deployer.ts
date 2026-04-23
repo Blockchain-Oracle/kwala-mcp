@@ -257,7 +257,7 @@ export async function fullDeploy(
       // Wait for CLAIMED status (network needs time to pick up the deployment)
       logger.info({ workflowId }, "waiting for workflow to reach CLAIMED status");
       let claimed = false;
-      for (let attempt = 1; attempt <= 20; attempt++) {
+      for (let attempt = 1; attempt <= 30; attempt++) {
         try {
           const statusRes = await fetch(`https://kwala-test.kalp.network/workflow/${workflowId}/status`);
           const statusData = (await statusRes.json()) as Record<string, unknown>;
@@ -268,7 +268,7 @@ export async function fullDeploy(
             break;
           }
         } catch { /* ignore */ }
-        await new Promise((r) => setTimeout(r, 3000));
+        await new Promise((r) => setTimeout(r, 5000));
       }
 
       if (!claimed) {
