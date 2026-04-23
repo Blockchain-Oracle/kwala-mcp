@@ -31,9 +31,11 @@ export async function POST(request: Request) {
     const {
       messages,
       id: chatId,
+      notificationConfig,
     }: {
       messages: UIMessage[];
       id: string;
+      notificationConfig?: { telegram?: { bot_token: string; chat_id: string }; discord?: { webhook_url: string } };
     } = await request.json();
 
     // Read connected wallet address from request header
@@ -72,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     // System prompt (includes wallet address when connected)
-    const systemPrompt = getSystemPrompt({ walletAddress });
+    const systemPrompt = getSystemPrompt({ walletAddress, notificationConfig });
 
     // Convert UI messages to model messages
     const modelMessages = await convertToModelMessages(messages);

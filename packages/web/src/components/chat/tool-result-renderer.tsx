@@ -12,6 +12,7 @@ import {
   CreditBalanceCard,
   VerifyCard,
   WorkflowListCard,
+  ConfigureCard,
   GenericResultCard,
   ErrorCard,
 } from "@/components/kwala";
@@ -136,6 +137,8 @@ export function ToolResultRenderer({
       return <WalletCard data={result} />;
     case "checkBalance":
       return <CreditBalanceCard data={result} />;
+    case "configureNotifications":
+      return <ConfigureCard data={result} />;
     case "listChains":
       return (
         <ChainSelectorCard

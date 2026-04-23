@@ -11,6 +11,10 @@ import { SuggestedActions } from "./suggested-actions";
 import { Terminal } from "lucide-react";
 import { useWalletAddress } from "@/components/wallet/use-wallet-address";
 import { WALLET_ADDRESS_HEADER } from "@/lib/wallet/constants";
+import {
+  getNotificationConfig,
+  saveNotificationConfig,
+} from "@/lib/notification-config";
 
 interface ChatProps {
   id: string;
@@ -30,10 +34,51 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      body: { id },
+      body: () => ({
+        id,
+        notificationConfig: getNotificationConfig(),
+      }),
       headers: () => ({ [WALLET_ADDRESS_HEADER]: address ?? "" }),
     }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    onToolCall: async ({ toolCall }) => {
+      if (toolCall.toolName === "configureNotifications") {
+        const input = toolCall.input as Record<string, unknown>;
+        const action = (input.action as string) ?? "view";
+
+        if (action === "save") {
+          const update: Record<string, unknown> = {};
+          if (input.telegram_bot_token && input.telegram_chat_id) {
+            update.telegram = {
+              bot_token: input.telegram_bot_token as string,
+              chat_id: input.telegram_chat_id as string,
+            };
+          }
+          if (input.discord_webhook_url) {
+            update.discord = { webhook_url: input.discord_webhook_url as string };
+          }
+          saveNotificationConfig(update as Parameters<typeof saveNotificationConfig>[0]);
+        }
+
+        const config = getNotificationConfig();
+        addToolOutput({
+          tool: "configureNotifications",
+          toolCallId: toolCall.toolCallId,
+          output: {
+            telegram: config.telegram
+              ? { chat_id: config.telegram.chat_id, bot_token_set: true }
+              : null,
+            discord: config.discord ? { webhook_url_set: true } : null,
+            message:
+              action === "save"
+                ? "Notification settings saved. Future workflows will auto-use these."
+                : config.telegram || config.discord
+                  ? "Notification channels configured."
+                  : "No notifications configured yet. Provide telegram_bot_token + telegram_chat_id to set up Telegram.",
+          },
+        });
+      }
+    },
     onFinish: () => {
       mutate("/api/history?limit=50");
     },

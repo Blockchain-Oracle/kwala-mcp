@@ -52,6 +52,23 @@ export const checkBalance = tool({
   },
 });
 
+// ── configureNotifications ──────────────────────────────────────────────
+// Client-side tool — no execute. The frontend renders a config UI,
+// user fills in Telegram/Discord details, addToolOutput saves to localStorage.
+
+export const configureNotifications = tool({
+  description:
+    "Configure Telegram or Discord notification settings. Saves to browser storage so future workflows auto-use them. Call this when the user wants to set up notifications or when notification config is missing.",
+  inputSchema: z.object({
+    telegram_bot_token: z.string().optional().describe("Telegram bot token from @BotFather."),
+    telegram_chat_id: z.string().optional().describe("Telegram chat ID."),
+    discord_webhook_url: z.string().optional().describe("Discord webhook URL."),
+    action: z.enum(["view", "save"]).optional().describe("'view' to check current config, 'save' to store new config. Default: view."),
+  }),
+  // No execute — this is a client-side tool.
+  // The frontend handles it via onToolCall in chat.tsx
+});
+
 // ── listChains ──────────────────────────────────────────────────────────
 
 export const listChains = tool({

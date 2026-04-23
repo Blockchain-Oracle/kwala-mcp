@@ -8,4 +8,4 @@ export { prepareDeploy, workflowStatus, listWorkflows, deactivateWorkflow } from
 export { explorerStats, explorerActions, getWorkflow, fetchAbi } from "./explorer";
 
 // Account
-export { getWalletInfo, checkBalance, listChains } from "./account";
+export { getWalletInfo, checkBalance, listChains, configureNotifications } from "./account";

@@ -1,9 +1,35 @@
+function getNotificationSection(config?: SystemPromptOptions["notificationConfig"]): string {
+  if (!config) return "";
+
+  const parts: string[] = [];
+  if (config.telegram?.bot_token && config.telegram?.chat_id) {
+    parts.push(`- Telegram: configured (chat_id: ${config.telegram.chat_id})`);
+  }
+  if (config.discord?.webhook_url) {
+    parts.push("- Discord: configured");
+  }
+
+  if (parts.length === 0) {
+    return "\n\n## Notifications\nNo notification channels configured. When the user wants notifications, use `configureNotifications` tool to set up Telegram or Discord first.";
+  }
+
+  return `\n\n## Notifications (stored in browser)
+${parts.join("\n")}
+When creating workflows with notification actions, auto-use these stored credentials. Do NOT ask the user for bot_token or chat_id — they are already configured. Pass them directly in the action:
+${config.telegram ? `- Telegram bot_token: "${config.telegram.bot_token}", chat_id: "${config.telegram.chat_id}"` : ""}
+${config.discord ? `- Discord webhook_url: "${config.discord.webhook_url}"` : ""}`;
+}
+
 interface SystemPromptOptions {
   walletAddress?: string;
+  notificationConfig?: {
+    telegram?: { bot_token: string; chat_id: string };
+    discord?: { webhook_url: string };
+  };
 }
 
 export function getSystemPrompt(options: SystemPromptOptions = {}): string {
-  const { walletAddress } = options;
+  const { walletAddress, notificationConfig } = options;
 
   const walletSection = walletAddress
     ? `\n\n## Connected Wallet
@@ -42,6 +68,7 @@ Pass this address to tools using their expected parameter names:
 - **getWalletInfo** -- Show connected wallet info
 - **checkBalance** -- Check Kwala credit balance
 - **listChains** -- List supported chains and tokens
+- **configureNotifications** -- Set up or view Telegram/Discord notification settings (saves to browser)
 
 ## Response Formatting
 
@@ -84,5 +111,5 @@ Testnets: Sepolia (11155111), Base Sepolia (84532), Polygon Amoy (80002), Avalan
 - **call** -- Call a smart contract function
 - **api** -- POST to any URL
 
-Keep responses concise and action-oriented. Format complex information with markdown for readability.${walletSection}`;
+Keep responses concise and action-oriented. Format complex information with markdown for readability.${walletSection}${getNotificationSection(notificationConfig)}`;
 }
