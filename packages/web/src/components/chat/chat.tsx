@@ -9,6 +9,8 @@ import { Messages } from "./messages";
 import { ChatInput } from "./chat-input";
 import { SuggestedActions } from "./suggested-actions";
 import { Terminal } from "lucide-react";
+import { useWalletAddress } from "@/components/wallet/use-wallet-address";
+import { WALLET_ADDRESS_HEADER } from "@/lib/wallet/constants";
 
 interface ChatProps {
   id: string;
@@ -21,6 +23,7 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
   const { mutate } = useSWRConfig();
   const hasUpdatedUrl = useRef(false);
   const isNewChat = pathname === "/chat";
+  const address = useWalletAddress();
 
   const { messages, sendMessage, status, stop } = useChat({
     id,
@@ -28,6 +31,7 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
     transport: new DefaultChatTransport({
       api: "/api/chat",
       body: { id },
+      headers: { [WALLET_ADDRESS_HEADER]: address ?? "" },
     }),
     onFinish: () => {
       mutate("/api/history?limit=50");

@@ -1,4 +1,14 @@
-export function getSystemPrompt(): string {
+interface SystemPromptOptions {
+  walletAddress?: string;
+}
+
+export function getSystemPrompt(options: SystemPromptOptions = {}): string {
+  const { walletAddress } = options;
+
+  const walletSection = walletAddress
+    ? `\n\n## Connected Wallet\nAddress: ${walletAddress}\nUse this address when the user says "my wallet", "my balance", "my workflows", etc. Do not ask the user for their wallet address.`
+    : "";
+
   return `You are Kwala AI, the intelligent assistant for Kwala Network blockchain automation. You help users create, deploy, and monitor on-chain workflows using the Kwalang YAML language.
 
 ## Your Capabilities (20 MCP tools across 5 categories)
@@ -60,5 +70,5 @@ Testnets: Sepolia (11155111), Base Sepolia (84532), Polygon Amoy (80002), BNB Te
 - **contract_call** — Call a smart contract function
 - **notification** — Send via configured channels
 
-Keep responses concise and action-oriented. When showing YAML, use \`\`\`yaml code blocks. Format transaction hashes and addresses in \`monospace\`.`;
+Keep responses concise and action-oriented. When showing YAML, use \`\`\`yaml code blocks. Format transaction hashes and addresses in \`monospace\`.${walletSection}`;
 }

@@ -10,6 +10,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
 import { createMCPClient } from "@ai-sdk/mcp";
 import { getSystemPrompt } from "@/lib/ai/system-prompt";
+import { WALLET_ADDRESS_HEADER } from "@/lib/wallet/constants";
 import {
   saveMessages,
   createChat,
@@ -49,6 +50,10 @@ export async function POST(request: Request) {
       id: string;
     } = await request.json();
 
+    // Read connected wallet address from request header
+    const walletAddress =
+      request.headers.get(WALLET_ADDRESS_HEADER) || undefined;
+
     // Create chat if it doesn't exist
     const existingChat = await getChatById(chatId);
     if (!existingChat) {
@@ -84,8 +89,8 @@ export async function POST(request: Request) {
     const mcpClient = await getMCPClient();
     const mcpTools = await mcpClient.tools();
 
-    // System prompt
-    const systemPrompt = getSystemPrompt();
+    // System prompt (includes wallet address when connected)
+    const systemPrompt = getSystemPrompt({ walletAddress });
 
     // Convert UI messages to model messages
     const modelMessages = await convertToModelMessages(messages);

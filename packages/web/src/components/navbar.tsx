@@ -6,6 +6,7 @@ import { ArrowUpRight, GitFork, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ConnectButton } from "@/components/wallet";
 
 const GITHUB_URL = "https://github.com/Blockchain-Oracle/kwala-mcp";
 
@@ -93,6 +94,8 @@ export function Navbar() {
 
           <ThemeToggle />
 
+          <ConnectButton />
+
           <a
             href="#install"
             className={cn(
@@ -107,8 +110,9 @@ export function Navbar() {
           </a>
         </nav>
 
-        {/* Mobile: theme toggle + hamburger */}
+        {/* Mobile: theme toggle + wallet + hamburger */}
         <div className="flex md:hidden items-center gap-1">
+          <ConnectButton />
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen((v) => !v)}
