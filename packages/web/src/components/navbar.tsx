@@ -12,9 +12,8 @@ const GITHUB_URL = "https://github.com/Blockchain-Oracle/kwala-ai";
 
 const navLinks = [
   { href: "/chat", label: "Chat" },
-  { href: "#tools", label: "Tools" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#install", label: "Install" },
+  { href: "/skill", label: "Skill" },
+  { href: "http://localhost:3001", label: "Docs", external: true },
   { href: "https://kwala.network", label: "Kwala Network", external: true },
 ];
 
