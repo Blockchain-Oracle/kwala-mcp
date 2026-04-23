@@ -91,15 +91,17 @@ export const createAutomation = tool({
       // Build Trigger
       const trigger: Record<string, unknown> = { ...triggerDefaults(chainId) };
 
-      // Resolve contract address
+      // Resolve contract address — only for triggers that need it
       let contractAddr = params.contract_address;
-      if (contractAddr && !contractAddr.startsWith("0x")) {
+      const needsContract = params.trigger_type === "event" || params.trigger_type === "address_tracking";
+
+      if (needsContract && contractAddr && !contractAddr.startsWith("0x")) {
         const resolved = resolveToken(contractAddr, chainId);
         if (resolved) {
           contractAddr = resolved;
         } else {
           return {
-            error: `Token "${contractAddr}" not found on chain ${chain?.name ?? chainId}. Use listChains to see supported tokens.`,
+            error: `Token "${contractAddr}" not found on chain ${chain?.name ?? chainId}. Use listChains to see supported tokens, or provide a 0x address.`,
           };
         }
       }
@@ -114,7 +116,7 @@ export const createAutomation = tool({
           break;
         case "oracle_price":
           if (!params.trigger_price) {
-            return { error: "trigger_price is required for oracle_price triggers." };
+            return { error: "trigger_price is required for oracle_price triggers. No contract_address needed." };
           }
           break;
         case "block":

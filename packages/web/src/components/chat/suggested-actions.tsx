@@ -33,19 +33,19 @@ const CATEGORIES: Category[] = [
         title: "Price Alert",
         description: "Alert when ETH drops below $2000",
         prompt:
-          "Create a workflow that alerts me via Telegram when ETH drops below $2000 on Ethereum",
+          "Create an oracle price alert workflow that notifies me when ETH drops below $2000",
       },
       {
-        title: "Transfer Monitor",
-        description: "Watch USDC transfers on Base",
+        title: "USDC Monitor",
+        description: "Watch USDC transfers on Base Sepolia",
         prompt:
-          "Create a workflow that monitors large USDC transfers (>$10k) on Base and sends a Discord notification",
+          "Create an event workflow that watches for USDC Transfer events on Base Sepolia and sends a Telegram notification with the from address, to address, and amount",
       },
       {
-        title: "NFT Activity",
-        description: "Track NFT mints on a contract",
+        title: "Wallet Tracker",
+        description: "Track any wallet for activity",
         prompt:
-          "Create a workflow to monitor NFT mint events on a contract and send me alerts",
+          "Create an address tracking workflow that monitors wallet 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18 on Polygon for all activity",
       },
     ],
   },
@@ -55,20 +55,19 @@ const CATEGORIES: Category[] = [
     icon: BarChart3,
     actions: [
       {
-        title: "Deploy Workflow",
-        description: "Deploy a workflow to Kwala Network",
-        prompt:
-          "Help me deploy a workflow to the Kwala Network. What do I need to get started?",
+        title: "Verify & Deploy",
+        description: "Deploy a workflow on-chain",
+        prompt: "List my workflow templates and help me deploy one",
       },
       {
-        title: "Check Status",
-        description: "View workflow deployment status",
-        prompt: "Show me the status of my deployed workflows",
+        title: "My Workflows",
+        description: "View deployed workflows",
+        prompt: "Show me all my deployed workflows and their status",
       },
       {
         title: "Network Stats",
-        description: "Explore Kwala network statistics",
-        prompt: "Show me the Kwala network explorer stats",
+        description: "Kwala network activity",
+        prompt: "Show me the Kwala network explorer stats — total actions and deployed workflows",
       },
     ],
   },
@@ -79,41 +78,18 @@ const CATEGORIES: Category[] = [
     actions: [
       {
         title: "My Wallet",
-        description: "Show your Kwala wallet",
-        prompt: "Show me my Kwala wallet address",
+        description: "Show connected wallet info",
+        prompt: "Show my connected wallet address and Kwala credit balance",
       },
-      {
-        title: "Credit Balance",
-        description: "Check your Kwala credits",
-        prompt: "What is my Kwala credit balance?",
-      },
-      {
-        title: "Configure Notifications",
-        description: "Set up Telegram or Discord",
-        prompt:
-          "Show me my current notification configuration for Telegram and Discord",
-      },
-    ],
-  },
-  {
-    id: "explore",
-    label: "Explore",
-    icon: Globe,
-    actions: [
       {
         title: "Supported Chains",
-        description: "View all supported blockchains",
-        prompt: "What blockchain networks does Kwala support?",
+        description: "View all chains and tokens",
+        prompt: "List all supported blockchain networks with their tokens",
       },
       {
         title: "Browse Templates",
         description: "Pre-built workflow templates",
-        prompt: "Show me available workflow templates",
-      },
-      {
-        title: "Available Tools",
-        description: "List all Kwala tools",
-        prompt: "What tools are available in Kwala?",
+        prompt: "Show me available workflow templates I can use",
       },
     ],
   },
@@ -123,21 +99,21 @@ const CATEGORIES: Category[] = [
     icon: Settings,
     actions: [
       {
-        title: "Getting Started",
-        description: "New to Kwala? Start here",
+        title: "Setup Telegram",
+        description: "Configure Telegram notifications",
         prompt:
-          "I'm new to Kwala. Help me set up my wallet and configure notifications so I can start creating automations.",
+          "I want to set up my Telegram notifications. My bot token is 8762443620:AAEZoRJ6b1xwzkFcj-PMekrQHXtewsB4p4g and my chat ID is 8028166336. Save this configuration.",
       },
       {
-        title: "Login",
-        description: "Authenticate with Kwala",
-        prompt: "Help me log in to the Kwala API",
+        title: "View Config",
+        description: "Check notification settings",
+        prompt: "Show me my current notification configuration",
       },
       {
-        title: "Full Setup",
-        description: "Configure everything at once",
+        title: "Quick Start",
+        description: "Set up everything at once",
         prompt:
-          "Set up my Kwala account: create wallet, check balance, and show my notification config",
+          "Show my wallet, check my balance, and show my notification config",
       },
     ],
   },
