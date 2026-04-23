@@ -1,8 +1,18 @@
 "use client";
 
-import { Rocket, Check, Loader2, AlertCircle } from "lucide-react";
+import {
+  Rocket,
+  Check,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+  FileCode,
+} from "lucide-react";
 import { BaseCard, DataRow } from "./base";
 import { ErrorCard } from "./base";
+import { TransactionWrapper } from "@/components/transactions";
+import type { TransactionStep } from "@/lib/types/transactions";
+import { KWALA_TX_DEFAULTS } from "@/lib/types/transactions";
 
 interface DeployStep {
   step: string;
@@ -14,12 +24,22 @@ interface DeployStep {
 
 interface DeployResult {
   workflow_name?: string;
+  yaml?: string;
   steps?: DeployStep[];
   final_status?: string;
   workflow_id?: string;
   chaincode_address?: string;
   error?: string;
   suggestion?: string;
+  /** Transaction steps for client-side signing */
+  transaction_steps?: Array<{
+    name: string;
+    to: string;
+    data: string;
+    chainId?: number;
+    gasPrice?: string;
+    gasLimit?: string;
+  }>;
 }
 
 interface DeploymentProgressCardProps {
@@ -47,13 +67,7 @@ function parseResult(data: unknown): DeployResult {
   return {};
 }
 
-function StepIndicator({
-  step,
-  status,
-}: {
-  step: string;
-  status: string;
-}) {
+function StepIndicator({ step, status }: { step: string; status: string }) {
   const isComplete = status === "success" || status === "completed";
   const isFailed = status === "failed" || status === "error";
   const isPending = !isComplete && !isFailed;
@@ -91,16 +105,61 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
   const result = parseResult(data);
 
   if (result.error && !result.steps) {
+    return <ErrorCard error={result.error} toolName="Deploy Workflow" />;
+  }
+
+  const isSuccess =
+    result.final_status === "active" || result.final_status === "deployed";
+
+  // Phase 1: Client-side signing mode
+  // If we have transaction_steps, show the TransactionWrapper for wallet signing
+  if (result.transaction_steps && result.transaction_steps.length > 0) {
+    const txSteps: TransactionStep[] = result.transaction_steps.map((s) => ({
+      name: s.name,
+      to: s.to,
+      data: s.data,
+      chainId: s.chainId ?? KWALA_TX_DEFAULTS.chainId,
+      gasPrice: s.gasPrice ?? KWALA_TX_DEFAULTS.gasPrice,
+      gasLimit: s.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit,
+    }));
+
     return (
-      <ErrorCard
-        error={result.error}
-        toolName="Deploy Workflow"
-      />
+      <BaseCard
+        title="Deploy Workflow"
+        icon={<Rocket className="w-4 h-4" />}
+      >
+        <TransactionWrapper
+          workflowName={result.workflow_name ?? "Workflow"}
+          steps={txSteps}
+          buttonText="Sign & Deploy"
+        >
+          {result.workflow_name && (
+            <DataRow label="Workflow" value={result.workflow_name} highlight />
+          )}
+          {result.yaml && (
+            <div className="mt-2">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <FileCode className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  YAML Preview
+                </span>
+              </div>
+              <pre className="bg-background rounded-lg border border-border p-3 overflow-x-auto text-xs font-mono text-foreground leading-relaxed max-h-32 overflow-y-auto">
+                {result.yaml}
+              </pre>
+            </div>
+          )}
+          <DataRow
+            label="Steps"
+            value={`${txSteps.length} transaction${txSteps.length > 1 ? "s" : ""}`}
+          />
+          <DataRow label="Chain" value="KWALA (1905)" />
+        </TransactionWrapper>
+      </BaseCard>
     );
   }
 
-  const isSuccess = result.final_status === "active" || result.final_status === "deployed";
-
+  // Phase 2: Server-side deployment result (receipt)
   return (
     <BaseCard
       title={isSuccess ? "Workflow Deployed" : "Deploying Workflow"}
@@ -117,7 +176,12 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
             <div key={i}>
               <StepIndicator step={step.step} status={step.status} />
               {step.tx_hash ? (
-                <DataRow label="TX Hash" value={step.tx_hash} mono copyable />
+                <DataRow
+                  label="TX Hash"
+                  value={step.tx_hash}
+                  mono
+                  copyable
+                />
               ) : null}
             </div>
           ))}

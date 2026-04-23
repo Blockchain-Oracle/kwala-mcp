@@ -1,15 +1,26 @@
 "use client";
 
-import { FileCode, Copy, Check } from "lucide-react";
+import { FileCode, Copy, Check, Rocket } from "lucide-react";
 import { BaseCard, DataRow } from "./base";
 import { ErrorCard } from "./base";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+
+interface AutomationResult {
+  yaml?: string;
+  name?: string;
+  description?: string;
+  trigger_type?: string;
+  chain?: string;
+  error?: string;
+}
 
 interface AutomationCardProps {
   data: unknown;
+  onDeploy?: (yaml: string, name: string) => void;
 }
 
-function parseResult(data: unknown): Record<string, unknown> {
+function parseResult(data: unknown): AutomationResult {
   if (!data) return {};
   if (typeof data === "object" && data !== null) {
     const d = data as Record<string, unknown>;
@@ -25,12 +36,12 @@ function parseResult(data: unknown): Record<string, unknown> {
         }
       }
     }
-    return d;
+    return d as AutomationResult;
   }
   return {};
 }
 
-export function AutomationCard({ data }: AutomationCardProps) {
+export function AutomationCard({ data, onDeploy }: AutomationCardProps) {
   const result = parseResult(data);
   const [copied, setCopied] = useState(false);
 
@@ -40,9 +51,9 @@ export function AutomationCard({ data }: AutomationCardProps) {
     );
   }
 
-  const yaml = result.yaml as string;
-  const name = result.name as string;
-  const description = result.description as string;
+  const yaml = result.yaml;
+  const name = result.name;
+  const description = result.description;
 
   const handleCopy = () => {
     if (!yaml) return;
@@ -50,6 +61,8 @@ export function AutomationCard({ data }: AutomationCardProps) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const isDeployable = typeof onDeploy === "function" && yaml && name;
 
   return (
     <BaseCard
@@ -90,11 +103,28 @@ export function AutomationCard({ data }: AutomationCardProps) {
       )}
 
       {result.trigger_type ? (
-        <DataRow label="Trigger" value={result.trigger_type as string} />
+        <DataRow label="Trigger" value={result.trigger_type} />
       ) : null}
       {result.chain ? (
-        <DataRow label="Chain" value={result.chain as string} />
+        <DataRow label="Chain" value={result.chain} />
       ) : null}
+
+      {isDeployable && (
+        <button
+          type="button"
+          onClick={() => onDeploy(yaml, name)}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 mt-3",
+            "py-2.5 px-4 rounded-lg font-medium text-sm",
+            "bg-primary text-primary-foreground",
+            "hover:bg-primary/90 transition-all",
+            "active:scale-[0.98]"
+          )}
+        >
+          <Rocket className="w-4 h-4" />
+          Deploy This Workflow
+        </button>
+      )}
     </BaseCard>
   );
 }

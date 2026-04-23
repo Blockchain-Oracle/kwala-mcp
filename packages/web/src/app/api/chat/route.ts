@@ -17,8 +17,6 @@ import {
   getChatById,
   updateChatTitle,
   extractChatTitle,
-  deleteMessagesByChatId,
-  deleteChat,
 } from "@/lib/db/queries";
 
 export const maxDuration = 60;
@@ -156,27 +154,4 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const chatId = searchParams.get("id");
-
-    if (!chatId) {
-      return new Response(
-        JSON.stringify({ error: "Chat ID is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    await deleteMessagesByChatId(chatId);
-    await deleteChat(chatId);
-
-    return Response.json({ success: true });
-  } catch (error) {
-    console.error("[Chat API] Delete error:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to delete chat" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
+// DELETE is handled by /api/chat/[id]/route.ts

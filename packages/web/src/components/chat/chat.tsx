@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useChat, type UIMessage } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from "ai";
 import { useSWRConfig } from "swr";
 import { Messages } from "./messages";
 import { ChatInput } from "./chat-input";
@@ -25,7 +25,7 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
   const isNewChat = pathname === "/chat";
   const address = useWalletAddress();
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const { messages, sendMessage, addToolOutput, status, stop } = useChat({
     id,
     messages: initialMessages,
     transport: new DefaultChatTransport({
@@ -33,6 +33,7 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
       body: { id },
       headers: { [WALLET_ADDRESS_HEADER]: address ?? "" },
     }),
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onFinish: () => {
       mutate("/api/history?limit=50");
     },
@@ -91,7 +92,11 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
             </div>
           </div>
         ) : (
-          <Messages messages={messages} isLoading={isLoading} />
+          <Messages
+            messages={messages}
+            isLoading={isLoading}
+            addToolOutput={addToolOutput}
+          />
         )}
       </div>
 

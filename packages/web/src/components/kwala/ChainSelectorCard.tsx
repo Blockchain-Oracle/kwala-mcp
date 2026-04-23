@@ -15,6 +15,7 @@ interface Chain {
 
 interface ChainSelectorCardProps {
   data: unknown;
+  onSelect?: (chain: Chain) => void;
 }
 
 function parseResult(data: unknown): Chain[] | { error: string } {
@@ -39,18 +40,23 @@ function parseResult(data: unknown): Chain[] | { error: string } {
   return [];
 }
 
-export function ChainSelectorCard({ data }: ChainSelectorCardProps) {
+export function ChainSelectorCard({ data, onSelect }: ChainSelectorCardProps) {
   const result = parseResult(data);
 
   if (!Array.isArray(result)) {
     return (
-      <ErrorCard error={(result as { error: string }).error} toolName="List Chains" />
+      <ErrorCard
+        error={(result as { error: string }).error}
+        toolName="List Chains"
+      />
     );
   }
 
   const chains = result as Chain[];
   const mainnets = chains.filter((c) => c.network === "mainnet");
   const testnets = chains.filter((c) => c.network === "testnet");
+
+  const isSelectable = typeof onSelect === "function";
 
   const renderChainGrid = (items: Chain[], label: string) => (
     <div>
@@ -59,16 +65,24 @@ export function ChainSelectorCard({ data }: ChainSelectorCardProps) {
       </h4>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.map((chain) => (
-          <div
+          <button
             key={chain.id}
+            type="button"
+            disabled={!isSelectable}
+            onClick={() => onSelect?.(chain)}
             className={cn(
               "rounded-lg border border-border bg-muted/20 p-3 text-center",
-              "hover:bg-muted/40 hover:border-primary/30 transition-all"
+              "transition-all text-left",
+              isSelectable
+                ? "hover:bg-primary/10 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 cursor-pointer active:scale-[0.98]"
+                : "hover:bg-muted/40 hover:border-primary/30"
             )}
           >
             <Network className="w-4 h-4 text-primary mx-auto mb-1" />
-            <p className="text-xs font-semibold text-foreground">{chain.name}</p>
-            <p className="text-[10px] text-muted-foreground font-mono">
+            <p className="text-xs font-semibold text-foreground text-center">
+              {chain.name}
+            </p>
+            <p className="text-[10px] text-muted-foreground font-mono text-center">
               {chain.symbol} / {chain.id}
             </p>
             {chain.tokens && chain.tokens.length > 0 ? (
@@ -83,7 +97,7 @@ export function ChainSelectorCard({ data }: ChainSelectorCardProps) {
                 ))}
               </div>
             ) : null}
-          </div>
+          </button>
         ))}
       </div>
     </div>
@@ -94,6 +108,11 @@ export function ChainSelectorCard({ data }: ChainSelectorCardProps) {
       title={`Supported Chains (${chains.length})`}
       icon={<Globe className="w-4 h-4" />}
     >
+      {isSelectable && (
+        <p className="text-xs text-muted-foreground mb-2">
+          Click a chain to select it
+        </p>
+      )}
       <div className="space-y-4">
         {mainnets.length > 0 && renderChainGrid(mainnets, "Mainnets")}
         {testnets.length > 0 && renderChainGrid(testnets, "Testnets")}

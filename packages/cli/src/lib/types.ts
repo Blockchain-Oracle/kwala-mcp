@@ -80,6 +80,26 @@ export interface DeployResult {
   error?: string;
 }
 
+// ─── Prepared Transaction (for browser wallet signing) ─
+export interface PreparedTransactionStep {
+  name: string;
+  to: string;
+  data: string;
+  chainId: number;
+  gasPrice: string;
+  gasLimit: string;
+  value: string;
+}
+
+export interface PreparedDeploy {
+  workflow_id: string;
+  workflow_name: string;
+  mutated_yaml: string;
+  transactions: PreparedTransactionStep[];
+  rpc_url: string;
+  contract_address: string;
+}
+
 // ─── Workflow Template ──────────────────────────────────
 export interface WorkflowTemplate {
   id: string;

@@ -5,13 +5,14 @@ import { isToolUIPart, getToolName } from "ai";
 import { User, Loader2, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./markdown";
-import { ToolResultRenderer } from "./tool-result-renderer";
+import { ToolResultRenderer, type AddToolOutputHandler } from "./tool-result-renderer";
 
 interface MessageProps {
   message: UIMessage;
+  addToolOutput?: AddToolOutputHandler;
 }
 
-export function Message({ message }: MessageProps) {
+export function Message({ message, addToolOutput }: MessageProps) {
   const isUser = message.role === "user";
 
   const renderParts = () => {
@@ -58,6 +59,7 @@ export function Message({ message }: MessageProps) {
       if (isToolUIPart(part)) {
         const toolName = getToolName(part);
         const state = part.state;
+        const toolCallId = "toolCallId" in part ? (part as Record<string, unknown>).toolCallId as string : undefined;
 
         // Loading states
         if (state === "input-streaming" || state === "input-available") {
@@ -87,7 +89,12 @@ export function Message({ message }: MessageProps) {
         if (state === "output-available" && "output" in part) {
           return (
             <div key={index} className="my-3">
-              <ToolResultRenderer toolName={toolName} result={part.output} />
+              <ToolResultRenderer
+                toolName={toolName}
+                result={part.output}
+                toolCallId={toolCallId}
+                addToolOutput={addToolOutput}
+              />
             </div>
           );
         }

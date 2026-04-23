@@ -1,12 +1,43 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useCallback } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MarkdownProps {
   content: string;
+}
+
+function CodeBlockCopyButton({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [code]);
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={cn(
+        "absolute top-2 right-2 p-1.5 rounded-md transition-all",
+        "opacity-0 group-hover/codeblock:opacity-100",
+        copied
+          ? "text-green-400 bg-green-400/10"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+      )}
+      title={copied ? "Copied!" : "Copy code"}
+    >
+      {copied ? (
+        <Check className="w-3.5 h-3.5" />
+      ) : (
+        <Copy className="w-3.5 h-3.5" />
+      )}
+    </button>
+  );
 }
 
 const components: Partial<Components> = {
@@ -36,15 +67,36 @@ const components: Partial<Components> = {
         </code>
       );
     }
+
+    // Extract language from className (e.g. "language-yaml")
+    const language = className?.replace("language-", "") ?? "";
+    const codeText =
+      typeof children === "string"
+        ? children
+        : Array.isArray(children)
+          ? children.join("")
+          : String(children ?? "");
+
     return (
-      <code
-        className={cn(
-          "block p-3 rounded-lg bg-muted font-mono text-sm overflow-x-auto",
-          className
+      <div className="relative group/codeblock">
+        {language && (
+          <div className="flex items-center justify-between px-3 py-1.5 bg-muted/80 border-b border-border rounded-t-lg">
+            <span className="text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
+              {language}
+            </span>
+          </div>
         )}
-      >
-        {children}
-      </code>
+        <CodeBlockCopyButton code={codeText} />
+        <code
+          className={cn(
+            "block p-3 bg-muted font-mono text-sm overflow-x-auto",
+            language ? "rounded-b-lg" : "rounded-lg",
+            className
+          )}
+        >
+          {children}
+        </code>
+      </div>
     );
   },
   pre: ({ children }) => <>{children}</>,
@@ -56,6 +108,42 @@ const components: Partial<Components> = {
     <blockquote className="border-l-2 border-primary/50 pl-4 my-2 text-muted-foreground italic">
       {children}
     </blockquote>
+  ),
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-3">
+      <table className="min-w-full text-sm border border-border rounded-lg overflow-hidden">
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children }) => (
+    <thead className="bg-muted/50">{children}</thead>
+  ),
+  th: ({ children }) => (
+    <th className="px-3 py-2 text-left text-xs font-semibold text-foreground border-b border-border">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-3 py-2 text-xs text-foreground border-b border-border/50">
+      {children}
+    </td>
+  ),
+  hr: () => <hr className="my-4 border-border" />,
+  h1: ({ children }) => (
+    <h1 className="text-xl font-bold text-foreground mt-4 mb-2">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-lg font-bold text-foreground mt-3 mb-2">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-base font-semibold text-foreground mt-3 mb-1">
+      {children}
+    </h3>
   ),
 };
 

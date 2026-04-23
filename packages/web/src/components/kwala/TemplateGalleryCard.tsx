@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutTemplate, Zap } from "lucide-react";
+import { LayoutTemplate, Zap, ArrowRight } from "lucide-react";
 import { BaseCard } from "./base";
 import { ErrorCard } from "./base";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ interface Template {
 
 interface TemplateGalleryCardProps {
   data: unknown;
+  onSelect?: (template: Template) => void;
 }
 
 function parseResult(
@@ -50,16 +51,18 @@ const categoryColors: Record<string, string> = {
   notifications: "bg-green-500/10 text-green-400 border-green-500/20",
 };
 
-export function TemplateGalleryCard({ data }: TemplateGalleryCardProps) {
+export function TemplateGalleryCard({
+  data,
+  onSelect,
+}: TemplateGalleryCardProps) {
   const result = parseResult(data);
 
   if (result.error) {
-    return (
-      <ErrorCard error={result.error} toolName="List Templates" />
-    );
+    return <ErrorCard error={result.error} toolName="List Templates" />;
   }
 
   const templates = result.templates ?? [];
+  const isSelectable = typeof onSelect === "function";
 
   return (
     <BaseCard
@@ -99,18 +102,35 @@ export function TemplateGalleryCard({ data }: TemplateGalleryCardProps) {
                   {t.category}
                 </span>
               </div>
-              <div className="flex gap-2 mt-2 flex-wrap">
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-mono">
-                  {t.trigger_type}
-                </span>
-                {t.chains?.slice(0, 3).map((chain) => (
-                  <span
-                    key={chain}
-                    className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border font-mono"
-                  >
-                    {chain}
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-mono">
+                    {t.trigger_type}
                   </span>
-                ))}
+                  {t.chains?.slice(0, 3).map((chain) => (
+                    <span
+                      key={chain}
+                      className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border font-mono"
+                    >
+                      {chain}
+                    </span>
+                  ))}
+                </div>
+                {isSelectable && (
+                  <button
+                    type="button"
+                    onClick={() => onSelect(t)}
+                    className={cn(
+                      "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium",
+                      "bg-primary/10 text-primary border border-primary/20",
+                      "hover:bg-primary/20 hover:border-primary/40",
+                      "transition-all active:scale-[0.97]"
+                    )}
+                  >
+                    Use This
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

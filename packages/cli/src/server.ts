@@ -28,6 +28,7 @@ import { registerBuildActionTool } from "./tools/build-action.js";
 // Deployment
 import { registerVerifyWorkflowTool } from "./tools/verify-workflow.js";
 import { registerDeployWorkflowTool } from "./tools/deploy-workflow.js";
+import { registerPrepareDeployTool } from "./tools/prepare-deploy.js";
 import { registerDeactivateWorkflowTool } from "./tools/deactivate-workflow.js";
 import { registerWorkflowStatusTool } from "./tools/workflow-status.js";
 import { registerListWorkflowsTool } from "./tools/list-workflows.js";
@@ -50,6 +51,7 @@ export function createMcpServer(): McpServer {
   // ── Deployment (5) ──
   registerVerifyWorkflowTool(server);
   registerDeployWorkflowTool(server);
+  registerPrepareDeployTool(server);
   registerDeactivateWorkflowTool(server);
   registerWorkflowStatusTool(server);
   registerListWorkflowsTool(server);

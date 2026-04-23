@@ -3,7 +3,7 @@ import YAML from "yaml";
 import { getWallet, getAddress } from "./wallet.js";
 import { kwalaGet } from "./api.js";
 import { logger } from "./logger.js";
-import type { ChaincodeResponse, DeployResult, DeployStep } from "./types.js";
+import type { ChaincodeResponse, DeployResult, DeployStep, PreparedDeploy } from "./types.js";
 
 const RPC_URL = "https://rpc-ohio.kwala.network";
 const CHAIN_ID = 1905;
@@ -143,6 +143,48 @@ async function fetchChaincodeAddress(workflowId: string): Promise<string> {
   throw new Error(
     `Could not fetch chaincode address for ${workflowId} after 3 attempts`,
   );
+}
+
+/**
+ * Prepare unsigned transaction data for browser wallet signing.
+ * Returns encoded calldata for save, deploy, and activate steps
+ * without signing — the frontend wallet signs and broadcasts.
+ */
+export function prepareDeploy(yamlStr: string, userAddress: string): PreparedDeploy {
+  const workflowName = extractWorkflowName(yamlStr);
+  const workflowId = `${workflowName}_${userAddress}`;
+  const mutatedYaml = mutateYamlName(yamlStr, userAddress);
+
+  const saveData = iface.encodeFunctionData("saveWorkflow", [mutatedYaml]);
+  const deployData = iface.encodeFunctionData("deployWorkflow", [mutatedYaml]);
+
+  return {
+    workflow_id: workflowId,
+    workflow_name: workflowName,
+    mutated_yaml: mutatedYaml,
+    rpc_url: RPC_URL,
+    contract_address: CONTRACT_ADDRESS,
+    transactions: [
+      {
+        name: "save",
+        to: CONTRACT_ADDRESS,
+        data: saveData,
+        chainId: CHAIN_ID,
+        gasPrice: GAS_PRICE.toString(),
+        gasLimit: GAS_LIMIT.toString(),
+        value: "0",
+      },
+      {
+        name: "deploy",
+        to: CONTRACT_ADDRESS,
+        data: deployData,
+        chainId: CHAIN_ID,
+        gasPrice: GAS_PRICE.toString(),
+        gasLimit: GAS_LIMIT.toString(),
+        value: "0",
+      },
+    ],
+  };
 }
 
 /**

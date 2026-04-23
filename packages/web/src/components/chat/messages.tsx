@@ -4,13 +4,15 @@ import { useEffect, useRef } from "react";
 import type { UIMessage } from "@ai-sdk/react";
 import { Message } from "./message";
 import { ToolCallLoader } from "./tool-call-loader";
+import type { AddToolOutputHandler } from "./tool-result-renderer";
 
 interface MessagesProps {
   messages: UIMessage[];
   isLoading: boolean;
+  addToolOutput?: AddToolOutputHandler;
 }
 
-export function Messages({ messages, isLoading }: MessagesProps) {
+export function Messages({ messages, isLoading, addToolOutput }: MessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -21,7 +23,11 @@ export function Messages({ messages, isLoading }: MessagesProps) {
     <div className="h-full overflow-y-auto px-4 py-6">
       <div className="max-w-3xl mx-auto space-y-6">
         {messages.map((message) => (
-          <Message key={message.id} message={message} />
+          <Message
+            key={message.id}
+            message={message}
+            addToolOutput={addToolOutput}
+          />
         ))}
 
         {isLoading && messages[messages.length - 1]?.role === "user" && (
