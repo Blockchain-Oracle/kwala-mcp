@@ -1,0 +1,86 @@
+---
+title: Introduction
+description: Kwala MCP — AI-powered blockchain automation across 11 EVM chains
+---
+
+# Kwala MCP
+
+**Kwala MCP** is a [Model Context Protocol](https://modelcontextprotocol.io) server that lets AI agents create, deploy, and monitor on-chain automations on [Kwala Network](https://kwala.network) using natural language — no Solidity, no dashboard, no glue code.
+
+Describe what you want to automate in plain English. Your agent generates a **Kwalang** YAML workflow, verifies it against the Kwala backend, deploys it on-chain to the KWALA chain (chain ID `1905`), and monitors its execution. Kwala Network then watches the target chain for your trigger and fires your actions automatically.
+
+## What it does
+
+Kwala MCP exposes **20 tools** across five categories:
+
+| Category | Tools | Purpose |
+| --- | --- | --- |
+| Workflow Generation | 5 | Turn natural language into a valid Kwalang YAML workflow |
+| Deployment | 5 | Verify, deploy, deactivate, and track workflows on-chain |
+| Explorer | 4 | Inspect network stats, execution logs, deployed workflows, and ABIs |
+| Account | 4 | Manage your KWALA wallet, credits, notification creds, and auth |
+| System | 2 | List supported chains and available tools |
+
+### Example prompts
+
+- *"Alert me on Telegram when USDC is transferred on Ethereum."*
+- *"Top up my wallet with 0.05 ETH when the balance drops below 0.01."*
+- *"Watch address `0xabc…` on Base and ping Discord on any outgoing tx."*
+- *"Mint an NFT reward when someone stakes more than 10 KALP."*
+
+## One-line install
+
+```bash
+# Claude Code
+claude mcp add kwala npx @kwala-dev/mcp
+```
+
+For Cursor, Windsurf, VS Code, Zed, Cline, Goose, Gemini CLI, Continue, and Claude Desktop, see the [Installation guide](/getting-started/installation).
+
+### Standalone CLI
+
+```bash
+npm install -g @kwala-dev/cli
+kwala --help
+```
+
+On first run, Kwala MCP generates a wallet on the KWALA chain (`1905`). The private key is stored locally at `~/.kwala-mcp/config.json` and never leaves your machine.
+
+## Example workflow
+
+```yaml
+Name: TokenTransferAlert
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 1
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: SendTelegramAlert
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "USDC Transfer: from re.event(0) to re.event(1), amount: re.event(2)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+Each `re.event(N)` reference pulls dynamic data from the triggering on-chain event — see the [`re.event(N)` guide](/kwalang/re-event).
+
+## Next steps
+
+- [Installation](/getting-started/installation) — Claude Code, Cursor, Windsurf, VS Code, Zed, Cline, Goose, Gemini CLI, CLI
+- [Quickstart](/getting-started/quickstart) — Build and deploy your first workflow end-to-end
+- [Tool reference](/tools) — All 20 MCP tools with inputs, outputs, and example prompts
+- [Kwalang guide](/kwalang) — Full YAML schema, trigger and action types, dynamic data
+- [Examples](/examples) — Walkthroughs of six production-ready workflows
+- [Architecture](/architecture) — How the MCP + CLI + Kwala chain deployment pipeline works
+
+## Packages
+
+- [`@kwala-dev/mcp`](https://www.npmjs.com/package/@kwala-dev/mcp) — thin MCP stdio wrapper
+- [`@kwala-dev/cli`](https://www.npmjs.com/package/@kwala-dev/cli) — CLI + core library (20 tools)
