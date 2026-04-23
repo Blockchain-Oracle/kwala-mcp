@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { createMcpServer } from "./server.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { loadOrCreateWallet, getAddress, getConfigPath } from "./lib/wallet.js";
+import { loadOrCreateWallet, getAddress, getConfigPath, getConfig, updateConfig } from "./lib/wallet.js";
 import { CHAINS, resolveChainId, getChain } from "./lib/chains.js";
 import { TOKENS, resolveToken } from "./lib/tokens.js";
 import { TEMPLATES } from "./lib/templates.js";
@@ -23,7 +23,7 @@ function fatal(msg: string): never {
 
 const program = new Command()
   .name("kwala")
-  .description("CLI for Kwala Network blockchain automations. 17 tools for creating, verifying, deploying, and monitoring Kwalang workflows.")
+  .description("CLI for Kwala Network blockchain automations. 19 tools for creating, verifying, deploying, and monitoring Kwalang workflows.")
   .version("0.1.0");
 
 // Default action: start MCP server
@@ -39,13 +39,13 @@ program.action(async () => {
 
 program
   .command("tools")
-  .description("List all 17 available Kwala MCP tools")
+  .description("List all 19 available Kwala MCP tools")
   .action(() => {
     output({
       "Workflow Generation": ["create-automation", "explain-yaml", "list-templates", "build-trigger", "build-action"],
       "Deployment": ["verify-workflow", "deploy-workflow", "workflow-status", "list-workflows"],
       "Explorer": ["explorer-stats", "explorer-actions", "get-workflow", "fetch-abi"],
-      "Account": ["wallet", "credit-balance"],
+      "Account": ["wallet", "credit-balance", "configure", "login"],
       "System": ["list-chains", "tools"],
     });
   });
@@ -295,6 +295,73 @@ program
     } catch (e) {
       fatal(e instanceof Error ? e.message : String(e));
     }
+  });
+
+program
+  .command("configure")
+  .description("View or update notification settings (Telegram, Discord, default chain)")
+  .option("--telegram-token <token>", "Telegram bot token from @BotFather")
+  .option("--telegram-chat <id>", "Telegram chat ID")
+  .option("--discord-webhook <url>", "Discord webhook URL")
+  .option("--default-chain <chain>", "Default chain name (e.g., Base, Ethereum)")
+  .action((opts) => {
+    const hasUpdate = opts.telegramToken || opts.telegramChat || opts.discordWebhook || opts.defaultChain;
+    if (!hasUpdate) {
+      const config = getConfig();
+      output({
+        wallet: config.address,
+        default_chain: config.default_chain ?? "base",
+        telegram: config.notifications?.telegram ? { chat_id: config.notifications.telegram.chat_id, bot_token_set: true } : null,
+        discord: config.notifications?.discord ? { webhook_url_set: true } : null,
+        config_path: getConfigPath(),
+      });
+      return;
+    }
+    const update: Record<string, unknown> = {};
+    if (opts.telegramToken || opts.telegramChat) {
+      const config = getConfig();
+      const existing = config.notifications?.telegram;
+      const botToken = opts.telegramToken ?? existing?.bot_token;
+      const chatId = opts.telegramChat ?? existing?.chat_id;
+      if (!botToken || !chatId) {
+        fatal("Both --telegram-token and --telegram-chat are required.");
+      }
+      update.notifications = { ...config.notifications, telegram: { bot_token: botToken, chat_id: chatId } };
+    }
+    if (opts.discordWebhook) {
+      const config = getConfig();
+      update.notifications = { ...(update.notifications as object ?? config.notifications), discord: { webhook_url: opts.discordWebhook } };
+    }
+    if (opts.defaultChain) update.default_chain = opts.defaultChain;
+    updateConfig(update);
+    output({ updated: true, message: "Settings saved." });
+  });
+
+program
+  .command("login")
+  .description("Authenticate with Kwala via Google OAuth (required for workflow activation)")
+  .option("--jwt <token>", "JWT token if you already have one")
+  .action(async (opts) => {
+    if (opts.jwt) {
+      updateConfig({ auth: { jwt: opts.jwt, expires: Math.floor(Date.now() / 1000) + 86400 } });
+      output({ authenticated: true, message: "JWT stored. Future deploys will include backend activation." });
+      return;
+    }
+    const config = getConfig();
+    if (config.auth?.jwt && config.auth.expires && config.auth.expires > Date.now() / 1000) {
+      output({ authenticated: true, message: "Already logged in.", expires: new Date(config.auth.expires * 1000).toISOString() });
+      return;
+    }
+    output({
+      action_required: "browser_login",
+      login_url: "https://kwala-test.kalp.network/auth/google/login",
+      instructions: [
+        "1. Open the login_url in your browser",
+        "2. Sign in with your Google account",
+        "3. Copy the JWT token from the redirect",
+        "4. Run: kwala login --jwt <your_token>",
+      ],
+    });
   });
 
 program.parse();

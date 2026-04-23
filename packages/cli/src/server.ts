@@ -68,6 +68,6 @@ export function createMcpServer(): McpServer {
   registerToolsListTool(server);
   registerListChainsTool(server);
 
-  logger.info("Kwala MCP server created with 19 tools");
+  logger.info("kwala-mcp: 19 tools registered");
   return server;
 }

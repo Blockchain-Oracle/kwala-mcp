@@ -1,6 +1,6 @@
 ---
 name: kwala
-description: Kwala Network MCP — create, verify, deploy, and monitor blockchain automations via natural language. 17 tools for Kwalang YAML workflows across 6 EVM chains.
+description: Kwala Network MCP — create, verify, deploy, and monitor blockchain automations via natural language. 19 tools for Kwalang YAML workflows across 6 EVM chains.
 ---
 
 # Kwala MCP Skill
@@ -43,7 +43,7 @@ kwala --help
 1. **MCP tools** (`kwala-*`) — preferred, cached responses, structured output
 2. **CLI** (`kwala <command>`) — fallback, always works, JSON to stdout
 
-## Tool catalog (17 tools)
+## Tool catalog (19 tools)
 
 ### Workflow Generation (5 tools)
 
@@ -73,19 +73,21 @@ kwala --help
 | `kwala-get-workflow` | Fetch deployed workflow YAML | `workflow_id` (accepts name or full ID) |
 | `kwala-fetch-abi` | Fetch contract ABI + list events/functions | `address`, `chain` (name or ID) |
 
-### Account (2 tools)
+### Account (4 tools)
 
 | Tool | Description | Key params |
 |------|-------------|------------|
 | `kwala-wallet` | Show/create KWALA chain wallet | (none) |
 | `kwala-credit-balance` | Check Kwala credit balance | `address?` |
+| `kwala-configure` | Store Telegram/Discord/webhook settings (set once, auto-used) | `telegram_bot_token?`, `telegram_chat_id?`, `discord_webhook_url?`, `default_chain?` |
+| `kwala-login` | Authenticate via Google OAuth for workflow activation | `jwt?`, `browser?` |
 
 ### System (2 tools)
 
 | Tool | Description | Key params |
 |------|-------------|------------|
 | `kwala-list-chains` | List supported chains + tokens | `network?` (mainnet/testnet/all) |
-| `kwala-tools` | List all 17 tools | (none) |
+| `kwala-tools` | List all 19 tools | (none) |
 
 ## Decision tree
 
@@ -106,6 +108,8 @@ kwala --help
 | Get a contract's ABI | `kwala-fetch-abi` | Returns events + functions list |
 | See wallet address | `kwala-wallet` | Auto-creates on first use |
 | Check credit balance | `kwala-credit-balance` | Defaults to stored wallet |
+| Set up Telegram/Discord | `kwala-configure` | Store once, auto-used everywhere |
+| Log in to Kwala | `kwala-login` | Google OAuth, stores JWT for activation |
 | See supported chains | `kwala-list-chains` | Includes token addresses |
 
 ## UX rules (non-negotiable)
