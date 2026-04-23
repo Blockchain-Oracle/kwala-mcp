@@ -1,0 +1,54 @@
+---
+title: Getting Started
+description: What Kwala MCP is, who it's for, and how the pieces fit together
+---
+
+# Getting Started
+
+**Kwala MCP** puts the whole [Kwala Network](https://kwala.network) automation platform behind a natural-language interface. You describe what you want to happen on-chain; the agent writes, verifies, deploys, and monitors a Kwalang workflow for you.
+
+## What Kwala Network is
+
+Kwala is a **serverless Web3 automation platform**. You write declarative YAML workflows ("Kwalang") that react to blockchain events and execute on-chain or off-chain actions. Workflows run on distributed Kwala nodes inside the Kwala Virtual Machine (KVM).
+
+Key properties:
+
+- YAML-first — no Solidity, no backend code
+- Runs across 11 EVM chains (6 mainnets + 4 testnets + the internal KWALA chain `1905`)
+- ERC-4337 smart wallets — Kwala sponsors gas
+- Deployment is an on-chain call to the Kwala contract on chain `1905` — fully programmable
+- Verification is a REST call — no auth needed to try it
+- Pay-as-you-go credits
+- Immutable once deployed (cannot be edited in place — deactivate and redeploy instead)
+- Up to 10 actions per workflow
+
+## What Kwala MCP adds
+
+Kwala MCP is a Model Context Protocol server built on top of that platform. It gives AI agents — Claude, Cursor, Windsurf, Gemini CLI, and every other MCP-compatible client — the tools they need to drive the whole lifecycle from natural language:
+
+1. **Generate** a Kwalang YAML workflow from a plain-English request
+2. **Verify** it against the Kwala backend before spending any gas
+3. **Deploy** it on-chain (save → deploy → activate) in a single tool call
+4. **Monitor** executions, inspect logs, and deactivate when done
+
+All 20 tools are listed in the [Tool Reference](/tools). The shape of a Kwalang workflow is explained in the [Kwalang YAML guide](/kwalang).
+
+## Who it's for
+
+- **Developers** who want programmatic deploys of automations without wiring up Kwala's dashboard manually
+- **AI agent builders** wiring on-chain actions into Claude, Cursor, Windsurf, Gemini, or any MCP client
+- **Non-technical users** who want to describe an automation in plain English and have it deployed
+
+## Two ways to run it
+
+| Surface | Install | Use from |
+| --- | --- | --- |
+| MCP server (`@kwala-dev/mcp`) | `claude mcp add kwala npx @kwala-dev/mcp` | Claude Code, Cursor, Windsurf, VS Code, Zed, Cline, Goose, Gemini CLI, Claude Desktop |
+| CLI (`@kwala-dev/cli`) | `npm install -g @kwala-dev/cli` | Terminal (no AI required) |
+
+Both surfaces share the same 20 tools and the same on-disk config at `~/.kwala-mcp/config.json`.
+
+## What's next
+
+- [Install the MCP server or CLI](/getting-started/installation)
+- [Run your first workflow end-to-end](/getting-started/quickstart)

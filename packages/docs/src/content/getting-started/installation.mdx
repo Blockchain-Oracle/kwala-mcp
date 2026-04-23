@@ -1,0 +1,109 @@
+---
+title: Installation
+description: Install Kwala MCP in Claude Code, Cursor, Windsurf, VS Code, Zed, Gemini CLI, or as a standalone CLI
+---
+
+# Installation
+
+Kwala MCP ships as two npm packages:
+
+- [`@kwala-dev/mcp`](https://www.npmjs.com/package/@kwala-dev/mcp) — an MCP stdio server
+- [`@kwala-dev/cli`](https://www.npmjs.com/package/@kwala-dev/cli) — the same 20 tools as a terminal CLI
+
+Pick whichever matches how you work. You can run both side-by-side — they share config.
+
+## Prerequisites
+
+- **Node.js 18+** (Node 20 or 24 recommended)
+- An MCP-compatible client (for the MCP server) — see the table below
+
+No Kwala account is required to get started. On first run, Kwala MCP generates a wallet on the KWALA chain (chain ID `1905`) and stores the private key locally at `~/.kwala-mcp/config.json`. The key never leaves your machine.
+
+## MCP server — one command for each client
+
+### Claude Code
+
+```bash
+claude mcp add kwala npx @kwala-dev/mcp
+```
+
+### Gemini CLI
+
+```bash
+gemini mcp add kwala npx -y @kwala-dev/mcp
+```
+
+### Cursor, Windsurf, Claude Desktop, VS Code, Zed, Continue, Cline, Goose
+
+Add this block to the client's MCP config (the file path varies per client — see the client's docs):
+
+```json
+{
+  "mcpServers": {
+    "kwala": {
+      "command": "npx",
+      "args": ["-y", "@kwala-dev/mcp"]
+    }
+  }
+}
+```
+
+Restart the client and the 20 Kwala tools should appear in the tool picker.
+
+## Standalone CLI
+
+For terminal-native use without an AI agent:
+
+```bash
+npm install -g @kwala-dev/cli
+kwala --help
+```
+
+Every MCP tool has a matching CLI command. A few examples:
+
+```bash
+kwala wallet                                    # show your KWALA wallet
+kwala list-chains                               # list all supported chains
+kwala list-templates --category alerts          # browse pre-built workflows
+kwala fetch-abi 0xA0b8...EB48 --chain ethereum  # fetch a contract's ABI
+kwala verify-workflow path/to/workflow.yaml     # REST verify, no auth
+kwala deploy-workflow path/to/workflow.yaml     # on-chain save + deploy + activate
+kwala workflow-status TokenTransferAlert        # check a deployed workflow
+kwala list-workflows                            # list your deployed workflows
+kwala credit-balance                            # check Kwala credit balance
+kwala explorer-stats                            # network stats
+kwala tools                                     # list all 20 tools
+```
+
+Full reference: [Tool Reference](/tools).
+
+## First-run configuration
+
+The first time you call any tool, Kwala MCP creates `~/.kwala-mcp/config.json` with a freshly generated wallet. After that, `kwala configure` lets you attach optional notification credentials:
+
+```bash
+kwala configure --telegram-bot-token '...' --telegram-chat-id '...'
+kwala configure --discord-webhook 'https://discord.com/api/webhooks/...'
+kwala configure --webhook-url 'https://your-endpoint.example.com/hook'
+```
+
+Stored credentials are auto-injected into any workflow that needs them — you never paste a token into a YAML file by hand.
+
+## Fund the KWALA wallet
+
+Deploying workflows on the KWALA chain costs a small amount of gas (KWALA chain token: `GINI`, RPC: `https://rpc-ohio.kwala.network`). To top up, view your wallet address:
+
+```bash
+kwala wallet
+```
+
+Send test `GINI` from the [Kwala testnet faucet](https://kwala.network). You also need **Kwala credits** to actually execute workflows — run `kwala credit-balance` to see your current balance.
+
+## Verify the install
+
+```bash
+kwala tools       # should list all 20 tools
+kwala wallet      # should print your auto-generated KWALA address
+```
+
+If both succeed, you're ready for the [Quickstart](/getting-started/quickstart).

@@ -1,0 +1,93 @@
+---
+title: Quickstart
+description: Build and deploy your first Kwala workflow end-to-end in under five minutes
+---
+
+# Quickstart — Your first automation
+
+Goal: deploy a workflow that fires a Telegram alert every time USDC is transferred on Ethereum. We'll go from natural-language prompt to live on-chain automation without leaving the agent (or the terminal).
+
+## 1. Install and configure
+
+Install Kwala MCP in your agent of choice (see [Installation](/getting-started/installation)) and store your Telegram credentials once:
+
+```bash
+kwala configure \
+  --telegram-bot-token '123456:ABC...' \
+  --telegram-chat-id '-1001234567890'
+```
+
+You can also do this through an agent: *"Configure Kwala with my Telegram bot token `123456:ABC…` and chat id `-1001234567890`."* The `kwala-configure` tool stores the credentials at `~/.kwala-mcp/config.json` so the rest of the pipeline can reference them automatically.
+
+## 2. Describe the automation
+
+Ask the agent in plain English:
+
+> **You:** Alert me on Telegram whenever USDC is transferred on Ethereum. Use my configured Telegram creds.
+
+Under the hood the agent calls [`kwala-create-automation`](/tools/workflow-generation#kwala-create-automation), which returns a complete Kwalang workflow:
+
+```yaml
+Name: TokenTransferAlert
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 1
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerEventFilter: "NA"
+  RepeatEvery: "event"
+  ExecuteAfter: "event"
+Actions:
+  - Name: SendTelegramAlert
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<YOUR_CHAT_ID>"
+      text: "USDC Transfer: from re.event(0) to re.event(1), amount: re.event(2)"
+    RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential
+```
+
+Notice `re.event(0)`, `re.event(1)`, `re.event(2)` — those are slotted with the `from`, `to`, and `amount` from each `Transfer` event at runtime. See [`re.event(N)`](/kwalang/re-event) for the full syntax.
+
+## 3. Verify the YAML
+
+Before spending gas, run the REST verifier:
+
+> **You:** Verify that workflow.
+
+The agent calls [`kwala-verify-workflow`](/tools/deployment#kwala-verify-workflow) — no auth, no gas. If the YAML is valid you'll see a `verified` result.
+
+## 4. Deploy on-chain
+
+> **You:** Deploy it.
+
+This invokes [`kwala-deploy-workflow`](/tools/deployment#kwala-deploy-workflow), which runs the full three-step pipeline:
+
+1. **Save** — signs and broadcasts `saveWorkflow(yaml)` to the Kwala contract on chain `1905`
+2. **Deploy** — signs and broadcasts `deployWorkflow(yaml)` (name is mutated to `TokenTransferAlert_0x<yourAddress>`)
+3. **Activate** — polls `/workflow/chaincode/{id}` for the chaincode address, waits for `CLAIMED` status, then calls `triggerWorkflow(chaincodeAddress)` on-chain
+
+You get back the chaincode address, the mutated workflow name, and an explorer link.
+
+## 5. Watch it run
+
+Trigger a USDC transfer on Ethereum (or wait for organic traffic) and your Telegram chat should start receiving alerts within a few seconds. Check execution history any time:
+
+> **You:** What's the status of TokenTransferAlert?
+
+The agent calls [`kwala-workflow-status`](/tools/deployment#kwala-workflow-status) for a summary, or [`kwala-explorer-actions`](/tools/explorer#kwala-explorer-actions) to see each execution.
+
+## 6. Deactivate when done
+
+Workflows on Kwala are immutable — you cannot edit one in place. To stop a running workflow, ask the agent to deactivate it:
+
+> **You:** Deactivate TokenTransferAlert.
+
+[`kwala-deactivate-workflow`](/tools/deployment#kwala-deactivate-workflow) expires it immediately on-chain. Redeploy with a new name if you want to change behavior.
+
+## Next steps
+
+- Browse the [Tool Reference](/tools) for the full 20-tool catalog
+- Understand the [Kwalang YAML schema](/kwalang/schema) so you can debug or hand-edit workflows
+- Read the [Examples](/examples) for six production-ready patterns (oracle price alerts, address tracking, auto top-up, NFT reward mints, and more)
