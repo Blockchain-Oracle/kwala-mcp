@@ -6,3 +6,5 @@ dist/
 !.env.example
 context/repos/
 .DS_Store
+.claude/worktrees/
+packages/web/.data/
