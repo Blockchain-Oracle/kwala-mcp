@@ -184,26 +184,19 @@ Natural language prompt
 
 The project includes a web interface with an AI-powered chat that calls kwala tools and renders results as interactive card components.
 
-### Setup
+### Setup and Run
 
 ```bash
-cd packages/web
 pnpm install
+pnpm build
 
-# Set one of these (OpenAI or Anthropic):
+# Set one of these:
 export OPENAI_API_KEY=sk-...
 # or
 export ANTHROPIC_API_KEY=sk-ant-...
-```
 
-### Run
-
-```bash
-# Terminal 1: Start the MCP HTTP transport server
-pnpm dev:http
-
-# Terminal 2: Start the web app
-pnpm dev:web
+# Run everything (MCP HTTP server + web app):
+pnpm dev
 
 # Visit http://localhost:3000       (landing page)
 # Visit http://localhost:3000/chat  (AI chat with generative UI)
@@ -246,8 +239,12 @@ To get a Telegram bot token: message @BotFather on Telegram, create a bot, copy 
 ```bash
 pnpm install
 pnpm build       # Build all packages
+pnpm dev         # Run MCP HTTP server + web app in parallel
+```
 
-# Development servers
+Individual packages:
+
+```bash
 pnpm dev:mcp     # MCP stdio server with tsx watch
 pnpm dev:http    # MCP HTTP transport server (port 3001)
 pnpm dev:cli     # CLI with tsx watch
