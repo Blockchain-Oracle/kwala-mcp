@@ -19,16 +19,10 @@ import {
 
 /**
  * Generic handler type for addToolOutput.
- * We use `any` for tool generics since MCP tools are dynamic.
+ * Matches the ChatAddToolOutputFunction signature from the AI SDK.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AddToolOutputHandler = (args: {
-  tool: string;
-  toolCallId: string;
-  output: unknown;
-  state?: "output-available" | "output-error";
-  errorText?: string;
-}) => void | Promise<void>;
+export type AddToolOutputHandler = (...args: any[]) => any;
 
 interface ToolResultRendererProps {
   toolName: string;
