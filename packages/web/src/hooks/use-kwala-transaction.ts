@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAccount, useSendTransaction } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import type {
   TransactionState,
   TransactionStep,
@@ -31,7 +31,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
   const [error, setError] = useState<string | null>(null);
 
   const { address } = useAccount();
-  const { sendTransactionAsync } = useSendTransaction();
+  const { data: walletClient } = useWalletClient();
 
   const reset = useCallback(() => {
     setProgress(null);
@@ -43,7 +43,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
 
   const execute = useCallback(
     async (workflowName: string, steps: TransactionStep[]) => {
-      if (!address) throw new Error("Wallet not connected");
+      if (!address || !walletClient) throw new Error("Wallet not connected");
 
       reset();
 
@@ -83,14 +83,23 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           setProgress({ ...prog });
           setStatus("broadcasting");
 
-          const result = await sendTransactionAsync({
+          // Use walletClient.sendTransaction directly with all params set
+          // to prevent viem from making pre-flight RPC calls that KWALA doesn't support
+          const result = await walletClient.sendTransaction({
+            account: address,
             to: step.to as `0x${string}`,
             data: step.data as `0x${string}`,
-            chainId: step.chainId ?? KWALA_TX_DEFAULTS.chainId,
+            chain: {
+              id: step.chainId ?? KWALA_TX_DEFAULTS.chainId,
+              name: "KWALA",
+              nativeCurrency: { name: "GINI", symbol: "GINI", decimals: 18 },
+              rpcUrls: { default: { http: ["https://rpc-ohio.kwala.network"] } },
+            },
             gasPrice: BigInt(step.gasPrice ?? KWALA_TX_DEFAULTS.gasPrice),
             gas: BigInt(step.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit),
             type: "legacy",
             value: BigInt(0),
+            nonce: 0,
           });
 
           console.log("[kwala-tx] Raw result:", result);
@@ -143,7 +152,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
       setStatus("success");
       return hashes;
     },
-    [sendTransactionAsync, address, reset]
+    [walletClient, address, reset]
   );
 
   return {
