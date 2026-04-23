@@ -1,0 +1,87 @@
+---
+title: Agent Skill
+description: Install Kwala AI as an Agent Skill in Claude Code, Cursor, Windsurf, and more
+---
+
+# Agent Skill
+
+Kwala AI also ships as an **Agent Skill** -- a `SKILL.md` file that teaches AI agents when and how to use Kwala tools, without consuming context until needed.
+
+## Skill vs MCP server -- what is the difference?
+
+They are complementary. Install both for the best experience.
+
+| | MCP Server | Skill |
+| --- | --- | --- |
+| What it ships | Tool schemas (machine-readable) | Procedural instructions (markdown) |
+| Context cost | Always in context | Minimal at startup, full body loads on demand |
+| Who invokes | Agent calls tools directly | Agent reads instructions, then calls tools |
+| Install | `claude mcp add kwala npx @kwala-ai/mcp` | `~/.claude/skills/kwala/SKILL.md` |
+
+The skill teaches your agent:
+- When Kwala tools are the right choice
+- The decision tree mapping user intent to tool
+- Trigger types and action types
+- Auto-resolution rules (chains, tokens, ABIs)
+- Notification setup (Telegram, Discord)
+- Example automation workflows
+
+## Three install methods
+
+### 1. Via the community skills CLI
+
+Uses [`vercel-labs/skills`](https://github.com/vercel-labs/skills), the emerging standard for skill distribution:
+
+```bash
+pnpm dlx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala
+
+# or with npm / bun
+npx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala
+bunx skills add github:Blockchain-Oracle/kwala-mcp --skill kwala
+```
+
+This clones the skills directory and installs `SKILL.md` into the right location for whichever agents you have installed.
+
+### 2. Via prompt
+
+Paste this sentence into any agent:
+
+```
+Read the SKILL.md from https://github.com/Blockchain-Oracle/kwala-mcp/tree/main/packages/skills/kwala and follow the instructions to install the Kwala AI skill.
+```
+
+The agent fetches the file, reads the instructions, and installs the skill itself.
+
+### 3. Manual download
+
+Download `SKILL.md` from the [skills directory](https://github.com/Blockchain-Oracle/kwala-mcp/tree/main/packages/skills/kwala) and place it in the correct path for your agent:
+
+| Client | Path |
+| --- | --- |
+| Claude Code | `~/.claude/skills/kwala/SKILL.md` |
+| Cursor (2.4+) | `~/.cursor/skills/kwala/SKILL.md` |
+| Windsurf | `~/.codeium/windsurf/skills/kwala/SKILL.md` |
+| VS Code Copilot | `~/.copilot/skills/kwala/SKILL.md` |
+| Gemini CLI | `~/.gemini/skills/kwala/SKILL.md` |
+| Cline (3.48+) | `~/.cline/skills/kwala/SKILL.md` |
+| Goose | `~/.config/agents/skills/kwala/SKILL.md` |
+
+## What the skill contains
+
+The SKILL.md frontmatter tells the agent when to activate:
+
+```yaml
+---
+name: kwala
+description: Kwala AI -- create, verify, deploy, and monitor blockchain automations via natural language. 20 tools for Kwalang YAML workflows across 6 EVM chains.
+---
+```
+
+The body includes:
+- **When to use / when not to use** -- trigger conditions and skip conditions
+- **Tool catalog** -- all 20 tools organized by category with key parameters
+- **Decision tree** -- maps user intents to specific tools
+- **UX rules** -- auto-resolve tokens, chains, ABIs; never ask for base64; default to testnet
+- **Notification config** -- auto-use stored Telegram/Discord settings
+- **Workflow naming** -- auto-generate unique, descriptive names
+- **Example workflows** -- multi-step automation scenarios

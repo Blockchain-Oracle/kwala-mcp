@@ -4,4 +4,5 @@ export default {
   actions: "Actions",
   examples: "Example Workflows",
   architecture: "Architecture",
+  skill: "Agent Skill",
 }
