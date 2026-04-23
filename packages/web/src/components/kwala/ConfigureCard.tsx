@@ -54,15 +54,18 @@ export function ConfigureCard({ data }: ConfigureCardProps) {
   const updatedList = result.updated as string[] | undefined;
   const isUpdated = Array.isArray(updatedList) && updatedList.length > 0;
 
-  // Read mode: notifications.configured / notifications.not_configured
+  // Handle both formats:
+  // 1. MCP format: { notifications: { configured: [...], telegram: {...} } }
+  // 2. Direct format: { telegram: { chat_id, bot_token_set }, discord: null }
   const notifications = result.notifications as Record<string, unknown> | undefined;
-  const configured = (notifications?.configured ?? []) as string[];
-  const notConfigured = (notifications?.not_configured ?? []) as string[];
 
-  const hasTelegram = configured.includes("Telegram") ||
-    !!(notifications?.telegram);
-  const hasDiscord = configured.includes("Discord") ||
-    !!(notifications?.discord);
+  const hasTelegram = !!(notifications?.telegram) ||
+    !!(result.telegram) ||
+    ((notifications?.configured as string[]) ?? []).includes("Telegram");
+
+  const hasDiscord = !!(notifications?.discord) ||
+    !!(result.discord) ||
+    ((notifications?.configured as string[]) ?? []).includes("Discord");
 
   return (
     <BaseCard
