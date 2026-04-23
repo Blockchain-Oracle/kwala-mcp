@@ -33,19 +33,19 @@ const CATEGORIES: Category[] = [
         title: "Price Alert",
         description: "Alert when ETH drops below $2000",
         prompt:
-          "Create an oracle price alert workflow that notifies me when ETH drops below $2000",
+          "Alert me on Telegram when ETH drops below $2000. Auto-generate a unique workflow name and include the price threshold in the notification message.",
       },
       {
         title: "USDC Monitor",
         description: "Watch USDC transfers on Base Sepolia",
         prompt:
-          "Create an event workflow that watches for USDC Transfer events on Base Sepolia and sends a Telegram notification with the from address, to address, and amount",
+          "Monitor USDC Transfer events on Base Sepolia and notify me on Telegram. Include the sender address, recipient, and amount in the notification.",
       },
       {
         title: "Wallet Tracker",
         description: "Track any wallet for activity",
         prompt:
-          "Create an address tracking workflow that monitors wallet 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18 on Polygon for all activity",
+          "Track wallet 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18 on Polygon for all activity and send me a Telegram alert with the transaction details.",
       },
     ],
   },
