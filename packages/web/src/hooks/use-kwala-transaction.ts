@@ -124,8 +124,9 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
             prog.status = "confirming";
             setProgress({ ...prog });
             setStatus("confirming");
-            console.log("[kwala-tx] Waiting 15s for KWALA gateway to process...");
-            await new Promise((resolve) => setTimeout(resolve, 15000));
+            // Wait for MetaMask to clear the pending tx before sending the next one
+            console.log("[kwala-tx] Waiting 3s for MetaMask to clear pending tx...");
+            await new Promise((resolve) => setTimeout(resolve, 3000));
           }
         } catch (err) {
           console.error("[kwala-tx] Failed:", err);

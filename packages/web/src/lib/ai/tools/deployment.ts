@@ -67,10 +67,10 @@ export const prepareDeploy = tool({
       const workflowId = `${workflowName}_${user_address}`;
       const mutatedYaml = mutateYamlName(yamlStr, user_address);
 
-      // Only saveWorkflow is needed as a wallet transaction.
-      // The Kwala dashboard does: save (wallet) → deploy (automatic) → activate (wallet)
-      // deployWorkflow via eth_sendTransaction is rejected by KWALA gateway.
+      // Dashboard flow: save (wallet) → deploy (wallet) → wait CLAIMED → activate (wallet)
+      // Each step is a separate wallet transaction, NOT batched.
       const saveData = iface.encodeFunctionData("saveWorkflow", [mutatedYaml]);
+      const deployData = iface.encodeFunctionData("deployWorkflow", [mutatedYaml]);
 
       return {
         prepared: true,
@@ -88,12 +88,22 @@ export const prepareDeploy = tool({
             gasLimit: KWALA_GAS_LIMIT,
             value: "0",
           },
+          {
+            name: "deploy",
+            to: KWALA_CONTRACT_ADDRESS,
+            data: deployData,
+            chainId: KWALA_CHAIN_ID,
+            gasPrice: KWALA_GAS_PRICE,
+            gasLimit: KWALA_GAS_LIMIT,
+            value: "0",
+          },
         ],
         instructions: [
-          "Sign the save transaction with your wallet to deploy the workflow on-chain.",
-          "After saving, the workflow will be automatically deployed by the Kwala network.",
+          "Sign each transaction separately with your wallet.",
+          "Save first, then deploy. Each requires a separate MetaMask confirmation.",
+          "After both succeed, the workflow progresses: PENDING → DEPLOYED → CLAIMED.",
         ],
-        note: "Your wallet signs the save transaction. Kwala handles deployment and activation.",
+        note: "Each step opens MetaMask separately. Do NOT reject any popup.",
       };
     } catch (e) {
       return { error: `Failed to prepare: ${e instanceof Error ? e.message : String(e)}` };
