@@ -1,0 +1,144 @@
+---
+title: Kwalang YAML Schema
+description: Every field in a Kwalang workflow document, with types and defaults
+---
+
+# Kwalang YAML Schema
+
+A complete reference for every field a workflow can contain. See [Triggers](/kwalang/triggers) for type-specific trigger shapes and [Actions](/kwalang/actions) for the four action types.
+
+## Full schema
+
+```yaml
+# --- METADATA ---
+Name: string                          # Workflow name (required)
+
+# --- TRIGGER SECTION ---
+Trigger:
+
+  # Primary event source (what starts the workflow)
+  TriggerSourceContract: "0x..."      # Contract address to watch
+  TriggerChainID: 1                   # Chain ID of the source contract
+  TriggerEventName: "Transfer(address,address,uint256)"  # Solidity event signature
+  TriggerEventFilter: "NA"            # Filter expression or "NA"
+                                      #   Exact:       re.event(2) == 1000
+                                      #   Comparison:  re.event(2) > 500
+                                      #   Range:       re.event(2) >= 100 && re.event(2) <= 1000
+                                      #   Membership:  re.event(0) in [addr1, addr2]
+  TriggerSourceContractABI: "base64..." # Base64-encoded ABI (auto-fetched by MCP tools)
+
+  # Recurring event source (optional — for multi-trigger workflows)
+  RecurringSourceContract: "0x..."
+  RecurringChainID: 1
+  RecurringEventName: "EventName(type1,type2)"
+  RecurringEventFilter: "NA"
+  RecurringSourceContractABI: "base64..."
+
+  # Timing & scheduling
+  ExecuteAfter: "event"               # When to first execute:
+                                      #   "event"            — immediately on event
+                                      #   1735689600         — Unix timestamp
+                                      #   "block:18000000"   — after a specific block
+                                      #   "oracle_price"     — on oracle condition
+                                      #   "address_tracking" — on any address activity
+
+  RepeatEvery: "event"                # How often to re-execute:
+                                      #   "event"            — each event firing
+                                      #   60 / 3600 / 86400  — seconds between runs
+                                      #   "0 9 * * *"        — cron expression
+                                      #   "oracle_price"     — each oracle match
+                                      #   "address_tracking" — each address activity
+
+  ExpiresIn: 1735689600               # When to stop:
+                                      #   Unix timestamp, or
+                                      #   "2592000" — duration in seconds (30 days)
+
+  # Oracle price triggers
+  TriggerPrice: 195.0                 # Initial price threshold
+  RecurringPrice: 195.0               # Per-check threshold
+
+  # Metadata & callbacks
+  Meta: "string"                                     # Arbitrary metadata
+  ActionStatusNotificationPOSTURL: "https://..."     # Webhook for execution status callbacks
+  ActionStatusNotificationAPIKey: "string"           # API key sent with the webhook
+
+# --- ACTIONS SECTION (max 10) ---
+Actions:
+
+  # Type: call — invoke a smart contract function
+  - Name: "TransferTokens"
+    Type: "call"
+    TargetContract: "0x..."
+    TargetFunction: "function transfer(address to, uint256 amount)"
+    TargetParams:
+      - "0xRecipient"                    # Static value
+      - "re.event(2)"                    # Dynamic value from the trigger
+    ChainID: 8453
+    EncodedABI: "NA"
+    Metadata: "NA"
+    RetriesUntilSuccess: 3
+
+  # Type: post / api — call a REST endpoint
+  - Name: "NotifyTelegram"
+    Type: "post"
+    APIEndpoint: "https://api.telegram.org/bot<TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "968602918"
+      text: "Transfer: {{re.event(0)}} -> {{re.event(1)}} ({{re.event(2)}})"
+    RetriesUntilSuccess: 5
+
+  # Type: deploy — deploy a new contract
+  - Name: "DeployRewardNFT"
+    Type: "deploy"
+    Bytecode: "0x6080..."
+    EncodedABI: "0x..."
+    InitializationArgs:
+      - "MyNFT"
+      - "NFT"
+      - "1000"
+    ChainID: 80002
+    RetriesUntilSuccess: 3
+
+# --- EXECUTION SECTION ---
+Execution:
+  Mode: "sequential"                   # "sequential" | "parallel"
+```
+
+## Field notes
+
+### `Name`
+
+Required, top-level. On deploy, Kwala mutates this to `<Name>_0x<yourWalletAddress>` so names are globally unique.
+
+### `TriggerEventFilter`
+
+Supports boolean expressions over `re.event(N)` values. Examples:
+
+- `re.event(2) > 1000` — only trigger when the third event param exceeds 1000
+- `re.event(0) == "0xabc..."` — only when the sender matches
+- `re.event(2) >= 100 && re.event(2) <= 500` — range filter
+- `re.event(0) in ["0xabc...","0xdef..."]` — allowlist
+
+Pass `"NA"` to disable filtering.
+
+### `TriggerSourceContractABI`
+
+Base64-encoded ABI. Kwala needs it to decode event data at runtime. Tools like [`kwala-create-automation`](/tools/workflow-generation#kwala-create-automation) fetch and encode this for you automatically — you never base64-encode ABIs by hand.
+
+### `ExecuteAfter` vs `RepeatEvery`
+
+- `ExecuteAfter` controls the **first** execution.
+- `RepeatEvery` controls **subsequent** executions.
+
+The two together cover every trigger pattern: `"event"/"event"` is "fire on every event"; an integer + `"event"` is "wait N seconds then fire on each event"; a cron string + `"event"` is a "fire on each event after the cron schedule starts" pattern; `"event"/3600` is "fire immediately then every hour"; and so on.
+
+### `RetriesUntilSuccess`
+
+Per-action. The total attempts = `1 + RetriesUntilSuccess`. Kwala retries with exponential backoff until either the action succeeds or retries are exhausted, then writes the outcome to execution history.
+
+### `Execution.Mode`
+
+- `sequential` — actions run in array order; failures short-circuit the run.
+- `parallel` — actions fire simultaneously; failures are independent.
+
+Default is `sequential`.

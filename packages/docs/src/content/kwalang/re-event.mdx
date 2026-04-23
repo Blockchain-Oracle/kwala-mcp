@@ -1,0 +1,101 @@
+---
+title: re.event(N) Dynamic Data
+description: How trigger event data flows into action parameters via re.event(N)
+---
+
+# `re.event(N)` — dynamic data
+
+`re.event(N)` is Kwalang's way of threading data from the trigger into actions. It's the single most important concept to understand — almost every non-trivial workflow uses it.
+
+## The basic rule
+
+For an event trigger, `re.event(N)` resolves to the `N`-th parameter of the event signature, in declaration order.
+
+For the ERC-20 event:
+
+```
+Transfer(address from, address to, uint256 amount)
+```
+
+you get:
+
+| Reference     | Value     |
+| ------------- | --------- |
+| `re.event(0)` | `from`    |
+| `re.event(1)` | `to`      |
+| `re.event(2)` | `amount`  |
+
+Zero-indexed, left-to-right.
+
+## Where it can appear
+
+- `TriggerEventFilter` — to filter before firing (e.g. `re.event(2) > 1000`).
+- `Actions[*].TargetParams` — to pass dynamic values into contract calls.
+- `Actions[*].APIPayload.*` string values — using the `{{re.event(N)}}` template form inside strings.
+- `Actions[*].InitializationArgs` — constructor args for `deploy` actions.
+
+## Examples
+
+### Filter on an amount
+
+Only alert on USDC transfers of at least $1,000 (USDC has 6 decimals, so 1,000 = `1000_000_000`):
+
+```yaml
+TriggerEventName: "Transfer(address,address,uint256)"
+TriggerEventFilter: "re.event(2) >= 1000000000"
+```
+
+### Forward event data to a contract call
+
+When a new deposit event fires, call your vault's `record(address,uint256)` with the sender and amount:
+
+```yaml
+- Name: "RecordDeposit"
+  Type: "call"
+  TargetContract: "0xYourVault"
+  TargetFunction: "function record(address depositor, uint256 amount)"
+  TargetParams:
+    - "re.event(0)"        # from
+    - "re.event(2)"        # amount
+  ChainID: 8453
+```
+
+### Interpolate into a notification message
+
+```yaml
+- Name: "Alert"
+  Type: "post"
+  APIEndpoint: "https://api.telegram.org/bot<TOKEN>/sendMessage"
+  APIPayload:
+    chat_id: "123456789"
+    text: "USDC Transfer: {{re.event(0)}} -> {{re.event(1)}} ({{re.event(2)}})"
+  RetriesUntilSuccess: 3
+```
+
+Inside string values you use the double-brace form `{{re.event(N)}}`. Outside strings (filters, `TargetParams`) you use the bare form `re.event(N)`.
+
+## Address-tracking triggers are different
+
+For an `address_tracking` trigger, there is no event signature to map — `re.event(0)` returns the **full transaction receipt** as a structured object:
+
+```
+{
+  from,
+  to,
+  contractAddress,
+  transactionHash,
+  chainId,
+  blockNumber,
+  status,
+  logs[]
+}
+```
+
+Access fields with dot notation where your payload string supports it: `{{re.event(0).from}}`, `{{re.event(0).transactionHash}}`, etc.
+
+## Tips
+
+- **Keep it explicit.** `re.event(0)` refers to the trigger's primary event; if you use `Recurring*` fields you'll see the recurring event's arguments too — check the event signature before addressing by index.
+- **Off-by-one is the #1 bug.** `Transfer(address from, address to, uint256 amount)` has three args, so `re.event(2)` is valid; `re.event(3)` is not.
+- **Indexed vs non-indexed.** Kwala treats all event parameters as addressable by position, whether they're `indexed` in the Solidity declaration or not.
+- **Let the agent do it.** [`kwala-create-automation`](/tools/workflow-generation#kwala-create-automation) and [`kwala-build-action`](/tools/workflow-generation#kwala-build-action) place `re.event(N)` references correctly given a natural-language description. Reach for manual editing only when you're debugging or hand-tuning.

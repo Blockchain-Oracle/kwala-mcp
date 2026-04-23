@@ -1,0 +1,95 @@
+---
+title: Actions
+description: The four Kwalang action types — call, post/api, deploy, and notification
+---
+
+# Actions
+
+When a trigger fires, Kwala runs the workflow's `Actions:` array (up to 10 items) in the order set by `Execution.Mode`. There are four action types.
+
+## `call` — invoke a contract function
+
+Call a function on any supported chain. Kwala signs and broadcasts the transaction with gas sponsored from your Kwala credits.
+
+```yaml
+- Name: "TransferTokens"
+  Type: "call"
+  TargetContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TargetFunction: "function transfer(address to, uint256 amount)"
+  TargetParams:
+    - "0xRecipient"        # static value
+    - "re.event(2)"        # dynamic value from the trigger
+  ChainID: 8453
+  EncodedABI: "NA"
+  Metadata: "NA"
+  RetriesUntilSuccess: 3
+```
+
+- `TargetFunction` is the **full** Solidity signature — tools like [`kwala-build-action`](/tools/workflow-generation#kwala-build-action) resolve a short name (`"transfer"`) to the full form from the contract's ABI.
+- `TargetParams` is positional. Use `re.event(N)` to thread event data into the call.
+- `EncodedABI` can be pre-encoded calldata; pass `"NA"` to let Kwala encode from `TargetFunction` + `TargetParams`.
+
+## `post` / `api` — call a REST endpoint
+
+Fire a JSON POST to any HTTPS endpoint. `post` and `api` are aliases in the schema.
+
+```yaml
+- Name: "NotifyTelegram"
+  Type: "post"
+  APIEndpoint: "https://api.telegram.org/bot<TOKEN>/sendMessage"
+  APIPayload:
+    chat_id: "968602918"
+    text: "Transfer: {{re.event(0)}} -> {{re.event(1)}} ({{re.event(2)}})"
+  RetriesUntilSuccess: 5
+```
+
+- `APIPayload` is a structured object that Kwala serializes to JSON.
+- String templates inside payloads support `{{re.event(N)}}` for dynamic substitution.
+- For Telegram, Discord, or generic webhooks, prefer the **notification sub-type** below — it pulls credentials from `kwala-configure` so you don't paste tokens into YAML.
+
+## Notification (Telegram / Discord / webhook)
+
+Not a distinct top-level action type — it's a `post` action with a convention. Use [`kwala-build-action`](/tools/workflow-generation#kwala-build-action) with `type: notification` and Kwala will generate the right `post` action for the chosen `channel`, injecting the bot token / webhook URL from your stored config:
+
+```yaml
+- Name: "NotifyTelegram"
+  Type: "post"
+  APIEndpoint: "https://api.telegram.org/bot<auto-filled>/sendMessage"
+  APIPayload:
+    chat_id: "<auto-filled>"
+    text: "..."
+  RetriesUntilSuccess: 3
+```
+
+Same convention applies for Discord (uses `APIEndpoint` = the webhook URL, payload with `content:`) and generic webhooks (any JSON body).
+
+## `deploy` — deploy a new contract
+
+Deploy a contract to any supported chain. Useful for reward NFTs, per-user vaults, or on-demand factories.
+
+```yaml
+- Name: "DeployRewardNFT"
+  Type: "deploy"
+  Bytecode: "0x6080..."            # compiled bytecode
+  EncodedABI: "0x..."              # constructor ABI encoding
+  InitializationArgs:              # constructor arguments
+    - "MyNFT"
+    - "NFT"
+    - "1000"
+  ChainID: 80002
+  RetriesUntilSuccess: 3
+```
+
+## Retry semantics
+
+`RetriesUntilSuccess` is per-action. Total attempts = `1 + RetriesUntilSuccess`. Kwala retries with exponential backoff; the final outcome is written to execution history and visible via [`kwala-explorer-actions`](/tools/explorer#kwala-explorer-actions).
+
+## Execution order
+
+The sibling `Execution:` block decides whether actions run in sequence or in parallel:
+
+```yaml
+Execution:
+  Mode: sequential   # default; failures short-circuit the run
+  # Mode: parallel   # fires all actions simultaneously
+```

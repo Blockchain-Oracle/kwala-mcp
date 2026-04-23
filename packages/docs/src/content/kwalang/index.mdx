@@ -1,0 +1,39 @@
+---
+title: Kwalang YAML
+description: The declarative YAML language used to describe Kwala workflows
+---
+
+# Kwalang YAML
+
+A **Kwalang workflow** is a YAML document that tells the Kwala Virtual Machine three things: *what to listen for*, *what to do when it fires*, and *how to schedule it*. The document has three top-level sections plus a workflow name:
+
+```yaml
+Name: TokenTransferAlert
+Trigger:        # what to listen for
+  ...
+Actions:        # what to do (up to 10 actions)
+  - ...
+Execution:      # sequential or parallel
+  Mode: sequential
+```
+
+That's the whole language. The rest of the guide drills into each piece:
+
+- [**YAML Schema**](/kwalang/schema) — every field in the document, with types and defaults
+- [**Triggers**](/kwalang/triggers) — the six trigger types (event, time interval, cron, oracle price, block, address tracking) with working YAML fragments
+- [**Actions**](/kwalang/actions) — the four action types (`call`, `post`/`api`, `deploy`, notification), their required fields, and retry semantics
+- [**`re.event(N)` Dynamic Data**](/kwalang/re-event) — how trigger event data flows into action parameters
+
+## Design constraints
+
+- A workflow is **immutable once deployed**. To change behaviour, deactivate and redeploy.
+- A workflow may contain **up to 10 actions**.
+- Execution order is controlled by `Execution.Mode` — `sequential` (default) runs actions in order; `parallel` fires them simultaneously.
+- Retries are per-action via `RetriesUntilSuccess`. Total attempts = 1 + retries.
+- Most string fields accept the literal `"NA"` when not applicable.
+
+## You don't usually write this by hand
+
+[`kwala-create-automation`](/tools/workflow-generation#kwala-create-automation) generates a full, valid Kwalang document from structured parameters (or a natural-language description relayed by your agent). [`kwala-build-trigger`](/tools/workflow-generation#kwala-build-trigger) and [`kwala-build-action`](/tools/workflow-generation#kwala-build-action) generate YAML fragments for more advanced composition. And [`kwala-explain-yaml`](/tools/workflow-generation#kwala-explain-yaml) translates YAML back into plain English.
+
+You'll want to read this guide anyway, though — for debugging, for auditing what your agent produced before deploy, and for hand-tuning edge cases.

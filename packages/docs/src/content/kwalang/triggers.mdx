@@ -1,0 +1,94 @@
+---
+title: Triggers
+description: The six Kwalang trigger types with working YAML fragments
+---
+
+# Triggers
+
+Kwala supports six kinds of triggers. Each one changes the combination of fields under `Trigger:`. Every example below is a complete `Trigger:` block that you can drop into a workflow.
+
+## Event-based (smart contract event)
+
+Fire when a specific event is emitted by a contract on a supported chain.
+
+```yaml
+Trigger:
+  TriggerSourceContract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  TriggerChainID: 8453
+  TriggerEventName: "Transfer(address,address,uint256)"
+  TriggerSourceContractABI: "<base64 ABI — auto-fetched>"
+  TriggerEventFilter: "NA"
+  ExecuteAfter: "event"
+  RepeatEvery: "event"
+```
+
+**Use when:** you want to react to ERC-20 transfers, NFT mints, oracle updates, DAO votes — anything emitted on-chain.
+
+## Time-based (interval)
+
+Fire on a fixed interval in seconds.
+
+```yaml
+Trigger:
+  ExecuteAfter: "event"         # "event" means "as soon as the workflow activates"
+  RepeatEvery: 3600             # every 3600 seconds (1 hour)
+  ExpiresIn: "2592000"          # stop after 30 days
+```
+
+**Use when:** you need heartbeat-style automation — hourly price snapshots, daily reports, weekly rebalances.
+
+## Time-based (cron)
+
+Fire on a standard 5-field cron schedule (UTC).
+
+```yaml
+Trigger:
+  ExecuteAfter: "event"
+  RepeatEvery: "0 9 * * *"     # every day at 09:00 UTC
+  ExpiresIn: 1735689600
+```
+
+**Use when:** the schedule needs calendar awareness (weekdays only, monthly, etc.).
+
+## Oracle price
+
+Fire when a price oracle crosses a threshold.
+
+```yaml
+Trigger:
+  TriggerPrice: 195.0
+  RecurringPrice: 195.0
+  ExecuteAfter: "oracle_price"
+  RepeatEvery: "oracle_price"
+```
+
+**Use when:** you need price-triggered automations — stop-losses, DCA entries, alerts when ETH > $X.
+
+## Block number
+
+Fire once a specific block height is reached.
+
+```yaml
+Trigger:
+  ExecuteAfter: "block:18000000"
+```
+
+**Use when:** you need to run something at a known future block (distribution kick-off, vesting cliff, coordinated event).
+
+## Address tracking
+
+Fire on any on-chain activity for a given address — transfers, contract calls, approvals, you name it.
+
+```yaml
+Trigger:
+  TriggerSourceContract: "0xAddressToTrack"
+  TriggerChainID: 8453
+  ExecuteAfter: "address_tracking"
+  RepeatEvery: "address_tracking"
+```
+
+**Use when:** you want a wide net — watch a whale wallet, audit a treasury, forward every outbound tx to a webhook. In this mode `re.event(0)` returns the full transaction receipt (see [`re.event(N)`](/kwalang/re-event)).
+
+## Combining triggers
+
+A workflow can have a **primary** trigger (`Trigger*` fields) and a **recurring** trigger (`Recurring*` fields). The recurring section mirrors the primary fields one-for-one and is optional — set it when you need two different event sources to drive the same workflow.
