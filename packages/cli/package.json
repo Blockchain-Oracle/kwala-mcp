@@ -1,6 +1,6 @@
 {
   "name": "@kwala-ai/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Core library and CLI for Kwala Network blockchain automations. 17 MCP tools for creating, verifying, deploying, and monitoring Kwalang workflows.",
   "type": "module",
   "bin": {
