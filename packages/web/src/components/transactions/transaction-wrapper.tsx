@@ -140,7 +140,9 @@ export function TransactionWrapper({
         </div>
 
         {/* Show tx hashes */}
-        {txHashes.map((hash, i) => (
+        {txHashes.map((rawHash, i) => {
+          const hash = typeof rawHash === "string" ? rawHash : String((rawHash as Record<string, unknown>)?.txHash ?? rawHash);
+          return (
           <div
             key={hash}
             className="flex items-center justify-between p-2 bg-muted/30 rounded-lg border border-border/50"
@@ -162,7 +164,8 @@ export function TransactionWrapper({
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
-        ))}
+          );
+        })}
 
         <button
           onClick={handleReset}

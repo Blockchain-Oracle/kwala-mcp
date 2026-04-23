@@ -188,7 +188,11 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
               {step.tx_hash ? (
                 <DataRow
                   label="TX Hash"
-                  value={step.tx_hash}
+                  value={
+                    typeof step.tx_hash === "object" && step.tx_hash !== null
+                      ? String((step.tx_hash as Record<string, unknown>).txHash ?? JSON.stringify(step.tx_hash))
+                      : String(step.tx_hash)
+                  }
                   mono
                   copyable
                 />
