@@ -1,0 +1,60 @@
+@import "tailwindcss";
+ 
+:root {
+  --background: #0a0a0f;
+  --foreground: #e2e8f0;
+  --kwala-purple: #7c3aed;
+  --kwala-green: #10b981;
+  --kwala-card: #111118;
+  --kwala-border: #1e1e2e;
+}
+ 
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+ 
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--background); }
+::-webkit-scrollbar-thumb { background: var(--kwala-purple); border-radius: 3px; }
+ 
+/* Glow effects */
+.glow-purple { box-shadow: 0 0 40px rgba(124, 58, 237, 0.15); }
+.glow-green { box-shadow: 0 0 40px rgba(16, 185, 129, 0.15); }
+ 
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+ 
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+ 
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+ 
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+ 
+.animate-fade-up { animation: fadeUp 0.7s ease forwards; }
+.animate-pulse-dot { animation: pulse-dot 2s infinite; }
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #10b981);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-x 3s ease infinite;
+}
