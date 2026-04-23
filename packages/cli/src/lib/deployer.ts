@@ -215,13 +215,13 @@ export async function fullDeploy(
       // Wait for CLAIMED status (network needs time to pick up the deployment)
       logger.info({ workflowId }, "waiting for workflow to reach CLAIMED status");
       let claimed = false;
-      for (let attempt = 1; attempt <= 10; attempt++) {
+      for (let attempt = 1; attempt <= 20; attempt++) {
         try {
           const statusRes = await fetch(`https://kwala-test.kalp.network/workflow/${workflowId}/status`);
           const statusData = (await statusRes.json()) as Record<string, unknown>;
           const s = statusData.status as string;
           logger.debug({ attempt, status: s }, "activation status check");
-          if (s === "CLAIMED" || s === "TRIGGERED" || s === "WORKFLOW_DEPLOYED") {
+          if (s === "CLAIMED") {
             claimed = true;
             break;
           }
