@@ -32,7 +32,7 @@ interface DeployResult {
   error?: string;
   suggestion?: string;
   /** Transaction steps for client-side signing */
-  transaction_steps?: Array<{
+  transactions?: Array<{
     name: string;
     to: string;
     data: string;
@@ -112,15 +112,16 @@ export function DeploymentProgressCard({ data }: DeploymentProgressCardProps) {
     result.final_status === "active" || result.final_status === "deployed";
 
   // Phase 1: Client-side signing mode
-  // If we have transaction_steps, show the TransactionWrapper for wallet signing
-  if (result.transaction_steps && result.transaction_steps.length > 0) {
-    const txSteps: TransactionStep[] = result.transaction_steps.map((s) => ({
-      name: s.name,
-      to: s.to,
-      data: s.data,
-      chainId: s.chainId ?? KWALA_TX_DEFAULTS.chainId,
-      gasPrice: s.gasPrice ?? KWALA_TX_DEFAULTS.gasPrice,
-      gasLimit: s.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit,
+  // If we have transactions from kwala-prepare-deploy, show wallet signing UI
+  if (result.transactions && (result.transactions as unknown[]).length > 0) {
+    const rawSteps = result.transactions as Array<Record<string, unknown>>;
+    const txSteps: TransactionStep[] = rawSteps.map((s) => ({
+      name: String(s.name ?? ""),
+      to: String(s.to ?? ""),
+      data: String(s.data ?? ""),
+      chainId: Number(s.chainId ?? KWALA_TX_DEFAULTS.chainId),
+      gasPrice: String(s.gasPrice ?? KWALA_TX_DEFAULTS.gasPrice),
+      gasLimit: String(s.gasLimit ?? KWALA_TX_DEFAULTS.gasLimit),
     }));
 
     return (

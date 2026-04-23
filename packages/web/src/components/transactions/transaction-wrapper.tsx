@@ -109,8 +109,8 @@ export function TransactionWrapper({
     if (!isConnected) return;
 
     try {
-      await execute(workflowName, steps);
-      onSuccess?.(txHashes);
+      const hashes = await execute(workflowName, steps);
+      onSuccess?.(hashes);
     } catch (err) {
       const errorMsg =
         err instanceof Error ? err.message : "Transaction failed";

@@ -116,6 +116,7 @@ export function ToolResultRenderer({
     case "kwala-verify-workflow":
       return <VerifyCard data={result} />;
     case "kwala-deploy-workflow":
+    case "kwala-prepare-deploy":
       return (
         <DeploymentProgressCard data={result as Record<string, unknown>} />
       );

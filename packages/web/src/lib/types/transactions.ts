@@ -6,6 +6,7 @@ export interface TransactionStep {
   chainId: number;
   gasPrice: string;
   gasLimit: string;
+  value?: string;
 }
 
 /** Multi-step workflow deployment transaction */

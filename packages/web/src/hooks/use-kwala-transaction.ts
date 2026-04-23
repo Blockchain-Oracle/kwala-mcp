@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useSendTransaction } from "wagmi";
 import type {
   TransactionState,
   TransactionStep,
@@ -19,7 +19,7 @@ interface UseKwalaTransactionReturn {
   execute: (
     workflowName: string,
     steps: TransactionStep[]
-  ) => Promise<void>;
+  ) => Promise<string[]>;
   reset: () => void;
 }
 
@@ -126,7 +126,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
           setProgress({ ...prog });
           setStatus("error");
           setError(errorMsg);
-          return;
+          throw err;
         }
       }
 
@@ -134,6 +134,7 @@ export function useKwalaTransaction(): UseKwalaTransactionReturn {
       prog.status = "success";
       setProgress({ ...prog });
       setStatus("success");
+      return hashes;
     },
     [sendTransactionAsync, reset]
   );
