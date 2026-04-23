@@ -145,13 +145,13 @@ export function TransactionWrapper({
           return (
           <div
             key={hash}
-            className="flex items-center justify-between p-2 bg-muted/30 rounded-lg border border-border/50"
+            className="flex items-center justify-between p-2 bg-muted/30 rounded-lg border border-border/50 overflow-hidden"
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+              <span className="text-xs text-muted-foreground shrink-0">
                 Step {i + 1}:
               </span>
-              <span className="text-xs font-mono text-foreground truncate">
+              <span className="text-xs font-mono text-foreground truncate break-all">
                 {hash.slice(0, 10)}...{hash.slice(-8)}
               </span>
             </div>
@@ -180,7 +180,7 @@ export function TransactionWrapper({
   // Step progress
   if (progress && status !== "idle" && status !== "error") {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 overflow-hidden">
         {children}
 
         {/* Step progress */}

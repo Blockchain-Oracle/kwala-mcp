@@ -1,6 +1,7 @@
 "use client";
 
 import { http, createConfig, createStorage, cookieStorage } from "wagmi";
+import { KWALA_RPC_URL } from "./constants";
 import { baseSepolia, sepolia, polygonAmoy } from "wagmi/chains";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
 import {
@@ -37,7 +38,7 @@ export const wagmiConfig = createConfig({
   storage: createStorage({ storage: cookieStorage }),
   ssr: true,
   transports: {
-    [kwalaChain.id]: http(),
+    [kwalaChain.id]: http(KWALA_RPC_URL, { batch: false }),
     [baseSepolia.id]: http(),
     [sepolia.id]: http(),
     [polygonAmoy.id]: http(),
