@@ -8,6 +8,7 @@
     "dev:cli": "pnpm --filter @kwala-ai/cli dev",
     "dev:web": "pnpm --filter @kwala-ai/web dev",
     "dev:docs": "pnpm --filter @kwala-ai/docs dev",
+    "start": "pnpm -r start",
     "build": "pnpm -r build",
     "test": "pnpm -r test"
   },
