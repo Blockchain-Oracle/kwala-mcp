@@ -19,8 +19,8 @@ const CONTRACT_ABI = [
 
 const iface = new Interface(CONTRACT_ABI);
 
-const GAS_PRICE = 40_000_000_000n; // 40 gwei from eth_gasPrice
-const GAS_LIMIT = 3_000_000n;
+const GAS_PRICE = 1_000_000_000n; // 1 gwei — KWALA gateway rejects higher gas prices
+const GAS_LIMIT = 500_000n;
 
 /**
  * Raw JSON-RPC call — bypasses ethers entirely.
