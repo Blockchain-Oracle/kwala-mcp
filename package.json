@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @kwala-ai/web dev",
+    "dev": "pnpm --filter @kwala-ai/web --filter @kwala-ai/docs -r --parallel dev",
     "dev:mcp": "pnpm --filter @kwala-ai/mcp dev",
     "dev:cli": "pnpm --filter @kwala-ai/cli dev",
     "dev:web": "pnpm --filter @kwala-ai/web dev",
