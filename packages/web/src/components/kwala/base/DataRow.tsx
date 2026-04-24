@@ -41,7 +41,7 @@ export function DataRow({
       <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
         {label}
       </span>
-      <div className="flex items-center gap-2 max-w-[70%]">
+      <div className="flex items-center gap-2 max-w-[60%] sm:max-w-[70%]">
         <span
           className={cn(
             "text-foreground text-right truncate",

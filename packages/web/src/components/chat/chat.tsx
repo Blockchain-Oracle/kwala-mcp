@@ -119,15 +119,15 @@ export function Chat({ id, initialMessages = [] }: ChatProps) {
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full px-4">
             <div className="max-w-2xl text-center space-y-8">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto border border-primary/20">
-                <Terminal className="w-8 h-8 text-primary" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto border border-primary/20">
+                <Terminal className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight text-foreground">
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                   Kwala AI
                 </h2>
-                <p className="text-muted-foreground text-lg max-w-lg mx-auto">
+                <p className="text-muted-foreground text-sm sm:text-lg max-w-lg mx-auto">
                   Create, deploy, and monitor blockchain automations using
                   natural language.
                 </p>

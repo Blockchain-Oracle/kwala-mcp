@@ -129,7 +129,7 @@ const ActionCard = memo(function ActionCard({
   return (
     <button
       onClick={() => onSelect(action.prompt)}
-      className="group relative flex items-center gap-4 w-full min-w-[280px] max-w-[320px] p-4 rounded-xl bg-card border border-border text-left transition-all duration-200 hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative flex items-center gap-4 w-full min-w-0 sm:min-w-[240px] sm:max-w-[300px] p-3 sm:p-4 rounded-xl bg-card border border-border text-left transition-all duration-200 hover:border-primary/30 hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="absolute left-0 top-3 bottom-3 w-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-primary" />
       <div className="flex-1 pl-2">
@@ -174,7 +174,7 @@ export function SuggestedActions({ onSelect }: SuggestedActionsProps) {
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all",
+                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
                 "hover:bg-muted hover:border-primary/30",
                 isActive
                   ? "bg-primary/10 text-primary border-primary"
@@ -193,7 +193,7 @@ export function SuggestedActions({ onSelect }: SuggestedActionsProps) {
         })}
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:overflow-x-auto pb-2">
         {currentCategory.actions.map((action) => (
           <ActionCard
             key={action.title}

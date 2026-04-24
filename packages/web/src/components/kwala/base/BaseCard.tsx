@@ -57,7 +57,7 @@ export function BaseCard({
       {/* Header */}
       <div
         className={cn(
-          "px-4 py-3 flex items-center justify-between border-b",
+          "px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between border-b",
           styles.header
         )}
       >
@@ -93,7 +93,7 @@ export function BaseCard({
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3 text-sm">{children}</div>
+      <div className="p-3 sm:p-4 space-y-3 text-sm overflow-hidden">{children}</div>
     </div>
   );
 }

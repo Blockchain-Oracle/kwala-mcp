@@ -142,7 +142,7 @@ export function Message({ message, addToolOutput, sendMessage }: MessageProps) {
   return (
     <div
       className={cn(
-        "group flex gap-4 md:gap-6 py-4 transition-colors hover:bg-muted/30 -mx-4 px-4 rounded-xl",
+        "group flex gap-3 sm:gap-4 md:gap-6 py-3 sm:py-4 transition-colors hover:bg-muted/30 -mx-2 sm:-mx-4 px-2 sm:px-4 rounded-xl",
         isUser ? "bg-transparent" : ""
       )}
     >
