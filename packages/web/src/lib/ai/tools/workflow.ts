@@ -161,17 +161,23 @@ export const createAutomation = tool({
 
       // Set trigger fields based on type
       switch (params.trigger_type) {
-        case "event":
+        case "event": {
+          const eventSig = resolveWellKnownEvent(params.event_name ?? "Transfer");
+          const abiB64 = getErc20AbiBase64();
           trigger.TriggerSourceContract = contractAddr;
           trigger.TriggerChainID = chainId;
-          trigger.RecurringChainID = chainId;
+          trigger.TriggerSourceContractABI = abiB64;
+          trigger.TriggerEventName = eventSig;
           trigger.TriggerEventFilter = params.event_filter ?? "NA";
+          trigger.RecurringSourceContract = contractAddr;
+          trigger.RecurringChainID = chainId;
+          trigger.RecurringSourceContractABI = abiB64;
+          trigger.RecurringEventName = eventSig;
           trigger.RecurringEventFilter = "NA";
           trigger.ExecuteAfter = "event";
           trigger.RepeatEvery = "event";
-          trigger.TriggerSourceContractABI = getErc20AbiBase64();
-          trigger.TriggerEventName = resolveWellKnownEvent(params.event_name ?? "Transfer");
           break;
+        }
         case "time":
           trigger.ExecuteAfter = "immediate";
           trigger.RepeatEvery = normalizeInterval(params.interval_seconds!);
@@ -209,6 +215,8 @@ export const createAutomation = tool({
       const actions: Array<Record<string, unknown>> = [];
       for (const a of params.actions) {
         const retries = a.retries ?? 3;
+        // Sanitize action name — Kwala API only allows letters, numbers, underscores
+        a.name = a.name.replace(/[^a-zA-Z0-9_]/g, "_");
 
         if (a.type === "call") {
           let funcSig = a.target_function ?? "";

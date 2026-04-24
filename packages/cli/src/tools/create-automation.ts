@@ -214,19 +214,20 @@ export function registerCreateAutomationTool(server: McpServer): void {
 
         switch (params.trigger_type) {
           case "event": {
+            const eventSig = resolveWellKnownEvent(params.event_name ?? "Transfer");
+            const abiB64 = getErc20AbiBase64();
             trigger.TriggerSourceContract = contractAddr;
             trigger.TriggerChainID = chainId;
-            trigger.RecurringChainID = chainId;
+            trigger.TriggerSourceContractABI = abiB64;
+            trigger.TriggerEventName = eventSig;
             trigger.TriggerEventFilter = params.event_filter ?? "NA";
+            trigger.RecurringSourceContract = contractAddr;
+            trigger.RecurringChainID = chainId;
+            trigger.RecurringSourceContractABI = abiB64;
+            trigger.RecurringEventName = eventSig;
             trigger.RecurringEventFilter = "NA";
             trigger.ExecuteAfter = "event";
             trigger.RepeatEvery = "event";
-
-            // Use built-in ERC-20 ABI (works for USDC, USDT, WETH, DAI, etc.)
-            trigger.TriggerSourceContractABI = getErc20AbiBase64();
-
-            // Resolve event name to full signature using well-known events
-            trigger.TriggerEventName = resolveWellKnownEvent(params.event_name ?? "Transfer");
             break;
           }
           case "time":
@@ -268,6 +269,8 @@ export function registerCreateAutomationTool(server: McpServer): void {
 
         for (const a of params.actions) {
           const retries = a.retries ?? 3;
+          // Sanitize action name — Kwala API only allows letters, numbers, underscores
+          a.name = a.name.replace(/[^a-zA-Z0-9_]/g, "_");
 
           if (a.type === "call") {
             let funcSig = a.target_function ?? "";
