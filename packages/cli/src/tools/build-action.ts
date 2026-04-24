@@ -90,12 +90,12 @@ export function registerBuildActionTool(server: McpServer): void {
               const botToken = params.bot_token ?? config.notifications?.telegram?.bot_token;
               const chatId = params.chat_id ?? config.notifications?.telegram?.chat_id;
               if (!botToken || !chatId) {
-                return err("Telegram not configured. Either pass bot_token/chat_id here, or run kwala-configure to store them once.", {
+                return err("Telegram not configured. To set up: 1) Search @BotFather on Telegram, send /newbot to create a bot and copy the token. 2) Search @userinfobot on Telegram, tap Start to get your chat ID. 3) Run kwala-configure to save both.", {
                   missing_params: [
                     ...(botToken ? [] : ["bot_token"]),
                     ...(chatId ? [] : ["chat_id"]),
                   ],
-                  suggestion: "Run kwala-configure with telegram_bot_token and telegram_chat_id to save them permanently.",
+                  suggestion: "Get a bot token from @BotFather, get your chat ID from @userinfobot, then run kwala-configure to save both.",
                 });
               }
               endpoint = `https://api.telegram.org/bot${botToken}/sendMessage`;

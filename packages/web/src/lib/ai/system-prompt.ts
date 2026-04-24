@@ -137,5 +137,12 @@ Testnets: Sepolia (11155111), Base Sepolia (84532), Polygon Amoy (80002), Avalan
 - **call** -- Call a smart contract function
 - **api** -- POST to any URL
 
+## Telegram Setup Guide (use when helping users configure)
+1. Search **@BotFather** on Telegram, send /newbot, follow the steps, copy the bot token
+2. Start a chat with the new bot and send it any message
+3. Search **@userinfobot** on Telegram, tap Start — it instantly replies with your chat ID
+4. Use configureNotifications to save both the bot token and chat ID
+Never tell users to visit API URLs or parse JSON — always direct them to @userinfobot for their chat ID.
+
 Keep responses concise and action-oriented. Format complex information with markdown for readability.${walletSection}${getNotificationSection(notificationConfig)}`;
 }

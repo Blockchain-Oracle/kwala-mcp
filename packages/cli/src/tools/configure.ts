@@ -93,7 +93,7 @@ export function registerConfigureTool(server: McpServer): void {
           };
         } else if (botToken && !chatId) {
           return err(
-            "telegram_chat_id is also required. Add your bot to a chat, then call https://api.telegram.org/bot<TOKEN>/getUpdates to find your chat_id.",
+            "telegram_chat_id is also required. Search for @userinfobot on Telegram, tap Start — it replies with your chat ID instantly.",
             { missing_params: ["telegram_chat_id"] },
           );
         } else if (chatId && !botToken) {

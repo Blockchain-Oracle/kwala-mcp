@@ -172,15 +172,15 @@ export function registerCreateAutomationTool(server: McpServer): void {
               if (!a.bot_token && storedTelegram?.bot_token) a.bot_token = storedTelegram.bot_token;
               if (!a.chat_id && storedTelegram?.chat_id) a.chat_id = storedTelegram.chat_id;
               if (!a.bot_token) {
-                return err("Telegram not configured. Either pass bot_token here, or run kwala-configure with telegram_bot_token and telegram_chat_id to store it once.", {
+                return err("Telegram not configured. To set up: 1) Search @BotFather on Telegram, send /newbot to create a bot and copy the token. 2) Search @userinfobot on Telegram, tap Start to get your chat ID. 3) Run kwala-configure with telegram_bot_token and telegram_chat_id to save them.", {
                   missing_params: ["actions[].bot_token"],
-                  suggestion: "Get a bot token from @BotFather on Telegram. Then call kwala-configure to save it.",
+                  suggestion: "Get a bot token from @BotFather on Telegram, then get your chat ID from @userinfobot. Run kwala-configure to save both.",
                 });
               }
               if (!a.chat_id) {
-                return err("Telegram chat_id missing. Either pass chat_id here, or run kwala-configure with telegram_chat_id to store it.", {
+                return err("Telegram chat_id missing. Search for @userinfobot on Telegram, tap Start — it replies with your chat ID instantly. Then run kwala-configure with telegram_chat_id to save it.", {
                   missing_params: ["actions[].chat_id"],
-                  suggestion: "Call https://api.telegram.org/bot<TOKEN>/getUpdates to find your chat_id.",
+                  suggestion: "Search @userinfobot on Telegram and tap Start to get your chat ID.",
                 });
               }
             } else if (channel === "discord") {

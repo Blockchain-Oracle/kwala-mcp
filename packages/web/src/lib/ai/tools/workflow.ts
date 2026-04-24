@@ -141,10 +141,10 @@ export const createAutomation = tool({
         if (a.type === "notification") {
           const channel = a.channel ?? "telegram";
           if (channel === "telegram" && !a.bot_token) {
-            return { error: "Telegram not configured. To set up:\n1. Open Telegram and search for @BotFather\n2. Send /newbot and follow the steps to create a bot\n3. Copy the bot token (looks like 123456:ABC-DEF)\n4. Start a chat with your bot and send a message\n5. Visit https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates to find your chat_id\n6. Use configureNotifications to save both values\n\nThen try again — your Telegram will auto-populate." };
+            return { error: "Telegram not configured. To set up:\n1. Open Telegram and search for @BotFather\n2. Send /newbot and follow the steps to create a bot\n3. Copy the bot token (looks like 123456:ABC-DEF)\n4. Start a chat with your bot and send it any message\n5. Search for @userinfobot on Telegram, tap Start — it replies with your chat ID instantly\n6. Use configureNotifications to save both values\n\nThen try again — your Telegram will auto-populate." };
           }
           if (channel === "telegram" && !a.chat_id) {
-            return { error: "Telegram chat_id missing. Visit https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates after messaging your bot to find your chat_id." };
+            return { error: "Telegram chat_id missing. To get your chat ID: search for @userinfobot on Telegram, tap Start — it replies with your ID instantly. Then use configureNotifications to save it." };
           }
           if (channel === "discord" && !a.webhook_url) {
             return { error: "Discord webhook_url is required." };
