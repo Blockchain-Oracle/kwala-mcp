@@ -39,18 +39,24 @@ export function CreditBalanceCard({ data }: CreditBalanceCardProps) {
   }
 
   return (
-    <BaseCard title="Credit Balance" icon={<Coins className="w-4 h-4" />}>
-      <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
-        <p className="text-3xl font-bold text-primary">
-          {result.balance !== undefined
-            ? typeof result.balance === "object" && result.balance !== null
-              ? String((result.balance as Record<string, unknown>).balance ?? "0")
-              : String(result.balance)
-            : "-"}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
-          Credits
-        </p>
+    <BaseCard title="Wallet Balance" icon={<Coins className="w-4 h-4" />}>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
+          <p className="text-2xl font-bold text-primary">
+            {result.gini_balance !== undefined ? String(result.gini_balance) : "-"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
+            GINI
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
+          <p className="text-2xl font-bold text-foreground">
+            {result.credits !== undefined ? String(result.credits) : "-"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
+            Credits
+          </p>
+        </div>
       </div>
 
       {result.address ? (

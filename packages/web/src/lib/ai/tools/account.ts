@@ -33,22 +33,41 @@ export const getWalletInfo = tool({
 
 export const checkBalance = tool({
   description:
-    "Check Kwala credit balance. Credits are consumed when workflows execute.",
+    "Check Kwala credit balance and native GINI token balance on the KWALA chain.",
   inputSchema: z.object({
     address: z.string().describe("Wallet address to check balance for."),
   }),
   execute: async ({ address }) => {
-    try {
-      const data = await kwalaGet(`/user/getBalance/${address}`);
-      return {
-        address,
-        balance: data,
-        purchase_info:
-          "Purchase credits at https://payments.kwala.network (~49 USDT = 20 credits on BNB Chain)",
-      };
-    } catch (e) {
-      return { error: `Failed to fetch balance: ${e instanceof Error ? e.message : String(e)}` };
-    }
+    // Fetch both API credits and native GINI balance in parallel
+    const [creditResult, nativeResult] = await Promise.allSettled([
+      kwalaGet(`/user/getBalance/${address}`),
+      fetch("https://rpc-ohio.kwala.network", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", method: "eth_getBalance", params: [address, "latest"], id: 1 }),
+      }).then(r => r.json()).then((j: { result?: string }) => {
+        const wei = BigInt(j.result ?? "0x0");
+        const gini = Number(wei) / 1e18;
+        return gini;
+      }),
+    ]);
+
+    const creditData = creditResult.status === "fulfilled" ? creditResult.value : null;
+    const credits = creditData
+      ? typeof creditData === "object" && creditData !== null && "balance" in (creditData as Record<string, unknown>)
+        ? String((creditData as Record<string, unknown>).balance)
+        : String(creditData)
+      : "unavailable";
+
+    const giniBalance = nativeResult.status === "fulfilled" ? nativeResult.value : 0;
+
+    return {
+      address,
+      credits,
+      gini_balance: giniBalance % 1 === 0 ? String(giniBalance) : giniBalance.toFixed(6),
+      purchase_info:
+        "Purchase credits at https://payments.kwala.network (~49 USDT = 20 credits on BNB Chain)",
+    };
   },
 });
 

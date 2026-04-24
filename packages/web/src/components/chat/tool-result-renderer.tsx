@@ -46,18 +46,10 @@ export function ToolResultRenderer({
   // Handler factories for selectable cards
   const handleChainSelect = useCallback(
     (chain: { id: number; name: string; symbol: string }) => {
-      if (!addToolOutput || !toolCallId) return;
-      addToolOutput({
-        tool: toolName,
-        toolCallId,
-        output: {
-          selectedChain: chain.name,
-          chainId: chain.id,
-          symbol: chain.symbol,
-        },
-      });
+      if (!sendMessage) return;
+      sendMessage({ text: `I want to use ${chain.name} (Chain ID: ${chain.id}, ${chain.symbol}). Set it up for me.` });
     },
-    [addToolOutput, toolCallId, toolName]
+    [sendMessage]
   );
 
   const handleTemplateSelect = useCallback(
@@ -130,7 +122,7 @@ export function ToolResultRenderer({
       return (
         <ChainSelectorCard
           data={result}
-          onSelect={addToolOutput && toolCallId ? handleChainSelect : undefined}
+          onSelect={sendMessage ? handleChainSelect : undefined}
         />
       );
 
