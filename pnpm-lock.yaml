@@ -82,8 +82,8 @@ importers:
   packages/mcp:
     dependencies:
       '@kwala-ai/cli':
-        specifier: ^0.1.1
-        version: 0.1.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+        specifier: ^0.1.2
+        version: 0.1.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.3.6)
@@ -1166,8 +1166,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kwala-ai/cli@0.1.1':
-    resolution: {integrity: sha512-4N3x4STCuhZV2DUmFqtQ5ziILR+OZqPGW9TmgGc33FrTQxF6FSfD0v+WckaY5b0QolQRq0dIhepfaRgYG31Ejw==}
+  '@kwala-ai/cli@0.1.2':
+    resolution: {integrity: sha512-q7paGaenIrkzFkLp9C8Dgxyq3xsTqNWzi3th+STzt0AruKfqgkv1nk2D68Rf/+oBESteNLZHV5uZuOo84fyJ9g==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -7729,7 +7729,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kwala-ai/cli@0.1.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+  '@kwala-ai/cli@0.1.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.3.6)
       commander: 14.0.3
